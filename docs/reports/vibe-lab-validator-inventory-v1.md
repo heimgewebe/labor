@@ -19,13 +19,13 @@ The current machine-readable source is `.vibe/validator-inventory.v1.json`. Afte
 | Group | Targets | Current consumer |
 | --- | ---: | --- |
 | Core | 45 | Repository contracts, generic evidence integrity and every experiment |
-| Active | 7 | Active registry, frozen Operator-Lab closeout and routing-readiness audit |
-| Legacy | 48 | Grandfathered historical experiments, retired agent-operability corpus and closed specialist families |
+| Active | 6 | Active registry, prospective registration and frozen Operator-Lab closeout |
+| Legacy | 46 | Grandfathered historical experiments, retired agent-operability corpus and closed specialist families |
 | Supplemental | 2 | Replay non-mutation and committed generated artifacts |
 
-The grouped inventory therefore contains 100 classified `validate-*` targets plus two supplemental checks. GitHub exposes a compact grouped frontdoor while all groups remain blocking on pull requests and `main`.
+The grouped inventory therefore contains 97 classified validation targets plus two supplemental checks. GitHub exposes a compact grouped frontdoor while all groups remain blocking on pull requests and `main`.
 
-The active experiment registry is currently empty. The seven targets in the inventory group named `active` therefore must not be read as seven active experiments: they are a retained validator grouping that still includes active-registry/registration boundaries plus specialist historical closeout or routing-readiness checks. Their continued blocking status is survivor debt to be reviewed against current consumers; this report does not remove them without that proof. Former Chronik, RepoBrief and routing-readiness experiment files remain historical evidence.
+The active experiment registry is currently empty. The six targets in the inventory group named `active` therefore must not be read as six active experiments: they protect active-registry/registration boundaries plus the frozen Operator-Lab closeout. The archived routing-readiness regression frontdoor is no longer part of current blocking validation; its scripts and evidence remain historical. Former Chronik, RepoBrief and routing-readiness experiment files remain historical evidence.
 
 ## Correction of the previous report
 
@@ -35,7 +35,7 @@ The earlier report was internally inconsistent after the routing-readiness work:
 
 Classification is not a usefulness claim. In particular:
 
-- 48 legacy targets are not presumed useful forever;
+- 46 legacy targets are not presumed useful forever;
 - historical evidence retention does not require every historical specialist validator to remain permanently blocking;
 - a green validator proves its encoded contract, not practical workflow benefit;
 - full CI does not give Labor runtime, routing, queue, merge, deployment or policy authority.
@@ -68,16 +68,15 @@ These surfaces have a current consumer or protect a generic failure class used b
 - active experiment registry checks;
 - frozen Operator-Lab closeout checks;
 - prospective experiment registration checks;
-- operator-routing ML-readiness aggregate-audit regression checks.
 
-The group still contains 7 of the permitted maximum 12 targets, but the experiment registry is now empty. Generic active-registry and registration checks retain a current lifecycle role; specialist Operator-Lab and routing-readiness targets need a fresh consumer/coverage disposition before they remain blocking. No new specialist target is justified merely by a new idea.
+The group now contains 6 of the permitted maximum 12 targets, but the experiment registry is empty. Generic active-registry and registration checks retain a current lifecycle role; the frozen Operator-Lab closeout remains until separately proven redundant. No new specialist target is justified merely by a new idea.
 
 ### Review for retirement
 
-The 48 legacy targets are reviewed in this order:
+The 46 remaining legacy targets are reviewed in this order:
 
 1. retired agent-handoff, agent-command and command-chain contracts;
-2. closed Model-Lab control, access, runtime, workspace and condition-design contracts;
+2. Model-Lab control, access, runtime, workspace and condition-design contracts only after a separate terminal disposition; the current manifest remains `testing`, Run-004 is not authorized/executed, and this survivor slice therefore retains all Model-Lab guards;
 3. historical replay, fixture and cross-contract semantics that may duplicate generic core gates;
 4. rLens and PR-context historical validators, now that the former RepoBrief pilot is archived.
 
@@ -90,7 +89,7 @@ A head- and diff-bound review is still mandatory for the removal PR, but it veri
 
 ## Quantitative reduction gate
 
-The legacy review date remains 2026-09-01. By that date each of the 48 targets must be classified as:
+The 2026-09-01 legacy review gate has passed. After the 2026-09-07 survivor review, 46 blocking legacy targets remain and each future retirement slice must classify its targets as:
 
 - `retain_with_consumer`;
 - `covered_by_core`;
@@ -100,8 +99,9 @@ The directional objective is a 30–50 percent reduction of the blocking legacy 
 
 ## Practical effect
 
-- Current active specialist surface: 7 targets instead of an undifferentiated historical frontdoor.
+- Current active specialist surface: 6 targets instead of an undifferentiated historical frontdoor.
 - Current active experiments: zero; `experiments/active.v1.json` is empty after the 2026-09-07 deferred Outcome-Bound review.
 - Four RepoBrief-pilot-only blocking targets are retired from the grouped frontdoor; their scripts and historical evidence remain available for audit.
+- Three additional specialist frontdoors are retired on 2026-09-07: the archived routing-readiness audit test target plus the Phase-1c archive guard and its regression-test target. Phase-1c current semantics remain covered by generic schema, run-bundle, relation and claim/evidence gates as established by commit `17a81f3`; historical scripts and fixtures are retained.
 - Retired custom-agent and instruction-bearing projection content: no longer active authority; generated compatibility markers and parity contracts remain active.
 - Next engineering work: reclassify now-consumerless specialist targets and remove only proven-redundant legacy groups rather than add new Labor capabilities.

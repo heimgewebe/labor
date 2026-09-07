@@ -6,7 +6,7 @@
     "pull_request_runs_all_groups": true,
     "main_runs_all_groups": true,
     "new_target_requires_classification": true,
-    "classified_target_count": 100,
+    "classified_target_count": 97,
     "max_validate_job_named_steps": 10
   },
   "groups": [
@@ -79,23 +79,20 @@
     },
     {
       "id": "active",
-      "consumer": "experiments/active.v1.json, frozen Operator-Lab closeout and operator-routing ML-readiness shadow experiment",
+      "consumer": "experiments/active.v1.json and frozen Operator-Lab closeout",
       "failure_classes": [
         "active_experiment_registration_drift",
-        "operator_lab_closeout_drift",
-        "operator_routing_ml_readiness_audit_drift"
+        "operator_lab_closeout_drift"
       ],
       "scope_paths": [
         "experiments/active.v1.json",
-        "experiments/2026-07-01_operator-lab-loop",
-        "experiments/_archive/2026-07-23_operator-routing-ml-readiness-shadow"
+        "experiments/2026-07-01_operator-lab-loop"
       ],
       "execution_policy": {
         "pull_request": "blocking",
         "main": "blocking"
       },
       "targets": [
-        "validate-operator-routing-ml-readiness-audit-tests",
         "validate-active-experiments-tests",
         "validate-active-experiments",
         "validate-operator-lab-closeout-tests",
@@ -147,8 +144,6 @@
         "validate-replay-dry-run",
         "validate-replay-tests",
         "validate-replay-trace-contract",
-        "validate-phase1c-fixtures",
-        "validate-phase1c-fixture-tests",
         "validate-model-lab-next-blocker-triage-tests",
         "validate-model-lab-next-blocker-triage",
         "validate-model-lab-condition-contrast-design-gate-tests",
