@@ -23,7 +23,7 @@ As of 2026-09-07:
 - earlier Chronik, operator-routing, RepoBrief, Model-Lab and Operator-Lab work remains historical evidence and is not active merely because validators or files still exist;
 - the generic observation capture and deterministic evaluator remain unpromoted review tooling;
 - custom agent profiles and instruction-bearing Cursor/Copilot projections are retired, while generated compatibility markers and their blocking parity contracts remain active;
-- the validator inventory contains 100 classified targets: 45 core, 7 active-group and 48 legacy, plus two supplemental checks; the seven active-group targets now require a fresh consumer review because the experiment registry itself is empty;
+- the validator inventory contains 97 classified validation targets: 45 core, 6 active-group and 46 legacy, plus two supplemental checks; the archived routing-readiness test frontdoor and the two Phase-1c archive frontdoors are no longer blocking, while the six active-group targets retain current registry/registration or frozen Operator-Lab consumers;
 - the active prompt-length-control library claim has been narrowed to the observed single-task evidence; its proposed cognitive mechanism and cross-task transfer remain unproven;
 - no Labor surface has runtime, queue, merge, deploy, routing or policy authority.
 
@@ -33,7 +33,7 @@ As of 2026-09-07:
 2. **Make active work explicit.** `experiments/active.v1.json` is the bounded active-work truth with a maximum of five entries.
 3. **Introduce prospective registration.** New experiments require consumer, decision target, control, treatment, primary metric, material threshold, comparability constraints, review date, expiry and closure outcomes.
 4. **Build generic capture and evaluation tooling.** Observation capture is evidence- and registration-bound, atomic, deduplicated and expiry-aware. The evaluator reports comparability, uncertainty, effort and non-claims.
-5. **Consolidate validation.** The current inventory classifies 100 `validate-*` targets behind core, active and legacy frontdoors plus two supplemental checks; GitHub exposes a smaller CI presentation without dropping the declared coverage.
+5. **Consolidate validation.** The current inventory classifies 97 validation targets behind core, active and legacy frontdoors plus two supplemental checks; GitHub exposes a smaller CI presentation, and terminal historical frontdoors are retired only when their evidence remains reproducible or generic core coverage is proven.
 6. **Archive the blocked evaluator pilot.** No synthetic or retrospective pilots were manufactured after the registered intervention proved causally non-executable.
 7. **Bind active lifecycle truth.** Active entries now point only to the canonical decision file. Registered entries must exactly match registration consumer, decision question, primary metric, review date and expiry; pre-registration experiments remain explicit grandfathered cases.
 
@@ -67,10 +67,10 @@ The former RepoBrief Workbench, Chronik and routing-readiness experiments remain
 
 ### Review for removal
 
-The 48 legacy targets remain blocking only until their protected family is archived or equivalent generic coverage is demonstrated. Review order:
+The 46 remaining legacy targets remain blocking only until their protected family is archived or equivalent generic coverage is demonstrated. Review order:
 
 1. retired agent-handoff, agent-command and command-chain contracts;
-2. closed Model-Lab specialist validators;
+2. Model-Lab specialist validators only after a separate terminal disposition; the current manifest remains `testing`, Run-004 is not authorized/executed, and all Model-Lab guards therefore remain blocking;
 3. historical replay and fixture semantics already covered by generic schema, relation, run-bundle and claim/evidence gates;
 4. historical rLens/PR-context validators, now that the former RepoBrief decision is closed.
 
@@ -78,7 +78,7 @@ Each reduction slice must identify the protected failure class, prove archive or
 
 ## Quantitative target
 
-By the legacy review date of 2026-09-01, every legacy target must have one of three dispositions: `retain_with_consumer`, `covered_by_core` or `retire`. The directional target is to reduce the 48 blocking legacy targets by 30–50 percent without weakening active or historical evidence integrity. The target is not an authorization to delete checks without proof.
+The legacy review date of 2026-09-01 has passed. Of the earlier 48-target baseline, 46 blocking legacy targets remain after the first evidence-backed survivor reduction. Every further target must receive one of three dispositions: `retain_with_consumer`, `covered_by_core` or `retire`; the directional reduction target never authorizes deletion without proof.
 
 ## Library consumer audit
 
