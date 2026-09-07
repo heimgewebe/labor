@@ -134,11 +134,11 @@ Ein Legacy-Validator wird nur entfernt, wenn mindestens ein materieller Beleg vo
 
 Der head- und diffgebundene Review des Entfernungs-PR prüft diesen Beleg und die Integrationsfolgen; er ersetzt den materiellen Beleg nicht.
 
-Der Reviewtermin für den aktuellen Legacy-Bestand ist 2026-09-01. Zielrichtung ist eine Reduktion um 30–50 Prozent, nicht blindes Löschen.
+Der Reviewtermin für den damaligen Legacy-Bestand war 2026-09-01 und ist überschritten. Weitere Reduktion bleibt evidenzgebunden; der Termin selbst autorisiert kein Löschen.
 
 ## Aktueller Umsetzungsstand
 
-Stand 13. Juli 2026:
+Stand 7. September 2026:
 
 - Operator-Lab mit 36 Karten eingefroren: `insufficient_evidence`;
 - aktive Experimentwahrheit eingeführt;
@@ -147,8 +147,9 @@ Stand 13. Juli 2026:
 - deterministischer Effekt-Evaluator als unpromotetes Review-Werkzeug vorhanden;
 - praktisch nicht ausführbarer Operator-Interventions-Pilot archiviert;
 - aktive Custom-Agenten und instruktionsführende Cursor-/Copilot-Projektionsinhalte stillgelegt; generierte Kompatibilitätsmarker und Paritätsverträge bleiben aktiv;
-- Validatorfläche gruppiert: 45 Core, 10 Active, 48 Legacy und 2 Supplemental;
-- ein aktiver RepoBrief-Workbench-Pilot mit Review am 15. August 2026 und Ablauf am 1. September 2026.
+- Validatorfläche gruppiert: 45 Core, 6 Active, 46 Legacy und 2 Supplemental, insgesamt 97 klassifizierte Validierungsziele;
+- `experiments/active.v1.json` ist nach dem fälligen Outcome-Bound-Review leer; die nicht ausgeführte Aktivierungsrevision wurde `defer` geschlossen;
+- der frühere RepoBrief-Pilot ist abgeschlossen und historische Evidenz; RepoGround ist das aktuelle Organ für zitierbaren Repository-Kontext.
 
 ## Nächste Phasen
 
@@ -166,15 +167,15 @@ Erfolg: Alle agentenseitig änderbaren maßgeblichen Dokumente beschreiben diese
 Prüfreihenfolge:
 
 1. Agent-Handoff-, Agent-Command- und Command-Chain-Verträge;
-2. geschlossene Model-Lab-Spezialprüfungen;
+2. Model-Lab-Spezialprüfungen erst nach separater terminaler Disposition; das aktuelle Manifest bleibt `testing`, Run-004 ist nicht autorisiert/ausgeführt und die Model-Lab-Guards bleiben blocking;
 3. historische Replay-, Fixture- und Cross-Contract-Semantik;
-4. rLens- und PR-Context-Prüfungen nach Abschluss des aktiven RepoBrief-Piloten.
+4. historische rLens- und PR-Context-Prüfungen; der frühere RepoBrief-Pilot ist bereits abgeschlossen.
 
 Erfolg: Jeder Legacy-Validator besitzt `retain_with_consumer`, `covered_by_core` oder `retire`; jede Entfernung beruht auf Archiv- oder Gleichwertigkeitsbeleg.
 
-### Phase E3 — Aktiven Pilot schließen
+### Phase E3 — Fällige Pilotabschlüsse erzwingen
 
-Den RepoBrief-Workbench-Piloten spätestens am Ablaufdatum mit einer überprüften Entscheidung schließen. Ohne prospektive Vergleichsevidenz keine Default-Promotion.
+Der frühere RepoBrief-Pilot und die Outcome-Bound-Aktivierungsrevision sind geschlossen; das Aktivregister ist leer. Künftige Versuche müssen am gebundenen Review- oder Ablaufdatum mit einer überprüften Entscheidung schließen. Ohne prospektive Vergleichsevidenz keine Default-Promotion und keine stille Verlängerung.
 
 Erfolg: klare Entscheidung, aktualisierte Active Registry und keine automatische Verlängerung.
 
