@@ -11,7 +11,7 @@ relations:
 
 # Prompt-Length-Control Prompt
 
-> Kausale Kontrollstudie: Spec-First vs. Token-Volumen
+> Begrenzte Heuristik aus einem einzelnen Spec-First-vs.-Vergleich
 
 ## Schritt 1 — Spec-First (Constraint-Modus)
 
@@ -38,4 +38,4 @@ Korrigiere Abweichungen.
 
 ## Warum nicht Ramble-First?
 
-Der Kontrollbeweis zeigt: Bloßes Erzwingen von mehr Tokens (z.B. „Erkläre erst ausführlich") erzeugt **keinen** Qualitätsgewinn. Nur aktive Constraint-Formulierung aktiviert den richtigen kognitiven Modus.
+Im zugrunde liegenden einzelnen Text-Parsing-Versuch schnitt Ramble-First trotz zusätzlichem Text nicht besser als Code-First ab, während Spec-First alle dort geprüften Fälle bestand. Das unterstützt die praktische Heuristik, vor der Implementierung relevante Constraints explizit zu formulieren. Es beweist weder, dass zusätzliche Tokens generell wirkungslos sind, noch dass Constraint-Formulierung einen bestimmten internen kognitiven Modus verursacht oder dass der Effekt auf andere Aufgaben und Modelle übertragbar ist.

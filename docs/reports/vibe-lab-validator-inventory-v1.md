@@ -3,14 +3,14 @@ title: "Vibe-Lab Validator Inventory v1"
 status: active
 canonicality: operative
 created: "2026-07-12"
-updated: "2026-07-24"
+updated: "2026-09-07"
 triggered_by: "vibe-lab-optimization-plan-v1-phase-c"
 relations:
   - type: informs
     target: ../plans/vibe-lab-optimization-plan-v1.md
 ---
 
-# Vibe-Lab Validator Inventory v1
+# Labor Validator Inventory v1
 
 ## Current result
 
@@ -25,7 +25,7 @@ The current machine-readable source is `.vibe/validator-inventory.v1.json`. Afte
 
 The grouped inventory therefore contains 100 classified `validate-*` targets plus two supplemental checks. GitHub exposes a compact grouped frontdoor while all groups remain blocking on pull requests and `main`.
 
-The active registry currently contains the designed Chronik history-brief comparison and the operator-routing ML-readiness shadow experiment. The former RepoBrief diagnostic pilot is archived because its named Bureau RPU-V1 consumer is completed; its four pilot-only validator targets are no longer part of the blocking grouped frontdoor. Chronik uses the existing generic registration, active-registry and evaluator contracts. The routing-readiness experiment adds one focused regression target for its aggregate-only audit because the audit has executable parsing, privacy and cross-source coverage semantics that generic registration validation does not exercise.
+The active experiment registry is currently empty. The seven targets in the inventory group named `active` therefore must not be read as seven active experiments: they are a retained validator grouping that still includes active-registry/registration boundaries plus specialist historical closeout or routing-readiness checks. Their continued blocking status is survivor debt to be reviewed against current consumers; this report does not remove them without that proof. Former Chronik, RepoBrief and routing-readiness experiment files remain historical evidence.
 
 ## Correction of the previous report
 
@@ -38,7 +38,7 @@ Classification is not a usefulness claim. In particular:
 - 48 legacy targets are not presumed useful forever;
 - historical evidence retention does not require every historical specialist validator to remain permanently blocking;
 - a green validator proves its encoded contract, not practical workflow benefit;
-- full CI does not give Vibe-Lab runtime, routing, queue, merge, deployment or policy authority.
+- full CI does not give Labor runtime, routing, queue, merge, deployment or policy authority.
 
 Every new `validate-*` target must be classified. The inventory validator fails when:
 
@@ -70,7 +70,7 @@ These surfaces have a current consumer or protect a generic failure class used b
 - prospective experiment registration checks;
 - operator-routing ML-readiness aggregate-audit regression checks.
 
-The specialist group is 7 of the permitted maximum 12 targets. No new specialist target is justified merely by a new idea; it needs an active consumer and named failure class. The Chronik comparison stays inside the generic contracts. The routing-readiness audit consumes one specialist slot because it protects executable parsing, privacy redaction and canonical-route coverage logic for an active experiment.
+The group still contains 7 of the permitted maximum 12 targets, but the experiment registry is now empty. Generic active-registry and registration checks retain a current lifecycle role; specialist Operator-Lab and routing-readiness targets need a fresh consumer/coverage disposition before they remain blocking. No new specialist target is justified merely by a new idea.
 
 ### Review for retirement
 
@@ -101,7 +101,7 @@ The directional objective is a 30–50 percent reduction of the blocking legacy 
 ## Practical effect
 
 - Current active specialist surface: 7 targets instead of an undifferentiated historical frontdoor.
-- Current active experiments: two — the Chronik comparison and the routing-readiness shadow experiment.
+- Current active experiments: zero; `experiments/active.v1.json` is empty after the 2026-09-07 deferred Outcome-Bound review.
 - Four RepoBrief-pilot-only blocking targets are retired from the grouped frontdoor; their scripts and historical evidence remain available for audit.
 - Retired custom-agent and instruction-bearing projection content: no longer active authority; generated compatibility markers and parity contracts remain active.
-- Next engineering work: remove proven-redundant legacy groups rather than add new Vibe-Lab capabilities.
+- Next engineering work: reclassify now-consumerless specialist targets and remove only proven-redundant legacy groups rather than add new Labor capabilities.

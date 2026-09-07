@@ -499,7 +499,7 @@
       "path": "experiments/2026-08-30_outcome-bound-natural-pilot-r3v3-activation",
       "pre_execution_hold": true,
       "promotion_ready": false,
-      "status": "testing",
+      "status": "blocked",
       "warnings": []
     }
   ],

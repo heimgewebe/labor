@@ -5,7 +5,7 @@ triggered_by: "user-request-vibe-lab-operator-loop-2026-07-01"
 canonicality: navigation
 role: roadmap_index
 created: "2026-05-10"
-updated: "2026-07-13"
+updated: "2026-09-07"
 relations:
   - type: references
     target: masterplan.md
@@ -75,21 +75,20 @@ Bei jedem Widerspruch gilt die höher eingestufte Quelle. Historische Blueprints
 
 ## Aktueller Zustand
 
-Stand 13. Juli 2026:
+Stand 7. September 2026:
 
-- Vibe-Lab ist auf einen kleinen Experiment- und Evidenzraum verengt.
+- Labor ist auf einen kleinen Experiment- und Evidenzraum verengt; GitHub und Systemkatalog führen das System als `labor`/„Labor“. Historische Pfade und Dateinamen mit `vibe-lab` bleiben Provenienz und werden nicht pauschal umgeschrieben.
+- `experiments/active.v1.json` enthält nach dem fälligen Review des Outcome-Bound-Aktivierungspiloten keinen aktiven Versuch. Der Pilot bleibt `not_executed` und ist mit `closure_outcome: defer` aus dem Aktivregister genommen, weil kein bereits vorhandener Provider den eingefrorenen Slot-Capture-Vertrag erfüllt.
 - Die Custom-Agent-Schicht und instruktionsführende Cursor-/Copilot-Projektionsinhalte sind stillgelegt; generierte Kompatibilitätsmarker und ihre blocking Paritätsverträge bleiben aktiv.
-- Die 36 Operator-Lab-Karten sind mit `insufficient_evidence` eingefroren.
-- Der Operator-Interventions-Effektvergleich ist als praktisch nicht ausführbar archiviert.
-- Ein RepoBrief-Workbench-Pilot ist aktiv; der verbindliche Bestand steht ausschließlich in `experiments/active.v1.json`.
-- Die Validatorfläche besteht aus 45 Core-, 10 Active- und 48 Legacy-Zielen sowie zwei ergänzenden Checks.
-- Das Bureau führt den Survivor-Audit unter `heimgewebe/bureau#442`.
+- Die 36 Operator-Lab-Karten sind mit `insufficient_evidence` eingefroren; frühere Chronik-, Routing-, RepoBrief- und Model-Lab-Versuche sind historische Evidenz, keine aktive Experimentwahrheit.
+- Die maschinenlesbare Validatorfläche besteht weiterhin aus 45 Core-, 7 Active- und 48 Legacy-Zielen sowie zwei ergänzenden Checks. `Active` ist dabei eine Validatorgruppe und nicht die Zahl aktiver Experimente; ihre Spezialziele sind wegen des nun leeren Aktivregisters erneut auf reale Verbraucher zu prüfen.
+- Das Bureau führt den Survivor-Audit weiterhin unter `heimgewebe/bureau#442`.
 
 ## Aktiver Repository-Ball
 
 ### RL-001 — Wahrheitsausrichtung und Survivor-Vertrag
 
-**Ziel:** Alle agentenseitig änderbaren maßgeblichen Vibe-Lab-Dokumente beschreiben dieselbe begrenzte Rolle und dieselben aktuellen Bestandszahlen.
+**Ziel:** Alle agentenseitig änderbaren maßgeblichen Labor-Dokumente beschreiben dieselbe begrenzte Rolle, ohne veraltete Bestandszahlen als Gegenwartswahrheit zu spiegeln.
 
 **Umfang:**
 
@@ -128,15 +127,13 @@ Prüfreihenfolge:
 1. Agent-Handoff-, Agent-Command- und Command-Chain-Verträge;
 2. geschlossene Model-Lab-Spezialprüfungen;
 3. historische Replay-, Fixture- und Cross-Contract-Semantik;
-4. rLens- und PR-Context-Prüfungen nach Abschluss des aktiven RepoBrief-Piloten.
+4. historische rLens- und PR-Context-Prüfungen; der frühere RepoBrief-Pilot ist bereits abgeschlossen.
 
 Zielrichtung bis 1. September 2026: 30–50 Prozent weniger blocking Legacy-Ziele, sofern Archiv- oder Äquivalenzevidenz dies trägt. Der Review eines Entfernungs-PR prüft diesen materiellen Beleg, ersetzt ihn aber nicht.
 
-### RL-003 — RepoBrief-Pilot schließen
+### RL-003 — fällige Experimentabschlüsse erzwingen
 
-Reviewdatum: 15. August 2026. Ablauf: 1. September 2026.
-
-Ohne prospektive Vergleichsevidenz keine Default-Promotion. Abschluss nur als `promote`, `pilot`, `defer`, `reject` oder `archive`; keine automatische Verlängerung.
+Der Outcome-Bound-Aktivierungspilot wurde am Reviewtermin 7. September 2026 ohne Aktivierung und ohne verbrauchten Slot `defer` geschlossen. Neue oder wiederaufgenommene Versuche benötigen eine neue prospektive Bindung; ein Reviewtermin darf nicht durch stilles Weiterlaufen ersetzt werden.
 
 ### RL-004 — Bibliotheksverbrauch prüfen
 
@@ -158,13 +155,15 @@ Insbesondere sind folgende frühere Expansionsrichtungen nicht aktiv:
 
 ## Neue-Arbeit-Gate
 
-Vor neuer Vibe-Lab-Funktionalität müssen alle Fragen mit Ja beantwortet sein:
+Vor neuer Labor-Funktionalität oder einem neuen aktiven Versuch müssen alle Fragen mit Ja beantwortet sein:
 
 1. Gibt es einen aktuellen externen Verbraucher?
-2. Verändert das Ergebnis eine konkrete Entscheidung?
-3. Ist die Fehlerklasse nicht bereits generisch abgedeckt?
-4. Besitzt die Arbeit Reviewdatum oder Ablauf?
-5. Entfernt sie mindestens so viel dauerhafte Oberfläche, wie sie hinzufügt?
-6. Bleiben Bureau, GitHub, CI, Grabowski und RepoBrief die zuständigen Wahrheitsorgane?
+2. Verändert das Ergebnis eine konkrete, reversible oder klar begrenzte Entscheidung?
+3. Ist der Versuch **jetzt** mit bereits vorhandenen Oberflächen ausführbar, ohne die fehlende Messinfrastruktur erst für den Versuch bauen zu müssen?
+4. Ist die Fehlerklasse nicht bereits generisch abgedeckt?
+5. Besitzt die Arbeit Reviewdatum oder Ablauf und ein explizites Stop-Kriterium?
+6. Sind Design-, Vorbereitungs-, Erfassungs-, Review- und Pflegeaufwand als getrennte Kosten sichtbar, ohne eingefrorene Experimentmetriken nachträglich zu ändern?
+7. Entfernt die Änderung mindestens so viel dauerhafte Oberfläche, wie sie hinzufügt, oder besitzt sie einen belegten höheren Entscheidungsnutzen?
+8. Bleiben Bureau, GitHub, CI, Grabowski und RepoGround die zuständigen Wahrheitsorgane?
 
 Bei einem Nein wird die Idee roh dokumentiert, zurückgestellt oder archiviert.
