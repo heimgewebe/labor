@@ -87,7 +87,7 @@ relations:
     target: ../decisions/README.md
 ---
 
-# Vibe-Lab Dokumentation
+# Labor Dokumentation
 
 > **Hinweis:** Diese Datei ist ausschließlich Navigation — kein kanonischer Inhalt. Bei Widersprüchen gelten die referenzierten Quelldokumente.
 

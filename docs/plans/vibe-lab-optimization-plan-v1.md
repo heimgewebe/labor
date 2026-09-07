@@ -1,5 +1,5 @@
 ---
-title: "Vibe-Lab Optimization Plan v1"
+title: "Labor Optimization Plan v1"
 status: active
 canonicality: operative
 created: "2026-07-12"
