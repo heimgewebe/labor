@@ -1,0 +1,44 @@
+{
+  "assessment": {
+    "activation_authorized": false,
+    "executable_provider_surface_proven": false,
+    "nonclaims": [
+      "No claim that no conceivable provider implementation exists elsewhere.",
+      "No claim about product efficacy.",
+      "No authorization to build a provider for this experiment."
+    ],
+    "provider_contract_satisfied": false,
+    "reason": "The fresh bounded connector and immutable deployed-source review did not identify an already-existing executable surface that can be proven against the complete frozen slot_capture contract. Absence of matching symbols alone is not a universal non-existence proof; it is sufficient here only to refuse activation because the registration requires positive provider proof."
+  },
+  "observed_at": "2026-09-07T19:12:02.198771Z",
+  "provider_surface_review": {
+    "connector_discovery_matching_tools": 0,
+    "connector_discovery_query": "slot",
+    "source_search_argv_sha256": "91431cb34816d2fb9e7c236325181bcfc5575f1cec5699d62759aa234bf2dcb1",
+    "source_search_match_count": 0,
+    "source_search_returncode": 1,
+    "source_symbol_query": "SessionAuthority|SlotCaptureProvider|slot_capture|terminalize_lost_session",
+    "transport_roundtrip_source": {
+      "assessment": "Transport roundtrip is an execution-intent challenge/verification/consumption surface; this observation does not establish the frozen provider-owned per-slot admission state machine.",
+      "observed_state_kinds": [
+        "grabowski_transport_roundtrip_state",
+        "grabowski_transport_roundtrip_challenge",
+        "grabowski_transport_roundtrip_verification",
+        "grabowski_transport_roundtrip_consumption"
+      ],
+      "path": "/home/alex/.local/share/grabowski-mcp-releases/00bab22669ca-srcset7f03c14a5920-lock33399b89320a-contract489c0901982d/inputs/src/grabowski_transport_roundtrip.py",
+      "sha256": "1c63ba31e7ab80e608b340d9e16c2cc005004b37e766c2748f550d29ed82e782"
+    }
+  },
+  "purpose": "Reassess the frozen pre-existing slot_capture provider prerequisite at the registered review boundary without creating or integrating a provider.",
+  "runtime": {
+    "audit_last_record_sha256": "bbd77505d01d641194c6c2241ae03d00f6828bd0dfd32d5226b2c4755b2ba111",
+    "healthy": true,
+    "immutable_source_root": "/home/alex/.local/share/grabowski-mcp-releases/00bab22669ca-srcset7f03c14a5920-lock33399b89320a-contract489c0901982d/inputs/src",
+    "registered_names_sha256": "832e04b0b87a16065bc52c79cb3a566a0b3b831f2b163e379c51a26901c09c2f",
+    "registered_tool_count": 198,
+    "release_id": "00bab22669ca-srcset7f03c14a5920-lock33399b89320a-contract489c0901982d",
+    "repo_head": "00bab22669ca46219e480d2187f7e1da6c9b0f05"
+  },
+  "schema_version": "labor.provider-review.v1"
+}

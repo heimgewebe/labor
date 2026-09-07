@@ -38,7 +38,7 @@ evidence_summary:
   provider_contract_satisfied: false
   executable_provider_surface_proven: false
   review_due_at: "2026-09-07T18:00:00Z"
-  reviewed_at: "2026-09-07T18:22:00Z"
+  reviewed_at: "2026-09-07T19:12:02.198771Z"
   registered_expiry_at: "2026-09-30T23:59:59Z"
   grabowski_runtime_release: "00bab22669ca-srcset7f03c14a5920-lock33399b89320a-contract489c0901982d"
   grabowski_runtime_head: "00bab22669ca46219e480d2187f7e1da6c9b0f05"
@@ -46,6 +46,8 @@ evidence_summary:
   slot_capture_tool_exposed: false
   session_authority_implementation_found: false
   transport_roundtrip_is_slot_provider: false
+  provider_review_artifact: "experiments/2026-08-30_outcome-bound-natural-pilot-r3v3-activation/artifacts/provider-review-2026-09-07.json"
+  provider_review_artifact_sha256: "eb733ce91942450df19b90878000783ed3b9115cf766aa12f7e50c5b104a301e"
 next_steps: >
   Do not admit, backfill or score cases under this deferred activation revision and
   do not create a provider for the purpose of making it executable. A future attempt
