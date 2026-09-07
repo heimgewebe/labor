@@ -6,12 +6,12 @@ experiment:
     The passed R3 v3 candidate_identity_birth rule can be activated prospectively for exactly three
     natural Bureau operator-intake births by choosing A as the event id of one post-merge activation
     marker, without backfill, self-created post-A slots or productive control-plane authority.
-  status: testing
+  status: blocked
   category: workflow
   execution_status: designed
   execution_refs: []
   created: "2026-08-30"
-  updated: "2026-09-02"
+  updated: "2026-09-07"
   author: "ChatGPT / Grabowski"
   triggered_by: "direct-user:outcome-bound-natural-pilot-r3v3-activation-20260830"
   iteration: 2

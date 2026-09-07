@@ -2,7 +2,7 @@
 title: "Repository-Plan"
 status: active
 canonicality: foundational
-updated: "2026-07-13"
+updated: "2026-09-07"
 ---
 
 # Repository-Plan für Vibe-Lab
@@ -42,7 +42,7 @@ Die Wahrheitshierarchie wird durch `repo.meta.yaml` definiert. Für den operativ
 - `experiments/active.v1.json` ist die einzige Wahrheit über aktive Experimente;
 - GitHub und CI sind Wahrheit für Code-, Review-, Merge- und Prüfzustände;
 - Grabowski ist Wahrheit für ausgeführte Operatorarbeit und Receipts;
-- RepoBrief / Lenskit ist Quelle für zitierbaren Repository-Kontext;
+- RepoGround ist Quelle für zitierbaren Repository-Kontext;
 - Bureau ist Wahrheit für Aufgaben, Prioritäten und Promotionen;
 - Vibe-Lab bewahrt nur Experimentdesign, Evidenzbindung, Auswertung und Abschluss.
 

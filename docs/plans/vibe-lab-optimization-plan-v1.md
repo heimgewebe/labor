@@ -3,30 +3,29 @@ title: "Vibe-Lab Optimization Plan v1"
 status: active
 canonicality: operative
 created: "2026-07-12"
-updated: "2026-07-24"
+updated: "2026-09-07"
 triggered_by: "user-request-2026-07-12"
 ---
 
-# Vibe-Lab Optimization Plan v1
+# Labor Optimization Plan v1
 
 ## Decision
 
-Vibe-Lab is a small experiment and decision-support surface. It may register a prospective comparison, validate evidence identity, capture bounded observations, evaluate a bounded effect and close with a reviewed decision. It must not become a scheduler, dashboard, runtime service, routing authority, second Bureau or second Grabowski governor.
+Labor is a small experiment and decision-support surface. It may register a prospective comparison, validate evidence identity, capture bounded observations, evaluate a bounded effect and close with a reviewed decision. It must not become a scheduler, dashboard, runtime service, routing authority, second Bureau or second Grabowski governor.
 
 The primary optimization objective is now **surface reduction**, not new capability growth.
 
 ## Verified current state
 
-As of 2026-07-24:
+As of 2026-09-07:
 
-- `experiments/active.v1.json` contains two active entries: the designed Chronik history-brief comparison and the operator-routing ML-readiness shadow experiment;
-- the former RepoBrief Workbench diagnostic pilot is archived because its named Bureau RPU-V1 consumer is completed; its limited evidence remains historical and is not rebound to RepoGround;
-- the 36-card Operator-Lab series is frozen with `insufficient_evidence`;
-- the registered operator-intervention effect-evaluator experiment is archived as practically non-executable;
+- `experiments/active.v1.json` is empty after the only active Outcome-Bound activation pilot reached its 2026-09-07 review boundary without an executable pre-existing slot-capture provider; the experiment remains `not_executed` and closes this revision with `defer`;
+- earlier Chronik, operator-routing, RepoBrief, Model-Lab and Operator-Lab work remains historical evidence and is not active merely because validators or files still exist;
 - the generic observation capture and deterministic evaluator remain unpromoted review tooling;
 - custom agent profiles and instruction-bearing Cursor/Copilot projections are retired, while generated compatibility markers and their blocking parity contracts remain active;
-- the validator inventory contains 100 classified targets: 45 core, 7 active and 48 legacy, plus two supplemental checks;
-- no Vibe-Lab surface has runtime, queue, merge, deploy, routing or policy authority.
+- the validator inventory contains 100 classified targets: 45 core, 7 active-group and 48 legacy, plus two supplemental checks; the seven active-group targets now require a fresh consumer review because the experiment registry itself is empty;
+- the active prompt-length-control library claim has been narrowed to the observed single-task evidence; its proposed cognitive mechanism and cross-task transfer remain unproven;
+- no Labor surface has runtime, queue, merge, deploy, routing or policy authority.
 
 ## Completed slices
 
@@ -34,19 +33,17 @@ As of 2026-07-24:
 2. **Make active work explicit.** `experiments/active.v1.json` is the bounded active-work truth with a maximum of five entries.
 3. **Introduce prospective registration.** New experiments require consumer, decision target, control, treatment, primary metric, material threshold, comparability constraints, review date, expiry and closure outcomes.
 4. **Build generic capture and evaluation tooling.** Observation capture is evidence- and registration-bound, atomic, deduplicated and expiry-aware. The evaluator reports comparability, uncertainty, effort and non-claims.
-5. **Consolidate validation.** All 103 grouped targets are classified behind core, active and legacy frontdoors; GitHub exposes a smaller CI presentation without dropping coverage.
+5. **Consolidate validation.** The current inventory classifies 100 `validate-*` targets behind core, active and legacy frontdoors plus two supplemental checks; GitHub exposes a smaller CI presentation without dropping the declared coverage.
 6. **Archive the blocked evaluator pilot.** No synthetic or retrospective pilots were manufactured after the registered intervention proved causally non-executable.
 7. **Bind active lifecycle truth.** Active entries now point only to the canonical decision file. Registered entries must exactly match registration consumer, decision question, primary metric, review date and expiry; pre-registration experiments remain explicit grandfathered cases.
 
 ## Current decision gate
 
-No new Vibe-Lab service, agent profile, instruction-bearing projection target, specialist validator or effect-analysis feature should be added while the active registry contains unresolved experiments, unless the change closes a demonstrated safety or evidence-integrity gap.
+No new Labor service, agent profile, instruction-bearing projection target, specialist validator or effect-analysis feature should be added merely because the active registry is now empty. The next experiment must first name a current external consumer, a concrete decision, an already-executable observation path, a cost budget and a stop rule.
 
-Both current entries must be reviewed by `2026-08-15T00:00:00Z` and expire at `2026-09-01T00:00:00Z`.
+The Outcome-Bound activation revision reached its review boundary on 2026-09-07 without activation. Fresh deployed-runtime inspection still did not prove the frozen provider contract, so this revision is deferred rather than extended or rescued by new provider development.
 
-The former RepoBrief Workbench pilot is archived rather than renamed or rebound. Its named consumer, Bureau RPU-V1, is completed; the historical `insufficient_proof` decision remains intact. RepoGround is a separate current component and requires its own prospective utility decision if Vibe-Lab evidence is ever needed.
-
-The Chronik comparison may advance only after at least three comparable natural cases per condition, independent scoring and no fatal history-as-live-truth failure. Otherwise it must be deferred, rejected or archived rather than expanded into another runtime surface.
+The former RepoBrief Workbench, Chronik and routing-readiness experiments remain historical. RepoGround is the current cited repository-context organ and requires its own prospective utility decision if Labor evidence is ever needed.
 
 ## Survivor program
 
@@ -98,4 +95,4 @@ Stop or remove an optimization slice if it requires a new service, database, das
 - RepoGround supplies cited, commit-bound repository context.
 - Bureau owns task and promotion decisions.
 - Chronik may own longitudinal append-only history when needed.
-- Vibe-Lab owns bounded prospective experiment design, evidence binding and reviewed closure only.
+- Labor owns bounded prospective experiment design, evidence binding and reviewed closure only.

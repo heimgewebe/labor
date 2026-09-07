@@ -3,10 +3,10 @@ schema_version: "0.1.0"
 title: "Prompt-Length Control (Cognitive-Mode-Switching)"
 status: adopted
 category: technique
-summary: "Leistungszugewinn bei Upfront-Structuring beruht auf kognitivem Moduswechsel (Constraint-Formulierung), nicht auf Token-Volumen — kausaler Kontrollbeweis."
+summary: "In einem einzelnen Text-Parsing-Versuch schnitt Spec-First besser ab als Code-First und Ramble-First; Mechanismus und Übertragbarkeit bleiben offen."
 evidence_source: "experiments/2026-04-14_prompt-length-control/"
 created: "2026-04-14"
-updated: "2026-04-20"
+updated: "2026-09-07"
 author: "Jules"
 tags:
   - prompting
@@ -25,7 +25,7 @@ relations:
 
 ## Kernaussage
 
-Der Leistungszugewinn von Spec-First / Test-First Prompting beruht **nicht** auf Token-Volumen oder Chain-of-Thought-Proxy-Effekten, sondern auf einem echten **kognitiven Moduswechsel**: Das Modell formuliert aktiv Constraints, bevor es Code generiert.
+Im dokumentierten einzelnen Text-Parsing-Versuch erreichte Spec-First eine höhere Test-Pass-Rate als Code-First und Ramble-First. Das spricht **in diesem Setup** gegen die einfache Erklärung, dass bloß mehr vorangestellter Text den beobachteten Unterschied erzeugt. Der interne Mechanismus wurde nicht direkt gemessen; ein „kognitiver Moduswechsel“ bleibt eine Hypothese, keine nachgewiesene Ursache.
 
 ## Evidenz
 
@@ -41,12 +41,18 @@ Ramble-First produzierte hohes Token-Volumen (wie Spec-First), fiel aber in dens
 
 ## Wann anwenden
 
-- Wenn Spec-First-Effekte hinterfragt werden: Dieser Befund schließt die Token-Volumen-Hypothese aus.
-- Als theoretische Basis für den Einsatz von Upfront-Structuring in Prompt-Designs.
-- Bei der Gestaltung neuer Prompting-Strategien: Constraint-Formulierung > reine Textmenge.
+- Als begrenzte Heuristik, wenn vor der Implementierung explizite Constraints hilfreich sein könnten.
+- Als Ausgangspunkt für einen neuen, auf die konkrete Aufgabenklasse registrierten Vergleich.
+- Nicht als allgemeiner Wirksamkeits- oder Mechanismusbeweis für Spec-First verwenden.
 
 ## Einschränkungen
 
 - n=1 Task, 1 Modell, 1 Experimentator
 - Nur Text-Parsing-Kontext — andere Task-Typen nicht getestet
-- Cognitive-Modes-Theorie ist gestützt, aber nicht erschöpfend bewiesen
+- Ein interner Cognitive-Mode-Mechanismus wurde nicht direkt gemessen
+- Die 0.8/1.0/0.8-Beobachtung trennt Struktur und Textmenge nur in diesem einen Versuchsaufbau
+
+
+## Consumer- und Claim-Grenze
+
+Bei der lokalen Ökosystemsuche am 7. September 2026 wurden außerhalb des Labor-Bestands, eines historischen `vibe-lab`-Checkouts und generierter RepoGround-/Manifest-Bundles keine aktuellen Verbraucherreferenzen auf diesen Artefaktnamen gefunden. Das ist kein Beweis für Nichtnutzung außerhalb des untersuchten Bestands. `status: adopted` bezeichnet deshalb hier nur die bestehende repo-interne Übernahme und keinen Nachweis allgemeiner Wirksamkeit.

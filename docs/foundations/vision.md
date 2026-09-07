@@ -2,7 +2,7 @@
 title: "Systemvision"
 status: active
 canonicality: foundational
-updated: "2026-07-13"
+updated: "2026-09-07"
 ---
 # Vibe-Lab: begrenzter Experiment- und Evidenzraum
 
@@ -47,7 +47,7 @@ Rohe Ideen dürfen billig sein. Promotionen müssen teuer sein: vollständige Ev
 
 - **Grabowski** führt Arbeit aus und erzeugt operative Receipts.
 - **GitHub und CI** sind Wahrheit für Code-, Review-, Merge- und Prüfzustände.
-- **RepoBrief / Lenskit** liefern zitierbaren Repository-Kontext.
+- **RepoGround** liefert zitierbaren Repository-Kontext.
 - **Bureau** entscheidet über Aufgaben, Prioritäten und Promotionen.
 - **Vibe-Lab** entwirft begrenzte Vergleiche, bindet Beobachtungen, prüft Claims und bewahrt Abschlüsse.
 
