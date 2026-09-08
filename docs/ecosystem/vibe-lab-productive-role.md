@@ -1,21 +1,21 @@
 ---
-title: "Vibe-Lab Productive Role Boundary"
+title: "Labor Productive Role Boundary"
 status: active
 canonicality: operative
-updated: "2026-07-24"
+updated: "2026-09-07"
 ---
 
-# Vibe-Lab Productive Role Boundary
+# Labor Productive Role Boundary
 
 ## Purpose
 
-Vibe-Lab is the ecosystem experiment and evidence surface. It registers bounded comparisons for named consumers, binds observations to evidence and closes experiments with reviewed decisions.
+Labor is the ecosystem experiment and evidence surface. It registers bounded comparisons for named consumers, binds observations to evidence and closes experiments with reviewed decisions.
 
 It is not a steering organ.
 
 ## Productive role
 
-Vibe-Lab may:
+Labor may:
 
 - register a bounded prospective comparison for a named consumer and decision target;
 - keep evidence references to pull requests, commits, CI checks, run cards, receipts, and cited repository artifacts;
@@ -24,7 +24,7 @@ Vibe-Lab may:
 - close an experiment with a reviewed disposition;
 - propose evidence-bound follow-up candidates for Bureau review.
 
-Vibe-Lab must not:
+Labor must not:
 
 - choose the next ecosystem task;
 - mutate Bureau queues;
@@ -35,22 +35,22 @@ Vibe-Lab must not:
 
 ## Cooperation contract
 
-| Organ | Vibe-Lab relation | Boundary |
+| Organ | Labor relation | Boundary |
 | --- | --- | --- |
-| Grabowski | Primary source of operator-work observations. | Grabowski executes work; Vibe-Lab only binds experiment observations to evidence. |
+| Grabowski | Primary source of operator-work observations. | Grabowski executes work; Labor only binds experiment observations to evidence. |
 | Bureau | Receives proposal-ready follow-up candidates. | Bureau decides whether candidates become tasks. |
-| RepoGround | Supplies cited, commit-bound repository context and freshness information. | Vibe-Lab stores references, not large source dumps and does not grant RepoGround mutation authority. |
+| RepoGround | Supplies cited, commit-bound repository context and freshness information. | Labor stores references, not large source dumps and does not grant RepoGround mutation authority. |
 | Leitstand | May display condensed learning signals. | Display only; no steering authority. |
 | Systemkatalog | Supplies stable organ-role and authority context. | Systemkatalog is read-only catalog truth; it does not own runtime status or execution claims. |
-| GitHub / CI | Primary truth source for PR, review, merge, and check state. | Vibe-Lab does not reinterpret green/red status without evidence. |
+| GitHub / CI | Primary truth source for PR, review, merge, and check state. | Labor does not reinterpret green/red status without evidence. |
 
 ## Current productive gate
 
-`experiments/active.v1.json` is the only current experiment truth. New work enters Vibe-Lab only when a named external consumer, a decision target, a prospective comparison and an expiry are explicit. Historical captures and archived experiments remain evidence, but they do not justify a new active surface by themselves.
+`experiments/active.v1.json` is the only current experiment truth. New work enters Labor only when a named external consumer, a decision target, a prospective comparison and an expiry are explicit. Historical captures and archived experiments remain evidence, but they do not justify a new active surface by themselves.
 
 ## Adoption rule
 
-A Vibe-Lab learning candidate may be promoted only when the evidence states:
+A Labor learning candidate may be promoted only when the evidence states:
 
 - what was observed;
 - where it was observed;

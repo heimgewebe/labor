@@ -1,10 +1,12 @@
-# Vibe-Lab
+# Labor
 
 **Verbrauchergebundener Experiment- und Evidenzraum für überprüfbare Arbeitsweisen.**
 
-Vibe-Lab hält rohe Beobachtungen fest, registriert begrenzte Vergleiche vor ihrer Ausführung, bindet Ergebnisse an konkrete Evidenz und schließt sie mit einer überprüften Entscheidung ab.
+Labor hält rohe Beobachtungen fest, registriert begrenzte Vergleiche vor ihrer Ausführung, bindet Ergebnisse an konkrete Evidenz und schließt sie mit einer überprüften Entscheidung ab.
 
 Es ist kein Agentenlaufzeitsystem, Scheduler, Dashboard, zweites Bureau, zweiter Grabowski-Governor oder automatische Lerninstanz. GitHub, CI, Grabowski, RepoGround und Bureau bleiben die jeweiligen Wahrheits- und Entscheidungsorgane.
+
+Die aktuelle Organ- und Repositorybezeichnung ist **Labor**. Historische Experiment-IDs, Evidenzreferenzen und stabile Dateinamen mit `vibe-lab` bleiben unverändert, wenn sie Provenienz oder Pfadkompatibilität tragen. `repo.meta.yaml` ist handgepflegt und führt bis zu einer menschlichen Änderung weiterhin die kanonische interne Maschinenidentität `vibe-lab`; diese Dokumentation überschreibt sie nicht.
 
 ## Schnellstart
 
@@ -35,7 +37,7 @@ Erst wenn ein Experiment belastbare Evidenz und einen benannten externen Verbrau
 
 1. Erstelle einen Pull Request mit dem Template **Promotion**.
 2. Alle Pflichtartefakte müssen vollständig sein (`make validate`).
-3. Review und Merge dokumentieren die Vibe-Lab-Entscheidung.
+3. Review und Merge dokumentieren die Labor-Entscheidung.
 4. Die tatsächliche Übernahme in ein Produktrepo, Bureau oder Grabowski bleibt eine eigene Entscheidung des zuständigen Organs.
 
 ## Aktive Experimente
@@ -70,7 +72,7 @@ make validate
 ## Projektstruktur
 
 ```text
-vibe-lab/
+labor/
   raw-vibes/                      # Rohe Ideen, Notizen, Fragmente
   experiments/                    # Registrierte Tests und historisches Archiv
   catalog/                        # Validierte, konsumierte Erkenntnisse
@@ -90,7 +92,7 @@ vibe-lab/
 
 ## Zuständigkeitsgrenze
 
-Vibe-Lab darf:
+Labor darf:
 
 - eine prospektive Vergleichsfrage registrieren;
 - Beobachtungen an Evidenz binden;
@@ -98,7 +100,7 @@ Vibe-Lab darf:
 - wiederkehrende Reibung als Vorschlag für das Bureau dokumentieren;
 - Experimente fördern, pilotieren, zurückstellen, verwerfen oder archivieren.
 
-Vibe-Lab darf nicht:
+Labor darf nicht:
 
 - die nächste Aufgabe auswählen;
 - Bureau-Queues verändern;

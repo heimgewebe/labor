@@ -5,11 +5,11 @@ canonicality: foundational
 updated: "2026-09-07"
 ---
 
-# Repository-Plan für Vibe-Lab
+# Repository-Plan für Labor
 
 ## Zielbild
 
-Vibe-Lab ist ein begrenzter, verbrauchergebundener Experiment- und Evidenzraum. Das Repository unterstützt eine konkrete unsichere Entscheidung durch:
+Labor ist ein begrenzter, verbrauchergebundener Experiment- und Evidenzraum. Das Repository unterstützt eine konkrete unsichere Entscheidung durch:
 
 1. billige Erfassung einer rohen Beobachtung;
 2. prospektive Registrierung eines Vergleichs;
@@ -22,7 +22,7 @@ Der Plan optimiert nicht auf Funktionsbreite, sondern auf geringe aktive Oberfl�
 
 ## Nichtziele
 
-Vibe-Lab wird nicht zu:
+Labor wird nicht zu:
 
 - Agentenlaufzeit oder Agenten-Orchestrator;
 - Scheduler, Queue oder Aufgabenregister;
@@ -39,12 +39,14 @@ Bestehende generierte Kompatibilitätsmarker und ihre blocking Paritätsverträg
 
 Die Wahrheitshierarchie wird durch `repo.meta.yaml` definiert. Für den operativen Zustand gelten zusätzlich folgende Grenzen:
 
+Aktueller Identitätshinweis: GitHub, Systemkatalog und Bureau führen das Organ als **Labor**. `repo.meta.yaml` ist jedoch human-protected und trägt weiterhin `identity.name: vibe-lab`. Bis zu einer menschlichen Änderung bleibt dieser Wert die kanonische repo-interne Maschinenidentität; dieser Plan beansprucht keine Autorität, ihn umzuschreiben.
+
 - `experiments/active.v1.json` ist die einzige Wahrheit über aktive Experimente;
 - GitHub und CI sind Wahrheit für Code-, Review-, Merge- und Prüfzustände;
 - Grabowski ist Wahrheit für ausgeführte Operatorarbeit und Receipts;
 - RepoGround ist Quelle für zitierbaren Repository-Kontext;
 - Bureau ist Wahrheit für Aufgaben, Prioritäten und Promotionen;
-- Vibe-Lab bewahrt nur Experimentdesign, Evidenzbindung, Auswertung und Abschluss.
+- Labor bewahrt nur Experimentdesign, Evidenzbindung, Auswertung und Abschluss.
 
 Generierte Dateien unter `docs/_generated/` sind Diagnoseflächen. Sie werden nicht manuell editiert und besitzen keine Entscheidungsautorität.
 
@@ -196,9 +198,9 @@ Ein Vorhaben wird beendet oder archiviert, wenn es:
 - nach Ablauf keine reale Entscheidung beeinflusst;
 - nur interne Konsistenz oder Dokumentmenge als Nutzen ausweist.
 
-## Akzeptanzkriterien für das reduzierte Vibe-Lab
+## Akzeptanzkriterien für das reduzierte Labor
 
-Vibe-Lab gilt als tragfähig, wenn:
+Labor gilt als tragfähig, wenn:
 
 - höchstens fünf aktive Experimente existieren;
 - jedes aktive Experiment Verbraucher, Entscheidungsziel, Review und Ablauf besitzt;
