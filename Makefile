@@ -476,14 +476,14 @@ generate-artifact-taxonomy:
 	@python3 scripts/docmeta/generate_artifact_taxonomy.py
 
 help:
-	@echo "Vibe-Lab Makefile"
+	@echo "Labor Makefile"
 	@echo ""
 	@echo "  make validate                  — Run schema, execution-proof, relations, interpretation-budget, handoff, generated-artifact contract, and regression-test guards"
 	@echo "  make validate-core             — Run generic repository, schema, evidence, relation, and generated-artifact guards"
 	@echo "  make validate-active           — Run only validators owned by active experiments and the frozen Operator-Lab closeout"
 	@echo "  make validate-legacy           — Run grandfathered historical experiment and agent-operability guards"
 	@echo "  make validate-validator-inventory — Prove every validator target is classified and CI uses the grouped frontdoor"
-	@echo "  make agent-check               — Fast guard: blocks edits to canonical control documents and generated artifacts (~2 s)"
+	@echo "  make agent-check               — Fast guard: blocks direct edits to generator-owned artifacts (~2 s)"
 	@echo "  make agent-check-tests         — Run agent compliance guard regression tests"
 	@echo "  make validate-generated-artifacts-contract — Validate .vibe/generated-artifacts.yml against v2 contract"
 	@echo "  make validate-generated-artifacts-contract-tests — Run generated-artifact contract regression tests"
