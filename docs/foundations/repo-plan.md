@@ -140,7 +140,7 @@ Der Reviewtermin für den damaligen Legacy-Bestand war 2026-09-01 und ist übers
 
 ## Aktueller Umsetzungsstand
 
-Stand 7. September 2026:
+Stand 8. September 2026:
 
 - Operator-Lab mit 36 Karten eingefroren: `insufficient_evidence`;
 - aktive Experimentwahrheit eingeführt;
@@ -149,7 +149,7 @@ Stand 7. September 2026:
 - deterministischer Effekt-Evaluator als unpromotetes Review-Werkzeug vorhanden;
 - praktisch nicht ausführbarer Operator-Interventions-Pilot archiviert;
 - aktive Custom-Agenten und instruktionsführende Cursor-/Copilot-Projektionsinhalte stillgelegt; generierte Kompatibilitätsmarker und Paritätsverträge bleiben aktiv;
-- Validatorfläche gruppiert: 45 Core, 6 Active, 46 Legacy und 2 Supplemental, insgesamt 97 klassifizierte Validierungsziele;
+- Validatorfläche gruppiert: 45 Core, 6 Active, 44 Legacy und 2 Supplemental, insgesamt 95 klassifizierte Validierungsziele;
 - `experiments/active.v1.json` ist nach dem fälligen Outcome-Bound-Review leer; die nicht ausgeführte Aktivierungsrevision wurde `defer` geschlossen;
 - der frühere RepoBrief-Pilot ist abgeschlossen und historische Evidenz; RepoGround ist das aktuelle Organ für zitierbaren Repository-Kontext.
 
@@ -171,7 +171,7 @@ Prüfreihenfolge:
 1. Agent-Handoff-, Agent-Command- und Command-Chain-Verträge;
 2. Model-Lab-Spezialprüfungen erst nach separater terminaler Disposition; das aktuelle Manifest bleibt `testing`, Run-004 ist nicht autorisiert/ausgeführt und die Model-Lab-Guards bleiben blocking;
 3. historische Replay-, Fixture- und Cross-Contract-Semantik;
-4. historische rLens- und PR-Context-Prüfungen; der frühere RepoBrief-Pilot ist bereits abgeschlossen.
+4. historische PR-Context-Prüfungen und verbleibende rLens-Flächen nur mit separater Consumer-/Archivevidenz; das nie ausgeführte rLens-Agent-Context-Design ist archiviert und seine zwei dedizierten Frontdoors sind nicht mehr blocking.
 
 Erfolg: Jeder Legacy-Validator besitzt `retain_with_consumer`, `covered_by_core` oder `retire`; jede Entfernung beruht auf Archiv- oder Gleichwertigkeitsbeleg.
 
