@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Validate the rLens agent-context condition measurement seed.
 
-This is a narrow validator for experiments/2026-07-08_rlens-agent-context-conditions.
-It checks the design surface only; it does not execute runs or claim condition effects.
+This is a narrow historical audit validator for experiments/_archive/2026-07-08_rlens-agent-context-conditions.
+It checks the preserved design surface only; it does not execute runs or claim condition effects.
 """
 
 from __future__ import annotations
@@ -21,6 +21,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_PLAN = (
     REPO_ROOT
     / "experiments"
+    / "_archive"
     / "2026-07-08_rlens-agent-context-conditions"
     / "measurement-plan.yml"
 )

@@ -6,7 +6,7 @@
     "pull_request_runs_all_groups": true,
     "main_runs_all_groups": true,
     "new_target_requires_classification": true,
-    "classified_target_count": 97,
+    "classified_target_count": 95,
     "max_validate_job_named_steps": 10
   },
   "groups": [
@@ -165,9 +165,7 @@
         "validate-outcome-series-tests",
         "validate-outcome-series",
         "validate-pr-context-pilot-tests",
-        "validate-pr-context-pilot",
-        "validate-rlens-agent-context-conditions-tests",
-        "validate-rlens-agent-context-conditions"
+        "validate-pr-context-pilot"
       ]
     }
   ],
