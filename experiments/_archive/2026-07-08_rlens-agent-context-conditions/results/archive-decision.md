@@ -2,6 +2,7 @@
 title: "Archive Decision: rLens Agent Context Conditions"
 status: archived
 canonicality: operative
+triggered_by: "github:heimgewebe/bureau#442; conversation:user-request-2026-09-08-continue-labor-survivor-audit"
 ---
 
 # Archive decision

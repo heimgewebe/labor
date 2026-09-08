@@ -4,11 +4,11 @@ status: designed
 canonicality: operative
 relations:
   - type: references
-    target: "../../docs/playbooks/pr-context-capture.md"
+    target: "../../../docs/playbooks/pr-context-capture.md"
   - type: references
-    target: "../2026-06-10_pr-agent-context-comparison-series/method.md"
+    target: "../../2026-06-10_pr-agent-context-comparison-series/method.md"
   - type: references
-    target: "../2026-07-01_operator-lab-loop/method.md"
+    target: "../../2026-07-01_operator-lab-loop/method.md"
 ---
 
 # Context — rLens Agent Context Conditions
