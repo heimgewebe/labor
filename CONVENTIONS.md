@@ -12,20 +12,22 @@
 5. [`README.md`](README.md), [`docs/index.md`](docs/index.md)
 6. `contracts/`, `schemas/`, `.vibe/`
 
-## Verbote
+## Leitplanken
 
-- **Keine Edits** an kanonischen Steuerungsdokumenten:
-  `repo.meta.yaml`, `AGENTS.md`, `agent-policy.yaml`,
-  `.vibe/pr-scope-policy.yml`.
-- **Keine manuellen Edits** an generierten Artefakten:
-  `docs/_generated/*`, `exports/*`, `.cursor/rules/*`.
+- `repo.meta.yaml`, `AGENTS.md`, `agent-policy.yaml` und
+  `.vibe/pr-scope-policy.yml` sind kanonisch und **maschinell pflegbar**.
+  Änderungen müssen explizit auslösergebunden, scopesicher und durch die
+  normalen Review-, CI- und Traceability-Gates abgesichert sein.
+- **Keine direkten Edits** an generator-owned Artefakten:
+  `docs/_generated/*`, `exports/*`, `.cursor/rules/*`; Änderungen erfolgen
+  ausschließlich über die kanonischen Generatoren.
 - **Keine Status-Umdeutung** ohne Belege.
 - **Keine Promotion** ohne Gate.
 
 ## Workflow
 
 1. Vor Aktionen: kanonische Quellen lesen (siehe oben).
-2. Vor Commit: `make agent-check` für schnellen Guard, `make validate` für volles Gate.
+2. Vor Commit: `make agent-check` für den schnellen Generator-Artefakt-Guard, `make validate` für das volle Gate.
 3. Bei Konflikten: Stopp und Meldung — nicht raten.
 
 ## Vollständige Regeln
