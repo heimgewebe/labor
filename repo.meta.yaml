@@ -16,6 +16,7 @@ truth_model:
     - repo.meta.yaml
     - AGENTS.md
     - agent-policy.yaml
+    - .vibe/pr-scope-policy.yml
     - "contracts/*"
     - "schemas/*"
   foundational_sources:

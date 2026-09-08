@@ -48,6 +48,7 @@ canonical_sources:
     - repo.meta.yaml
     - AGENTS.md
     - agent-policy.yaml
+    - .vibe/pr-scope-policy.yml
   policy: "Kanonisch und maschinell pflegbar. Agenten und Automatisierung dürfen diese Quellen innerhalb eines explizit gebundenen Changes ändern; normale Scope-, Review-, CI- und Traceability-Gates bleiben verpflichtend. Keine human-only-Ausnahme."
 
 conflict_resolution:
