@@ -15,12 +15,14 @@
 
 Bei Widersprüchen gewinnt die höhere Ebene.
 
-## Verbote (Kurzform)
+## Kurzregeln
 
-- **Keine Edits** an `repo.meta.yaml`, `AGENTS.md`, `agent-policy.yaml`,
-  `.vibe/pr-scope-policy.yml` (kanonisch, handgepflegt).
-- **Keine manuellen Edits** an `docs/_generated/*`, `exports/*`,
-  `.cursor/rules/*` (generiert).
+- `repo.meta.yaml`, `AGENTS.md`, `agent-policy.yaml` und
+  `.vibe/pr-scope-policy.yml` sind kanonisch und **maschinell pflegbar**.
+  Änderungen müssen explizit auslösergebunden, scopesicher und durch die
+  normalen Review-, CI- und Traceability-Gates abgesichert sein.
+- **Keine direkten Edits** an `docs/_generated/*`, `exports/*`,
+  `.cursor/rules/*` (generator-owned; nur über kanonische Generatoren).
 - **Keine Status-Änderungen** an Experimenten ohne belegte Grundlage.
 - **Keine Promotion** in die Bibliothek ohne Promotion-Gate.
 - **Keine erfundenen** Felder oder Konzepte außerhalb der Schemas.
@@ -28,7 +30,7 @@ Bei Widersprüchen gewinnt die höhere Ebene.
 ## Eigen-Check
 
 ```bash
-make agent-check    # schneller Diff-Guard
+make agent-check    # schneller Guard gegen direkte Generator-Artefakt-Edits
 make validate       # vollständige Validierung
 ```
 

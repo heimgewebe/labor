@@ -1,6 +1,6 @@
 # AGENTS.md — Bindende Leseregeln für Agenten
 
-> Dieses Dokument ist handgepflegt und kanonisch. Es wird nicht generiert.
+> Dieses Dokument ist kanonisch und maschinell pflegbar. Änderungen dürfen durch Menschen, Agenten oder Automatisierung erfolgen und müssen dieselben Scope-, Review- und CI-Gates durchlaufen.
 
 ## Lesereihenfolge
 
@@ -13,20 +13,20 @@ Agenten MÜSSEN Dokumente in dieser Reihenfolge lesen:
 5. `README.md` — Projekteinstieg
 6. `docs/index.md` — Navigation
 7. Kanonische Pfade (`contracts/`, `schemas/`, `.vibe/`)
-8. `docs/_generated/*` — Diagnose (nur lesen, nie editieren)
+8. `docs/_generated/*` — Diagnose (nur lesen, nie direkt editieren)
 
 ## Wahrheitshierarchie
 
 | Ebene        | Quellen                                               | Charakter              |
 | ------------ | ----------------------------------------------------- | ---------------------- |
-| Wahrheit     | `repo.meta.yaml`, `AGENTS.md`, `agent-policy.yaml`   | Kanonisch, handgepflegt |
+| Wahrheit     | `repo.meta.yaml`, `AGENTS.md`, `agent-policy.yaml`, `.vibe/pr-scope-policy.yml` | Kanonisch, maschinell pflegbar |
 | Wahrheit     | `contracts/*`, `schemas/*` | Kanonisch             |
 | Grundlagen   | `docs/foundations/vision.md`, `docs/foundations/repo-plan.md` | Richtungsgebend |
-| Operativ     | `README.md`, `CONTRIBUTING.md`, `.vibe/*`             | Handgepflegt           |
+| Operativ     | `README.md`, `CONTRIBUTING.md`, `.vibe/*`             | Maschinell pflegbar    |
 | Navigation   | `docs/index.md`, `docs/roadmap.md`                    | Wegweiser              |
-| Diagnose     | `docs/_generated/*`                                   | Maschinell, read-only  |
+| Diagnose     | `docs/_generated/*`                                   | Maschinell, generator-owned |
 
-**Regel:** Bei Widersprüchen gilt die höhere Ebene.
+**Regel:** Bei Widersprüchen gilt die höhere Ebene. Explizit als kanonisch aufgeführte Pfade haben Vorrang vor breiteren operativen Pfadklassen wie `.vibe/*`.
 
 Grundlagenquellen sind keine operativen Steuerungsdokumente, aber sie sind auch nicht bloß unverbindlicher Kontext. Im Konfliktfall stehen sie unterhalb der bindenden Steuerungsdokumente.
 
@@ -45,20 +45,22 @@ Grundlagenquellen sind keine operativen Steuerungsdokumente, aber sie sind auch 
 
 ## Generierte Artefakte
 
-Die folgenden Pfade enthalten ausschließlich generierte Artefakte. Agenten dürfen sie lesen, aber **niemals manuell editieren**:
+Die folgenden Pfade enthalten ausschließlich generierte Artefakte. Agenten und Automatisierung pflegen sie **nur über den jeweils kanonischen Generator**; direkte manuelle oder agentische Edits sind unzulässig:
 
 - `exports/`
 - `.cursor/rules/`
 - `docs/_generated/`
 
-## Handgepflegte Steuerungsdokumente
+## Kanonische Steuerungsdokumente
 
-Die folgenden Dokumente sind kanonisch und werden ausschließlich von Menschen gepflegt:
+Die folgenden Dokumente sind kanonisch und **maschinell pflegbar**; es gibt für sie keine `human-only`-Ausnahme:
 
 - `repo.meta.yaml`
 - `AGENTS.md`
 - `agent-policy.yaml`
 - `.vibe/pr-scope-policy.yml` (operative Quelle für PR-Scope/Artifact-Boundary; vom Validator `validate_pr_scope.py` gelesen)
+
+Änderungen durch Agenten oder Automatisierung müssen ihren Auslöser transparent dokumentieren, den Scope explizit begrenzen und die normalen Validator-, Review- und CI-Gates durchlaufen. Maschinenpflege hebt weder Wahrheitshierarchie noch Schutzregeln für generierte Artefakte auf.
 
 ## Verhaltensregeln
 

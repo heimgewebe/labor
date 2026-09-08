@@ -1,11 +1,11 @@
 # repo.meta.yaml — Maschinenlesbare Repo-Verfassung
-# Handgepflegt. Kanonisch. Nicht generiert.
+# Kanonisch. Maschinell pflegbar. Nicht generiert.
 # Lesereihenfolge: repo.meta.yaml → AGENTS.md → agent-policy.yaml → docs/roadmap.md → README.md → docs/index.md
 
 schema_version: "0.1.0"
 
 identity:
-  name: vibe-lab
+  name: labor
   purpose: "Verbrauchergebundener Experiment- und Evidenzraum für überprüfbare Arbeitsweisen"
   vision: docs/foundations/vision.md
   plan: docs/foundations/repo-plan.md
@@ -16,6 +16,7 @@ truth_model:
     - repo.meta.yaml
     - AGENTS.md
     - agent-policy.yaml
+    - .vibe/pr-scope-policy.yml
     - "contracts/*"
     - "schemas/*"
   foundational_sources:
@@ -56,7 +57,7 @@ path_logic:
       - "benchmarks/*"
       - "instruction-blocks/*"
   generated:
-    description: "Maschinell erzeugt, niemals manuell editiert"
+    description: "Maschinell erzeugt, niemals direkt editiert"
     paths:
       - "exports/*"
       - ".cursor/rules/*"

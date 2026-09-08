@@ -2,7 +2,7 @@
 title: "Policy — Agent Compliance"
 status: active
 canonicality: operative
-updated: "2026-05-19"
+updated: "2026-09-08"
 relations:
   - type: references
     target: ../../AGENTS.md
@@ -44,8 +44,9 @@ ineinandergreifende Schichten:
 
 1. **Anker-Dateien** — sorgen dafür, dass jedes verbreitete Agent-Tool
    die Leseordnung beim ersten Tool-Auto-Load findet.
-2. **Lokaler Guard** — gibt 2-Sekunden-Feedback auf die zwei häufigsten
-   Verstöße, bevor CI startet.
+2. **Lokaler Guard** — gibt 2-Sekunden-Feedback auf direkte Änderungen an
+   generator-owned Artefakten, bevor CI startet. Kanonische Steuerungsdateien
+   sind maschinell pflegbar und werden nicht mehr als Verstoß behandelt.
 3. **CI-Validierung** — die vollständige Gate-Pipeline in
   `.github/workflows/validate.yml` bleibt der harte Boden. CI testet
   den Guard selbst und ergänzt ihn um spezialisierte Drift- und
@@ -67,10 +68,12 @@ gewinnt AGENTS.md.
 
 ## Verbote (Kurzform — siehe AGENTS.md für die volle Liste)
 
-1. **Kanonische Steuerungsdokumente** — nur handgepflegt:
+1. **Kanonische Steuerungsdokumente** — maschinell pflegbar:
    `repo.meta.yaml`, `AGENTS.md`, `agent-policy.yaml`,
-   `.vibe/pr-scope-policy.yml`.
-2. **Generierte Artefakte** — niemals manuell editieren: `exports/*`,
+   `.vibe/pr-scope-policy.yml`. Agenten und Automatisierung dürfen sie in
+   explizit gebundenen Changes ändern; Scope-, Review-, CI- und
+   Traceability-Gates bleiben verpflichtend.
+2. **Generierte Artefakte** — niemals direkt editieren: `exports/*`,
    `.cursor/rules/*`, `docs/_generated/*`. Stattdessen Generator laufen
    lassen (`make generate-*`).
 3. **Status-Umdeutung von Experimenten** — nur mit belegter Grundlage
@@ -87,7 +90,7 @@ Welche Regel wird **wo** geprüft?
 
 | Regel | Lokaler Guard (~2 s) | `make validate` (~150 s) | CI |
 |-------|:---:|:---:|:---:|
-| Kanonische Steuerungsdokumente unangetastet | ✅ `make agent-check` / `make agent-check-staged` | ⚠️ `agent-check-tests` prüfen den Guard, aber kein direkter Diff-Scan | ⚠️ kein allgemeiner `agent-check`-Diff-Scan; Review/Ownership bleibt Backstop |
+| Kanonische Steuerungsdokumente maschinell pflegbar | ✅ kein Fast-Guard-Verstoß | ✅ normale Validatoren und Review-Gates | ✅ normale CI-/Review-Gates |
 | Generierte Artefakte nicht manuell editiert | ✅ `make agent-check` / `make agent-check-staged` | ✅ `validate_generated_artifacts_contract.py` + `validate_export_parity.py` + ⚠️ `agent-check-tests` | ✅ Blocking-Artifact-Drift + spezifische Contract-Checks, aber kein allgemeiner `agent-check`-Diff-Scan |
 | Schema-Compliance (Experiment, Catalog, Decision) | — | ✅ `validate_schema.py` | ✅ |
 | Frontmatter-Relationen konsistent | — | ✅ `validate_relations.py` | ✅ |
@@ -101,7 +104,7 @@ Welche Regel wird **wo** geprüft?
 Vor jedem Commit:
 
 ```bash
-make agent-check    # 2-Sekunden-Guard: kanonische + generierte Pfade
+make agent-check    # 2-Sekunden-Guard: direkte Edits an generator-owned Pfaden
 make agent-check-staged
 make validate       # vollständige Validierung (~150 s)
 ```
@@ -124,20 +127,18 @@ ersetzt aber nicht dieselbe allgemeine lokale Diff-Prüfung.
 > wurde. Legitime Generator-Outputs erfordern deshalb einen expliziten
 > Override (siehe unten) oder `--no-verify` beim Commit.
 
-## Override-Flags (nur bei legitimen Generator-Outputs)
+## Kompatibilitäts- und Generator-Flags
 
-Der Guard erkennt zwei Override-Flags:
+Der Guard akzeptiert weiterhin zwei Flags:
 
 ```bash
 python3 scripts/agents/check_agent_compliance.py --allow-canonical
 python3 scripts/agents/check_agent_compliance.py --allow-generated
 ```
 
-- `--allow-canonical` ist **nur für Maintainer**. Agenten dürfen dieses
-  Flag nicht setzen — Edits an kanonischen Steuerungsdokumenten bleiben
-  immer ein Verstoß gegen
-  [`.vibe/constraints.yml#canonical-sources-immutable-by-agents`](../../.vibe/constraints.yml).
-  Das Flag ist damit ein expliziter Maintainer-Override, kein Agentenpfad.
+- `--allow-canonical` ist ein **deprecated Kompatibilitäts-No-op**.
+  Kanonische Steuerungsdokumente sind standardmäßig maschinell pflegbar;
+  das Flag bleibt nur erhalten, damit ältere Aufrufer nicht brechen.
 - `--allow-generated` ist erlaubt, **wenn** der Generator gerade gelaufen
   ist (z. B. `make generate-blocking`) und die Änderung dessen Output
   ist. Wird der Guard ohne Generator-Lauf umgangen, erkennt CI den

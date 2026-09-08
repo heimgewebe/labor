@@ -6,7 +6,7 @@ Labor hält rohe Beobachtungen fest, registriert begrenzte Vergleiche vor ihrer 
 
 Es ist kein Agentenlaufzeitsystem, Scheduler, Dashboard, zweites Bureau, zweiter Grabowski-Governor oder automatische Lerninstanz. GitHub, CI, Grabowski, RepoGround und Bureau bleiben die jeweiligen Wahrheits- und Entscheidungsorgane.
 
-Die aktuelle Organ- und Repositorybezeichnung ist **Labor**. Historische Experiment-IDs, Evidenzreferenzen und stabile Dateinamen mit `vibe-lab` bleiben unverändert, wenn sie Provenienz oder Pfadkompatibilität tragen. `repo.meta.yaml` ist handgepflegt und führt bis zu einer menschlichen Änderung weiterhin die kanonische interne Maschinenidentität `vibe-lab`; diese Dokumentation überschreibt sie nicht.
+Die aktuelle Organ-, Repository- und Maschinenidentität ist **Labor** beziehungsweise `labor`. Historische Experiment-IDs, Evidenzreferenzen und stabile Dateinamen mit `vibe-lab` bleiben unverändert, wenn sie Provenienz oder Pfadkompatibilität tragen. Kanonische Steuerungsdateien sind maschinell pflegbar und durchlaufen dieselben Scope-, Review-, CI- und Traceability-Gates wie andere Änderungen.
 
 ## Schnellstart
 
@@ -115,13 +115,14 @@ Labor darf nicht:
 | `repo.meta.yaml` | Maschinenlesbare Repo-Verfassung | Kanonisch |
 | `AGENTS.md` | Bindende Leseregeln | Kanonisch |
 | `agent-policy.yaml` | Operative Agentengrenzen | Kanonisch |
+| `.vibe/pr-scope-policy.yml` | PR-Scope- und Artifact-Boundary-Policy | Kanonisch |
 | `docs/foundations/vision.md` | Begrenztes Zielbild | Grundlagendokument |
 | `docs/foundations/repo-plan.md` | Architektur- und Umsetzungsrahmen | Grundlagendokument |
 | `experiments/active.v1.json` | Laufende Experimentwahrheit | Operativ, validiert |
 
 **Wahrheitshierarchie:**
 
-1. kanonische Steuerungsquellen — `repo.meta.yaml`, `AGENTS.md`, `agent-policy.yaml`, `contracts/*`, `schemas/*`;
+1. kanonische Steuerungsquellen — `repo.meta.yaml`, `AGENTS.md`, `agent-policy.yaml`, `.vibe/pr-scope-policy.yml`, `contracts/*`, `schemas/*`;
 2. Grundlagenquellen — `docs/foundations/vision.md`, `docs/foundations/repo-plan.md`;
 3. operative Dokumente und aktive Experimentwahrheit;
 4. Navigation;

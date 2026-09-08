@@ -2,7 +2,7 @@
 title: "Masterplan — Labor Zielbild"
 status: active
 canonicality: operative
-updated: "2026-09-07"
+updated: "2026-09-08"
 relations:
   - type: derived_from
     target: foundations/vision.md
@@ -14,9 +14,9 @@ relations:
 
 ## Rolle
 
-Labor ist ein kleiner, verbrauchergebundener Experiment- und Evidenzraum. Dieses Dokument besitzt keine eigene Status- oder Expansionswahrheit; bei Widersprüchen gelten `repo.meta.yaml`, `AGENTS.md`, `agent-policy.yaml` sowie die beiden Grundlagendokumente.
+Labor ist ein kleiner, verbrauchergebundener Experiment- und Evidenzraum. Dieses Dokument besitzt keine eigene Status- oder Expansionswahrheit; bei Widersprüchen gelten `repo.meta.yaml`, `AGENTS.md`, `agent-policy.yaml`, `.vibe/pr-scope-policy.yml` sowie die beiden Grundlagendokumente.
 
-GitHub, Systemkatalog und Bureau führen das Organ als **Labor**. `repo.meta.yaml` ist human-protected und trägt bis zu einer menschlichen Änderung weiterhin die repo-interne Maschinenidentität `vibe-lab`. Historische Experiment-IDs, Evidenzreferenzen und stabile Dateinamen werden nicht wegen der Umbenennung umgeschrieben.
+GitHub, Systemkatalog, Bureau und `repo.meta.yaml` führen das Organ konsistent als **Labor** beziehungsweise `labor`. Kanonische Steuerungsdateien sind maschinell pflegbar; historische Experiment-IDs, Evidenzreferenzen und stabile Dateinamen werden trotzdem nicht allein wegen der Umbenennung umgeschrieben.
 
 ## Arbeitszyklus
 

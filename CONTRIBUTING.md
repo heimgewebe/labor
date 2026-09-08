@@ -109,5 +109,6 @@ Die kanonischen Steuerungsdokumente des Repositories sind:
 - `repo.meta.yaml` — Maschinenlesbare Repo-Verfassung
 - `AGENTS.md` — Bindende Leseregeln für Agenten
 - `agent-policy.yaml` — Agentensteuerung
+- `.vibe/pr-scope-policy.yml` — PR-Scope- und Artifact-Boundary-Policy
 
-Diese Dokumente sind handgepflegt und kanonisch. Sie werden nicht generiert.
+Diese Dokumente sind kanonisch, **maschinell pflegbar** und nicht generiert. Änderungen durch Agenten oder Automatisierung müssen explizit auslösergebunden, scopesicher und über die normalen Review-, CI- und Traceability-Gates laufen. Generator-owned Artefakte bleiben davon getrennt und dürfen nur über ihre kanonischen Generatoren geändert werden.

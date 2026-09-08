@@ -20,14 +20,15 @@
 Bei Widersprüchen gewinnt die höhere Ebene
 (canonical > foundational > operative > navigation > diagnosis).
 
-## Die fünf Verbote (Kurzform — Quelle: `AGENTS.md` und `.vibe/constraints.yml`)
+## Fünf Kurzregeln (Quelle: `AGENTS.md` und `.vibe/constraints.yml`)
 
-1. **Nicht** `repo.meta.yaml`, `AGENTS.md`, `agent-policy.yaml` oder
-   `.vibe/pr-scope-policy.yml` editieren — diese sind kanonisch und
-   ausschließlich handgepflegt.
-2. **Nicht** `docs/_generated/*`, `exports/*` oder `.cursor/rules/*` manuell
-   editieren — diese sind generiert und werden über Generatoren
-   regeneriert (`make generate`).
+1. `repo.meta.yaml`, `AGENTS.md`, `agent-policy.yaml` und
+   `.vibe/pr-scope-policy.yml` sind kanonisch und **maschinell pflegbar**.
+   Änderungen müssen explizit auslösergebunden, scopesicher und durch die
+   normalen Review-, CI- und Traceability-Gates abgesichert sein.
+2. **Nicht** `docs/_generated/*`, `exports/*` oder `.cursor/rules/*` direkt
+   editieren — diese sind generator-owned und werden über die kanonischen
+   Generatoren regeneriert (`make generate`).
 3. **Nicht** Status bestehender Experimente ohne belegte Grundlage ändern
    (siehe AGENTS.md → „Verbot unbelegter Status-Umdeutung").
 4. **Nicht** Labor-Artefakte ohne Promotion-Gate in die Bibliothek
@@ -40,7 +41,7 @@ Bei Widersprüchen gewinnt die höhere Ebene
 Vor jedem Commit:
 
 ```bash
-make agent-check    # 2-Sekunden-Guard: kanonische und generierte Pfade
+make agent-check    # 2-Sekunden-Guard: direkte Edits an generator-owned Pfaden
 make validate       # vollständige Validierung (~150 s)
 ```
 

@@ -1,5 +1,5 @@
 # agent-policy.yaml — Operative Agentensteuerung
-# Handgepflegt. Kanonisch. Nicht generiert.
+# Kanonisch. Maschinell pflegbar. Nicht generiert.
 # Referenz: repo.meta.yaml, AGENTS.md
 
 schema_version: "0.1.0"
@@ -41,14 +41,15 @@ generated_artifacts:
     - "exports/*"
     - ".cursor/rules/*"
     - "docs/_generated/*"
-  policy: "Niemals manuell editieren. Bei Widerspruch zu kanonischen Quellen: Abbruch und Meldung."
+  policy: "Nur über den kanonischen Generator pflegen; niemals direkt editieren. Bei Widerspruch zu kanonischen Quellen: Abbruch und Meldung."
 
 canonical_sources:
   paths:
     - repo.meta.yaml
     - AGENTS.md
     - agent-policy.yaml
-  policy: "Handgepflegt. Nicht durch Agenten oder Generatoren veränderbar."
+    - .vibe/pr-scope-policy.yml
+  policy: "Kanonisch und maschinell pflegbar. Agenten und Automatisierung dürfen diese Quellen innerhalb eines explizit gebundenen Changes ändern; normale Scope-, Review-, CI- und Traceability-Gates bleiben verpflichtend. Keine human-only-Ausnahme."
 
 conflict_resolution:
   on_conflict: abort

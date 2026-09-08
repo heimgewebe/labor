@@ -23,7 +23,7 @@ Repo-Governance, Prozess-Retrospektiven, System-Feature-Gates und Architektur-We
 
 > **Navigationshinweis:** Diese Datei ist Wegweiser, kein kanonischer Inhalt.
 > Bei Widersprüchen gelten die jeweiligen Decision-Artefakte und die
-> übergeordneten Steuerdokumente (`repo.meta.yaml`, `AGENTS.md`, `agent-policy.yaml`).
+> übergeordneten Steuerdokumente (`repo.meta.yaml`, `AGENTS.md`, `agent-policy.yaml`, `.vibe/pr-scope-policy.yml`).
 
 ## Typisierte Namespaces
 

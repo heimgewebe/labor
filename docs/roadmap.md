@@ -75,7 +75,7 @@ Bei jedem Widerspruch gilt die höher eingestufte Quelle. Historische Blueprints
 
 ## Aktueller Zustand
 
-Stand 7. September 2026:
+Stand 8. September 2026:
 
 - Labor ist auf einen kleinen Experiment- und Evidenzraum verengt; GitHub und Systemkatalog führen das System als `labor`/„Labor“. Historische Pfade und Dateinamen mit `vibe-lab` bleiben Provenienz und werden nicht pauschal umgeschrieben.
 - `experiments/active.v1.json` enthält nach dem fälligen Review des Outcome-Bound-Aktivierungspiloten keinen aktiven Versuch. Der Pilot bleibt `not_executed` und ist mit `closure_outcome: defer` aus dem Aktivregister genommen, weil kein bereits vorhandener Provider den eingefrorenen Slot-Capture-Vertrag erfüllt.
@@ -88,11 +88,11 @@ Stand 7. September 2026:
 
 ### RL-001 — Wahrheitsausrichtung und Survivor-Vertrag
 
-**Ziel:** Alle agentenseitig änderbaren maßgeblichen Labor-Dokumente beschreiben dieselbe begrenzte Rolle, ohne veraltete Bestandszahlen als Gegenwartswahrheit zu spiegeln.
+**Ziel:** Alle maßgeblichen Labor-Dokumente einschließlich der kanonischen Steuerungsquellen beschreiben dieselbe begrenzte Rolle und bleiben über den überprüften Maschinenpflege-Pfad konsistent, ohne veraltete Bestandszahlen als Gegenwartswahrheit zu spiegeln.
 
 **Umfang:**
 
-- Verträglichkeit des kanonischen Repo-Zwecks prüfen; `repo.meta.yaml` bleibt menschlich gepflegt;
+- kanonischen Repo-Zweck und Maschinenidentität prüfen; `repo.meta.yaml` und die übrigen kanonischen Steuerungsquellen sind maschinell pflegbar und unterliegen denselben Scope-, Review-, CI- und Traceability-Gates;
 - Grundlagenvision und Repository-Plan;
 - README;
 - Optimierungsplan und Validatorbericht;
@@ -108,7 +108,7 @@ Stand 7. September 2026:
 - Änderung an Experimentdaten, Schemas oder Validatorlogik;
 - automatischer Bureau-, Routing-, Merge- oder Deploy-Eingriff.
 
-**Erfolg:** vollständige CI, diffgebundener Review und Merge eines reinen Wahrheits- und Navigationsschnitts; kanonische menschengepflegte Quellen bleiben unverändert.
+**Erfolg:** vollständige CI, diffgebundener Review und Merge des Wahrheits- und Navigationsschnitts; kanonische Steuerungsquellen sind mit der begrenzten Labor-Rolle konsistent und können über denselben überprüften Maschinenpflege-Pfad aktualisiert werden.
 
 ## Nächste Arbeitsstränge
 

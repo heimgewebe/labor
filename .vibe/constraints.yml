@@ -9,7 +9,7 @@ schema_version: "0.1.0"
 constraints:
 
   - id: no-manual-edit-generated
-    description: "Generierte Artefakte dürfen niemals manuell editiert werden."
+    description: "Generierte Artefakte dürfen niemals direkt editiert werden; Änderungen erfolgen ausschließlich über den kanonischen Generator."
     applies_to:
       - "exports/*"
       - ".cursor/rules/*"
@@ -52,12 +52,13 @@ constraints:
       - "catalog/*"
     severity: hard
 
-  - id: canonical-sources-immutable-by-agents
-    description: "Kanonische Steuerungsdokumente werden nur von Menschen editiert."
+  - id: canonical-sources-machine-maintainable
+    description: "Kanonische Steuerungsdokumente sind maschinell pflegbar. Änderungen durch Agenten oder Automatisierung müssen auslösergebunden, scopesicher und über die normalen Review-, CI- und Traceability-Gates laufen."
     applies_to:
       - repo.meta.yaml
       - AGENTS.md
       - agent-policy.yaml
+      - ".vibe/pr-scope-policy.yml"
     severity: hard
 
   - id: anti-gaming-evidence
