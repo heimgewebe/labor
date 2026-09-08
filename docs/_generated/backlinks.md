@@ -349,7 +349,6 @@
 
 - ← `docs/index.md` (references)
 - ← `docs/playbooks/operator-lab-loop.md` (references)
-- ← `experiments/2026-07-08_rlens-agent-context-conditions/CONTEXT.md` (references)
 
 ## `docs/playbooks/pr-review-evidence-wait-gate.md`
 
@@ -730,10 +729,6 @@
 
 - ← `experiments/2026-06-10_pr-agent-context-comparison-series/method.md` (references)
 
-## `experiments/2026-06-10_pr-agent-context-comparison-series/method.md`
-
-- ← `experiments/2026-07-08_rlens-agent-context-conditions/CONTEXT.md` (references)
-
 ## `experiments/2026-06-10_pr-agent-context-comparison-series/pilot-v1.yml`
 
 - ← `docs/playbooks/operator-lab-loop.md` (references)
@@ -756,21 +751,9 @@
 
 - ← `docs/playbooks/operator-lab-loop.md` (references)
 
-## `experiments/2026-07-01_operator-lab-loop/method.md`
-
-- ← `experiments/2026-07-08_rlens-agent-context-conditions/CONTEXT.md` (references)
-
 ## `experiments/2026-07-01_operator-lab-loop/results/cross-run-assessment.v1.json`
 
 - ← `experiments/2026-08-16_outcome-bound-operator-loop-p0/schema-fit.md` (references)
-
-## `experiments/2026-07-08_rlens-agent-context-conditions/CONTEXT.md`
-
-- ← `experiments/2026-07-08_rlens-agent-context-conditions/method.md` (references)
-
-## `experiments/2026-07-08_rlens-agent-context-conditions/measurement-plan.yml`
-
-- ← `experiments/2026-07-08_rlens-agent-context-conditions/method.md` (references)
 
 ## `experiments/2026-08-16_outcome-bound-operator-loop-p0/CONTEXT.md`
 

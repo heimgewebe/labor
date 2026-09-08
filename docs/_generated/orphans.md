@@ -126,7 +126,7 @@ Unexpected orphans (120 found):
 - `tests/fixtures/model_lab_next_blocker_triage/_evidence/assessment-context.md`
 - `tests/fixtures/pr_scope/valid/summary.md`
 
-Expected orphans (122 found):
+Expected orphans (121 found):
 
 - `experiments/2026-04-08_spec-first/CONTEXT.md` — experiment_bundle_local_context
 - `experiments/2026-04-08_spec-first/INITIAL.md` — experiment_bundle_initial_prompt
@@ -205,10 +205,12 @@ Expected orphans (122 found):
 - `experiments/2026-06-10_pr-agent-context-comparison-series/CONTEXT.md` — experiment_bundle_local_context
 - `experiments/2026-06-10_pr-agent-context-comparison-series/INITIAL.md` — experiment_bundle_initial_prompt
 - `experiments/2026-06-10_pr-agent-context-comparison-series/failure_modes.md` — experiment_bundle_local_analysis
+- `experiments/2026-06-10_pr-agent-context-comparison-series/method.md` — experiment_bundle_method
 - `experiments/2026-06-10_pr-agent-context-comparison-series/results/result.md` — experiment_result_local_surface
 - `experiments/2026-07-01_operator-lab-loop/CONTEXT.md` — experiment_bundle_local_context
 - `experiments/2026-07-01_operator-lab-loop/INITIAL.md` — experiment_bundle_initial_prompt
 - `experiments/2026-07-01_operator-lab-loop/failure_modes.md` — experiment_bundle_local_analysis
+- `experiments/2026-07-01_operator-lab-loop/method.md` — experiment_bundle_method
 - `experiments/2026-07-01_operator-lab-loop/results/result.md` — experiment_result_local_surface
 - `experiments/2026-07-05_ecosystem-organ-preflight/CONTEXT.md` — experiment_bundle_local_context
 - `experiments/2026-07-05_ecosystem-organ-preflight/failure_modes.md` — experiment_bundle_local_analysis
@@ -219,9 +221,6 @@ Expected orphans (122 found):
 - `experiments/2026-07-08_operator-learning-capture-sample/failure_modes.md` — experiment_bundle_local_analysis
 - `experiments/2026-07-08_operator-learning-capture-sample/method.md` — experiment_bundle_method
 - `experiments/2026-07-08_operator-learning-capture-sample/results/result.md` — experiment_result_local_surface
-- `experiments/2026-07-08_rlens-agent-context-conditions/INITIAL.md` — experiment_bundle_initial_prompt
-- `experiments/2026-07-08_rlens-agent-context-conditions/failure_modes.md` — experiment_bundle_local_analysis
-- `experiments/2026-07-08_rlens-agent-context-conditions/method.md` — experiment_bundle_method
 - `experiments/2026-08-18_outcome-bound-operator-loop-successor-s1r1-natural-identity-shadow/CONTEXT.md` — experiment_bundle_local_context
 - `experiments/2026-08-18_outcome-bound-operator-loop-successor-s1r1-natural-identity-shadow/method.md` — experiment_bundle_method
 - `experiments/2026-08-18_outcome-bound-operator-loop-successor-s1r2-paper/CONTEXT.md` — experiment_bundle_local_context
