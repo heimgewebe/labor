@@ -19,14 +19,14 @@ Agenten MÜSSEN Dokumente in dieser Reihenfolge lesen:
 
 | Ebene        | Quellen                                               | Charakter              |
 | ------------ | ----------------------------------------------------- | ---------------------- |
-| Wahrheit     | `repo.meta.yaml`, `AGENTS.md`, `agent-policy.yaml`   | Kanonisch, maschinell pflegbar |
+| Wahrheit     | `repo.meta.yaml`, `AGENTS.md`, `agent-policy.yaml`, `.vibe/pr-scope-policy.yml` | Kanonisch, maschinell pflegbar |
 | Wahrheit     | `contracts/*`, `schemas/*` | Kanonisch             |
 | Grundlagen   | `docs/foundations/vision.md`, `docs/foundations/repo-plan.md` | Richtungsgebend |
 | Operativ     | `README.md`, `CONTRIBUTING.md`, `.vibe/*`             | Maschinell pflegbar    |
 | Navigation   | `docs/index.md`, `docs/roadmap.md`                    | Wegweiser              |
 | Diagnose     | `docs/_generated/*`                                   | Maschinell, generator-owned |
 
-**Regel:** Bei Widersprüchen gilt die höhere Ebene.
+**Regel:** Bei Widersprüchen gilt die höhere Ebene. Explizit als kanonisch aufgeführte Pfade haben Vorrang vor breiteren operativen Pfadklassen wie `.vibe/*`.
 
 Grundlagenquellen sind keine operativen Steuerungsdokumente, aber sie sind auch nicht bloß unverbindlicher Kontext. Im Konfliktfall stehen sie unterhalb der bindenden Steuerungsdokumente.
 

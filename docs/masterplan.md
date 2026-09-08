@@ -14,7 +14,7 @@ relations:
 
 ## Rolle
 
-Labor ist ein kleiner, verbrauchergebundener Experiment- und Evidenzraum. Dieses Dokument besitzt keine eigene Status- oder Expansionswahrheit; bei Widersprüchen gelten `repo.meta.yaml`, `AGENTS.md`, `agent-policy.yaml` sowie die beiden Grundlagendokumente.
+Labor ist ein kleiner, verbrauchergebundener Experiment- und Evidenzraum. Dieses Dokument besitzt keine eigene Status- oder Expansionswahrheit; bei Widersprüchen gelten `repo.meta.yaml`, `AGENTS.md`, `agent-policy.yaml`, `.vibe/pr-scope-policy.yml` sowie die beiden Grundlagendokumente.
 
 GitHub, Systemkatalog, Bureau und `repo.meta.yaml` führen das Organ konsistent als **Labor** beziehungsweise `labor`. Kanonische Steuerungsdateien sind maschinell pflegbar; historische Experiment-IDs, Evidenzreferenzen und stabile Dateinamen werden trotzdem nicht allein wegen der Umbenennung umgeschrieben.
 
