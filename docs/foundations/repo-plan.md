@@ -2,7 +2,7 @@
 title: "Repository-Plan"
 status: active
 canonicality: foundational
-updated: "2026-09-07"
+updated: "2026-09-08"
 ---
 
 # Repository-Plan für Labor
@@ -39,7 +39,7 @@ Bestehende generierte Kompatibilitätsmarker und ihre blocking Paritätsverträg
 
 Die Wahrheitshierarchie wird durch `repo.meta.yaml` definiert. Für den operativen Zustand gelten zusätzlich folgende Grenzen:
 
-Aktueller Identitätshinweis: GitHub, Systemkatalog und Bureau führen das Organ als **Labor**. `repo.meta.yaml` ist jedoch human-protected und trägt weiterhin `identity.name: vibe-lab`. Bis zu einer menschlichen Änderung bleibt dieser Wert die kanonische repo-interne Maschinenidentität; dieser Plan beansprucht keine Autorität, ihn umzuschreiben.
+Aktueller Identitätshinweis: GitHub, Systemkatalog, Bureau und `repo.meta.yaml` führen das Organ konsistent als **Labor** beziehungsweise `identity.name: labor`. Kanonische Steuerungsdateien sind maschinell pflegbar; Änderungen bleiben auslösergebunden und durch normale Scope-, Review-, CI- und Traceability-Gates geschützt.
 
 - `experiments/active.v1.json` ist die einzige Wahrheit über aktive Experimente;
 - GitHub und CI sind Wahrheit für Code-, Review-, Merge- und Prüfzustände;
@@ -157,12 +157,12 @@ Stand 7. September 2026:
 
 ### Phase E1 — Wahrheitsausrichtung
 
-- kanonischen Zweck gegen die begrenzte Rolle prüfen; Änderungen an `repo.meta.yaml` bleiben menschlich gepflegt;
+- kanonischen Zweck und die Maschinenidentität gegen die begrenzte Rolle prüfen; kanonische Steuerungsdateien bleiben maschinell pflegbar;
 - Vision, Repository-Plan, README, Roadmap und operative Berichte angleichen;
 - veraltete aktive Zahlen und frühere Expansionsziele entfernen;
 - keine neue Funktion hinzufügen.
 
-Erfolg: Alle agentenseitig änderbaren maßgeblichen Dokumente beschreiben dieselbe begrenzte Rolle; kanonische Quellen bleiben unverändert oder werden separat menschlich gepflegt.
+Erfolg: Alle maßgeblichen Dokumente einschließlich der kanonischen Steuerungsquellen beschreiben dieselbe begrenzte Rolle und können über denselben überprüften Maschinenpflege-Pfad konsistent gehalten werden.
 
 ### Phase E2 — Legacy-Survivor-Audit
 

@@ -400,7 +400,7 @@ validate-artifact-taxonomy-contract-tests:
 	@python3 scripts/docmeta/test_validate_artifact_taxonomy.py
 
 agent-check:
-	@echo "🛡  Running fast agent compliance guard (canonical + generated paths)..."
+	@echo "🛡  Running fast agent compliance guard (direct generated-artifact edits)..."
 	@python3 scripts/agents/check_agent_compliance.py
 
 agent-check-staged:

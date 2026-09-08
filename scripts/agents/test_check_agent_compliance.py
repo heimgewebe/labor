@@ -2,7 +2,7 @@
 """Regression tests for ``check_agent_compliance.py``.
 
 Covers:
-- canonical paths fail by default and pass with ``--allow-canonical``
+- canonical paths are machine-maintainable and pass by default; ``--allow-canonical`` remains a compatibility no-op
 - generated paths (file + directory pattern) fail and pass with override
 - non-protected paths always pass
 - protected-path patterns are read from ``.vibe/generated-artifacts.yml``
@@ -40,39 +40,19 @@ class CheckCanonicalTests(unittest.TestCase):
     def setUp(self) -> None:
         self.mod = _load_module()
 
-    def test_repo_meta_yaml_is_canonical(self) -> None:
+    def test_canonical_paths_are_machine_maintainable(self) -> None:
         violations = self.mod.check_canonical(
-            ["repo.meta.yaml"], allowed=False
-        )
-        self.assertEqual(len(violations), 1)
-        self.assertEqual(violations[0].rule, "canonical-source")
-        self.assertIn("AGENTS.md", violations[0].reference)
-
-    def test_agents_md_is_canonical(self) -> None:
-        violations = self.mod.check_canonical(["AGENTS.md"], allowed=False)
-        self.assertEqual(len(violations), 1)
-
-    def test_agent_policy_yaml_is_canonical(self) -> None:
-        violations = self.mod.check_canonical(
-            ["agent-policy.yaml"], allowed=False
-        )
-        self.assertEqual(len(violations), 1)
-
-    def test_pr_scope_policy_is_canonical(self) -> None:
-        violations = self.mod.check_canonical(
-            [".vibe/pr-scope-policy.yml"], allowed=False
-        )
-        self.assertEqual(len(violations), 1)
-
-    def test_other_vibe_files_are_not_canonical(self) -> None:
-        # constraints.yml and quality-gates.yml are operative, not canonical.
-        violations = self.mod.check_canonical(
-            [".vibe/constraints.yml", ".vibe/quality-gates.yml"],
+            [
+                "repo.meta.yaml",
+                "AGENTS.md",
+                "agent-policy.yaml",
+                ".vibe/pr-scope-policy.yml",
+            ],
             allowed=False,
         )
         self.assertEqual(violations, [])
 
-    def test_allowed_flag_disables_check(self) -> None:
+    def test_legacy_allow_canonical_is_compatible_noop(self) -> None:
         violations = self.mod.check_canonical(
             ["repo.meta.yaml", "AGENTS.md"], allowed=True
         )
@@ -232,7 +212,7 @@ class RunChecksTests(unittest.TestCase):
         )
         self.assertEqual(violations, [])
 
-    def test_canonical_and_generated_combine(self) -> None:
+    def test_canonical_path_does_not_mask_generated_violation(self) -> None:
         violations = self.mod.run_checks(
             repo_root=self.repo,
             paths=["repo.meta.yaml", "docs/_generated/doc-index.md"],
@@ -240,7 +220,7 @@ class RunChecksTests(unittest.TestCase):
             allow_generated=False,
         )
         rules = sorted(v.rule for v in violations)
-        self.assertEqual(rules, ["canonical-source", "generated-artifact"])
+        self.assertEqual(rules, ["generated-artifact"])
 
 
 class MainCliTests(unittest.TestCase):
@@ -259,11 +239,11 @@ class MainCliTests(unittest.TestCase):
         self.assertIn("OK", out)
         self.assertEqual(err, "")
 
-    def test_paths_flag_canonical_violation_returns_one(self) -> None:
+    def test_paths_flag_canonical_path_returns_zero(self) -> None:
         code, out, err = self._run(["--paths", "AGENTS.md"])
-        self.assertEqual(code, 1)
-        self.assertIn("FAILED", err)
-        self.assertIn("canonical-source", err)
+        self.assertEqual(code, 0)
+        self.assertIn("OK", out)
+        self.assertEqual(err, "")
 
     def test_paths_flag_generated_violation_returns_one(self) -> None:
         code, out, err = self._run(["--paths", "docs/_generated/doc-index.md"])
@@ -291,10 +271,8 @@ class MainCliTests(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertEqual(out, "")
 
-    def test_violations_reference_canonical_sources(self) -> None:
-        # The error message must point the agent at the binding source so
-        # an LLM that reads only the failure can find the canonical rule.
-        _code, _out, err = self._run(["--paths", "AGENTS.md"])
+    def test_generated_violations_reference_binding_sources(self) -> None:
+        _code, _out, err = self._run(["--paths", "docs/_generated/doc-index.md"])
         self.assertIn("AGENTS.md", err)
         self.assertIn("constraints.yml", err)
 

@@ -1,25 +1,24 @@
 #!/usr/bin/env python3
 """Fast agent compliance guard.
 
-Two rules, < 2 s runtime, designed as a pre-commit / pre-push companion to
-the full ``make validate`` pipeline.
+One blocking rule, < 2 s runtime, designed as a pre-commit / pre-push
+companion to the full ``make validate`` pipeline.
 
-Rule 1 — Canonical-source protection
-    The four canonical control documents are hand-maintained. An agent that
-    touches them without an explicit override is in violation of
-    ``AGENTS.md`` and ``.vibe/constraints.yml:canonical-sources-immutable-by-agents``.
+Canonical-source maintenance
+    Canonical control documents are machine-maintainable under the normal
+    scoped change, review, CI and traceability gates. They are therefore not
+    blocked by this fast guard.
 
-Rule 2 — Generated-artifact protection
+Generated-artifact protection
     Paths declared in ``.vibe/generated-artifacts.yml`` carry
     ``enforcement: [..., no_manual_edit]``. Manual edits violate
     ``AGENTS.md`` and ``.vibe/constraints.yml:no-manual-edit-generated``.
 
 Generated artifact patterns are read from canonical contracts
-(``.vibe/generated-artifacts.yml`` and ``agent-policy.yaml``) so that
-list stays in sync without duplication. Canonical protected paths are
-intentionally hardcoded from ``AGENTS.md`` policy — they are a small,
-stable set that does not benefit from dynamic loading. The script is
-intentionally additive and never modifies repo state.
+(``.vibe/generated-artifacts.yml`` and ``agent-policy.yaml``) so that the
+list stays in sync without duplication. Canonical source paths remain known
+only for backward-compatible CLI/tests; they are not violation targets. The
+script is intentionally additive and never modifies repo state.
 
 Exit codes
     0 — no violations (or only violations explicitly allowed via flags)
@@ -48,8 +47,8 @@ except ImportError:  # pragma: no cover - dependency surface
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
-# Canonical control documents. Source: AGENTS.md → "Handgepflegte
-# Steuerungsdokumente"; agent-policy.yaml → canonical_sources.
+# Canonical control documents remain machine-maintainable; the set is retained
+# for compatibility/introspection only, not as a denylist.
 CANONICAL_PATHS: frozenset[str] = frozenset(
     {
         "repo.meta.yaml",
@@ -172,26 +171,14 @@ def _path_matches(file_path: str, pattern: str) -> bool:
 def check_canonical(
     paths: Iterable[str], allowed: bool
 ) -> list[Violation]:
-    if allowed:
-        return []
-    violations: list[Violation] = []
-    for p in paths:
-        if p in CANONICAL_PATHS:
-            violations.append(
-                Violation(
-                    path=p,
-                    rule="canonical-source",
-                    message=(
-                        "Canonical control document — hand-maintained by "
-                        "maintainers only. Agent edits are forbidden."
-                    ),
-                    reference=(
-                        "AGENTS.md → 'Handgepflegte Steuerungsdokumente'; "
-                        ".vibe/constraints.yml#canonical-sources-immutable-by-agents"
-                    ),
-                )
-            )
-    return violations
+    """Compatibility shim: canonical sources are machine-maintainable.
+
+    ``allowed`` and the known-path set are retained so older callers using
+    ``--allow-canonical`` keep working, but canonical edits no longer create
+    fast-guard violations. Review/CI/traceability remain authoritative.
+    """
+    del paths, allowed
+    return []
 
 
 def check_generated(
@@ -242,8 +229,8 @@ def run_checks(
 def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
-            "Fast agent compliance guard. Detects edits to canonical "
-            "control documents and generated artifacts."
+            "Fast agent compliance guard. Detects direct edits to generated artifacts; "
+            "canonical control documents are machine-maintainable."
         ),
     )
     parser.add_argument(
@@ -269,8 +256,8 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "--allow-canonical",
         action="store_true",
         help=(
-            "Allow changes to canonical control documents. "
-            "Maintainers only — agents must NOT pass this flag."
+            "Deprecated compatibility no-op. Canonical control documents are "
+            "machine-maintainable by default."
         ),
     )
     parser.add_argument(

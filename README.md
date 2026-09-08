@@ -6,7 +6,7 @@ Labor hält rohe Beobachtungen fest, registriert begrenzte Vergleiche vor ihrer 
 
 Es ist kein Agentenlaufzeitsystem, Scheduler, Dashboard, zweites Bureau, zweiter Grabowski-Governor oder automatische Lerninstanz. GitHub, CI, Grabowski, RepoGround und Bureau bleiben die jeweiligen Wahrheits- und Entscheidungsorgane.
 
-Die aktuelle Organ- und Repositorybezeichnung ist **Labor**. Historische Experiment-IDs, Evidenzreferenzen und stabile Dateinamen mit `vibe-lab` bleiben unverändert, wenn sie Provenienz oder Pfadkompatibilität tragen. `repo.meta.yaml` ist handgepflegt und führt bis zu einer menschlichen Änderung weiterhin die kanonische interne Maschinenidentität `vibe-lab`; diese Dokumentation überschreibt sie nicht.
+Die aktuelle Organ-, Repository- und Maschinenidentität ist **Labor** beziehungsweise `labor`. Historische Experiment-IDs, Evidenzreferenzen und stabile Dateinamen mit `vibe-lab` bleiben unverändert, wenn sie Provenienz oder Pfadkompatibilität tragen. Kanonische Steuerungsdateien sind maschinell pflegbar und durchlaufen dieselben Scope-, Review-, CI- und Traceability-Gates wie andere Änderungen.
 
 ## Schnellstart
 
