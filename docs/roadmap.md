@@ -81,7 +81,7 @@ Stand 8. September 2026:
 - `experiments/active.v1.json` enthält nach dem fälligen Review des Outcome-Bound-Aktivierungspiloten keinen aktiven Versuch. Der Pilot bleibt `not_executed` und ist mit `closure_outcome: defer` aus dem Aktivregister genommen, weil kein bereits vorhandener Provider den eingefrorenen Slot-Capture-Vertrag erfüllt.
 - Die Custom-Agent-Schicht und instruktionsführende Cursor-/Copilot-Projektionsinhalte sind stillgelegt; generierte Kompatibilitätsmarker und ihre blocking Paritätsverträge bleiben aktiv.
 - Die 36 Operator-Lab-Karten sind mit `insufficient_evidence` eingefroren; frühere Chronik-, Routing-, RepoBrief- und Model-Lab-Versuche sind historische Evidenz, keine aktive Experimentwahrheit.
-- Die maschinenlesbare Validatorfläche besteht aus 45 Core-, 6 Active- und 46 Legacy-Zielen sowie zwei ergänzenden Checks, insgesamt 97 klassifizierten Validierungszielen. `Active` ist dabei eine Validatorgruppe und nicht die Zahl aktiver Experimente; der archivierte Routing-Readiness-Testfrontdoor und die beiden Phase-1c-Archivfrontdoors sind nach belegter Terminalität nicht mehr blocking.
+- Die maschinenlesbare Validatorfläche besteht aus 45 Core-, 6 Active- und 44 Legacy-Zielen sowie zwei ergänzenden Checks, insgesamt 95 klassifizierten Validierungszielen. `Active` ist dabei eine Validatorgruppe und nicht die Zahl aktiver Experimente; der archivierte Routing-Readiness-Testfrontdoor und die beiden Phase-1c-Archivfrontdoors sind nach belegter Terminalität nicht mehr blocking.
 - Das Bureau führt den Survivor-Audit weiterhin unter `heimgewebe/bureau#442`.
 
 ## Aktiver Repository-Ball
@@ -116,7 +116,7 @@ Die Reihenfolge ist verbindlich, soweit Bureau keine neue Prioritätsentscheidun
 
 ### RL-002 — Legacy-Validator-Survivor-Audit
 
-Jedes der 46 verbleibenden Legacy-Ziele erhält eine Disposition:
+Jedes der 44 verbleibenden Legacy-Ziele erhält eine Disposition:
 
 - `retain_with_consumer`;
 - `covered_by_core`;
@@ -127,9 +127,9 @@ Prüfreihenfolge:
 1. Agent-Handoff-, Agent-Command- und Command-Chain-Verträge;
 2. Model-Lab-Spezialprüfungen erst nach separater terminaler Disposition; das aktuelle Model-Lab-Manifest bleibt `testing` und seine Guards bleiben blocking;
 3. historische Replay-, Fixture- und Cross-Contract-Semantik;
-4. historische rLens- und PR-Context-Prüfungen; der frühere RepoBrief-Pilot ist bereits abgeschlossen.
+4. historische PR-Context-Prüfungen und verbleibende rLens-Flächen nur mit separater Consumer-/Archivevidenz; das nie ausgeführte rLens-Agent-Context-Design ist inzwischen archiviert und seine zwei dedizierten Frontdoors sind nicht mehr blocking.
 
-Der Reviewtermin 1. September 2026 ist überschritten. Von der früheren 48er-Baseline bleiben nach dem ersten belegten Survivor-Abbau 46 blocking Legacy-Ziele; weitere Reduktion erfolgt nur mit Archiv- oder Äquivalenzevidenz. Der Review eines Entfernungs-PR prüft diesen materiellen Beleg, ersetzt ihn aber nicht.
+Der Reviewtermin 1. September 2026 ist überschritten. Von der früheren 48er-Baseline bleiben nach dem zweiten belegten Survivor-Abbau 44 blocking Legacy-Ziele; weitere Reduktion erfolgt nur mit Archiv- oder Äquivalenzevidenz. Der Review eines Entfernungs-PR prüft diesen materiellen Beleg, ersetzt ihn aber nicht.
 
 ### RL-003 — fällige Experimentabschlüsse erzwingen
 

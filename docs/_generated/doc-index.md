@@ -280,10 +280,6 @@
 | `experiments/2026-07-08_operator-learning-capture-sample/results/result.md` | Result: Operator Learning Capture Sample | active | operative |
 | `experiments/2026-07-08_operator-learning-capture-sample/results/review-questions.md` | Review Questions: Operator Learning Capture Sample | active | operative |
 | `experiments/2026-07-08_operator-learning-capture-sample/results/scope-stop.md` | Scope Stop: Operator Learning Capture Sample | active | operative |
-| `experiments/2026-07-08_rlens-agent-context-conditions/CONTEXT.md` | Context — rLens Agent Context Conditions | designed | operative |
-| `experiments/2026-07-08_rlens-agent-context-conditions/INITIAL.md` | Initial Prompt — rLens Agent Context Conditions | designed | operative |
-| `experiments/2026-07-08_rlens-agent-context-conditions/failure_modes.md` | Failure Modes — rLens Agent Context Conditions | designed | operative |
-| `experiments/2026-07-08_rlens-agent-context-conditions/method.md` | Method — rLens Agent Context Conditions | designed | operative |
 | `experiments/2026-08-16_outcome-bound-operator-loop-p0/CONTEXT.md` | Outcome-Bound Operator Loop P0 — Context | designed | operative |
 | `experiments/2026-08-16_outcome-bound-operator-loop-p0/examples.md` | Outcome-Bound Operator Loop P0 — Illustrative examples | designed | exploratory |
 | `experiments/2026-08-16_outcome-bound-operator-loop-p0/method.md` | Outcome-Bound Operator Loop P0 — Method and future protocols | testing | operative |

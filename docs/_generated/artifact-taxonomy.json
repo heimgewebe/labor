@@ -15976,118 +15976,6 @@
         "experiments/*/CONTEXT.md"
       ],
       "origin": "handcrafted",
-      "path": "experiments/2026-07-08_rlens-agent-context-conditions/CONTEXT.md",
-      "status": "classified"
-    },
-    {
-      "authority": "raw_capture",
-      "catchall_match": false,
-      "enforcement": [
-        "review_required"
-      ],
-      "kind": "initial_prompt",
-      "layer": "experiment",
-      "lifecycle": "handcrafted",
-      "matched_patterns": [
-        "experiments/*/INITIAL.md"
-      ],
-      "origin": "handcrafted",
-      "path": "experiments/2026-07-08_rlens-agent-context-conditions/INITIAL.md",
-      "status": "classified"
-    },
-    {
-      "authority": "result_interpretation",
-      "catchall_match": false,
-      "enforcement": [
-        "review_required"
-      ],
-      "kind": "experiment_failure_modes",
-      "layer": "experiment",
-      "lifecycle": "handcrafted",
-      "matched_patterns": [
-        "experiments/*/failure_modes.md"
-      ],
-      "origin": "handcrafted",
-      "path": "experiments/2026-07-08_rlens-agent-context-conditions/failure_modes.md",
-      "status": "classified"
-    },
-    {
-      "authority": "procedure_contract",
-      "catchall_match": false,
-      "enforcement": [
-        "ci_blocking"
-      ],
-      "kind": "experiment_manifest",
-      "layer": "experiment",
-      "lifecycle": "revision_with_reason",
-      "matched_patterns": [
-        "experiments/*/manifest.yml"
-      ],
-      "origin": "handcrafted",
-      "path": "experiments/2026-07-08_rlens-agent-context-conditions/manifest.yml",
-      "status": "classified"
-    },
-    {
-      "authority": "historical_record",
-      "catchall_match": true,
-      "enforcement": [
-        "no_rewrite"
-      ],
-      "kind": "experiment_artifact",
-      "layer": "experiment",
-      "lifecycle": "append_only",
-      "matched_patterns": [
-        "experiments/**"
-      ],
-      "origin": "handcrafted",
-      "path": "experiments/2026-07-08_rlens-agent-context-conditions/measurement-plan.yml",
-      "status": "classified"
-    },
-    {
-      "authority": "procedure_contract",
-      "catchall_match": false,
-      "enforcement": [
-        "review_required"
-      ],
-      "kind": "experiment_method",
-      "layer": "experiment",
-      "lifecycle": "handcrafted",
-      "matched_patterns": [
-        "experiments/*/method.md"
-      ],
-      "origin": "handcrafted",
-      "path": "experiments/2026-07-08_rlens-agent-context-conditions/method.md",
-      "status": "classified"
-    },
-    {
-      "authority": "decision_record",
-      "catchall_match": false,
-      "enforcement": [
-        "ci_blocking"
-      ],
-      "kind": "decision_record",
-      "layer": "experiment",
-      "lifecycle": "handcrafted",
-      "matched_patterns": [
-        "experiments/*/results/decision.yml"
-      ],
-      "origin": "handcrafted",
-      "path": "experiments/2026-07-08_rlens-agent-context-conditions/results/decision.yml",
-      "status": "classified"
-    },
-    {
-      "authority": "procedure_contract",
-      "catchall_match": false,
-      "enforcement": [
-        "review_required"
-      ],
-      "kind": "experiment_context",
-      "layer": "experiment",
-      "lifecycle": "handcrafted",
-      "matched_patterns": [
-        "experiments/*/CONTEXT.md"
-      ],
-      "origin": "handcrafted",
       "path": "experiments/2026-08-16_outcome-bound-operator-loop-p0/CONTEXT.md",
       "status": "classified"
     },
@@ -17682,6 +17570,22 @@
       ],
       "origin": "handcrafted",
       "path": "experiments/2026-08-30_outcome-bound-natural-pilot-r3v3-activation/CONTEXT.md",
+      "status": "classified"
+    },
+    {
+      "authority": "historical_record",
+      "catchall_match": true,
+      "enforcement": [
+        "no_rewrite"
+      ],
+      "kind": "experiment_artifact",
+      "layer": "experiment",
+      "lifecycle": "append_only",
+      "matched_patterns": [
+        "experiments/*/artifacts/**"
+      ],
+      "origin": "handcrafted",
+      "path": "experiments/2026-08-30_outcome-bound-natural-pilot-r3v3-activation/artifacts/provider-review-2026-09-07.json",
       "status": "classified"
     },
     {
@@ -28033,7 +27937,6 @@
     "experiments/2026-07-08_operator-learning-capture-sample/results/review-questions.md",
     "experiments/2026-07-08_operator-learning-capture-sample/results/sample.yml",
     "experiments/2026-07-08_operator-learning-capture-sample/results/scope-stop.md",
-    "experiments/2026-07-08_rlens-agent-context-conditions/measurement-plan.yml",
     "experiments/2026-08-16_outcome-bound-operator-loop-p0/contracts/outcome-case-spec.v0.schema.json",
     "experiments/2026-08-16_outcome-bound-operator-loop-p0/contracts/outcome-observation.v0.schema.json",
     "experiments/2026-08-16_outcome-bound-operator-loop-p0/examples.md",
@@ -28077,6 +27980,7 @@
     "experiments/2026-08-24_outcome-bound-natural-pilot-sampling-unit-r3-v3/sampling-unit-cases.md",
     "experiments/2026-08-24_outcome-bound-natural-pilot-sampling-unit-r3/registration.v2.json",
     "experiments/2026-08-24_outcome-bound-natural-pilot-sampling-unit-r3/sampling-unit-cases.md",
+    "experiments/2026-08-30_outcome-bound-natural-pilot-r3v3-activation/artifacts/provider-review-2026-09-07.json",
     "experiments/2026-08-30_outcome-bound-natural-pilot-r3v3-activation/registration.v2.json",
     "experiments/_template/artifacts/README.md",
     "experiments/_template/registration.v1.json",
@@ -28371,8 +28275,8 @@
     },
     "by_matched_pattern": {
       "docs/**": 12,
-      "experiments/**": 88,
-      "experiments/*/artifacts/**": 528,
+      "experiments/**": 87,
+      "experiments/*/artifacts/**": 529,
       "tests/fixtures/**": 275
     },
     "high_risk_count": 275,
@@ -28434,7 +28338,7 @@
             "experiments/2026-05-31_model-lab-replication-series/artifacts/runtime-validation-run-001-run-002": 13,
             "experiments/2026-05-31_model-lab-replication-series/artifacts/runtime-validation-run-003": 12
           },
-          "total": 528
+          "total": 529
         },
         {
           "high_risk_count": 0,
@@ -28463,7 +28367,7 @@
             "experiments/2026-08-16_outcome-bound-operator-loop-p0/p1/cases/P1-02": 5,
             "experiments/2026-08-18_outcome-bound-operator-loop-successor-s1r2-paper/results": 5
           },
-          "total": 88
+          "total": 87
         },
         {
           "high_risk_count": 0,
@@ -28520,7 +28424,7 @@
             "experiments/2026-05-31_model-lab-replication-series/artifacts/runtime-validation-run-001-run-002": 13,
             "experiments/2026-05-31_model-lab-replication-series/artifacts/runtime-validation-run-003": 12
           },
-          "total": 528
+          "total": 529
         },
         {
           "high_risk_count": 275,
@@ -28578,7 +28482,7 @@
             "experiments/2026-08-16_outcome-bound-operator-loop-p0/p1/cases/P1-02": 5,
             "experiments/2026-08-18_outcome-bound-operator-loop-successor-s1r2-paper/results": 5
           },
-          "total": 88
+          "total": 87
         },
         {
           "high_risk_count": 0,
@@ -28665,7 +28569,7 @@
           "experiments/2026-05-31_model-lab-replication-series/artifacts/runtime-validation-run-001-run-002": 13,
           "experiments/2026-05-31_model-lab-replication-series/artifacts/runtime-validation-run-003": 12
         },
-        "total": 528
+        "total": 529
       },
       {
         "high_risk_count": 0,
@@ -28694,7 +28598,7 @@
           "experiments/2026-08-16_outcome-bound-operator-loop-p0/p1/cases/P1-02": 5,
           "experiments/2026-08-18_outcome-bound-operator-loop-successor-s1r2-paper/results": 5
         },
-        "total": 88
+        "total": 87
       },
       {
         "high_risk_count": 0,
@@ -28871,7 +28775,6 @@
     "experiments/2026-07-01_operator-lab-loop/results/evidence.jsonl",
     "experiments/2026-07-05_ecosystem-organ-preflight/results/evidence.jsonl",
     "experiments/2026-07-08_operator-learning-capture-sample/results/evidence.jsonl",
-    "experiments/2026-07-08_rlens-agent-context-conditions/results/decision.yml",
     "experiments/2026-08-16_outcome-bound-operator-loop-p0/p1/decision.yml",
     "experiments/2026-08-16_outcome-bound-operator-loop-p0/results/decision.yml",
     "experiments/2026-08-16_outcome-bound-operator-loop-p0/results/evidence.jsonl",
@@ -28953,7 +28856,7 @@
   "summary": {
     "ambiguous": 0,
     "by_authority": {
-      "decision_record": 34,
+      "decision_record": 33,
       "diagnostic_signal": 7,
       "evidence_log": 32,
       "generated_projection": 10,
@@ -28961,9 +28864,9 @@
       "implementation_behavior": 25,
       "navigation_surface": 28,
       "normative_contract": 16,
-      "procedure_contract": 187,
-      "raw_capture": 32,
-      "result_interpretation": 72,
+      "procedure_contract": 184,
+      "raw_capture": 31,
+      "result_interpretation": 71,
       "runtime_observation": 131,
       "schema_truth": 49,
       "sovereign_source": 3,
@@ -28973,14 +28876,14 @@
     "by_enforcement": {
       "advisory": 1,
       "best_effort": 1,
-      "ci_blocking": 678,
+      "ci_blocking": 676,
       "diagnostic": 2,
       "no_manual_edit": 18,
       "no_rewrite": 697,
       "no_silent_edit": 3,
       "non_blocking_diagnostic": 6,
       "owner_required": 3,
-      "review_required": 374
+      "review_required": 370
     },
     "by_layer": {
       "<none>": 1,
@@ -28990,7 +28893,7 @@
       "catalog": 12,
       "contract": 61,
       "docs": 50,
-      "experiment": 981,
+      "experiment": 975,
       "export": 16,
       "generated": 8,
       "governance": 94,
@@ -28999,18 +28902,18 @@
     "by_lifecycle": {
       "<none>": 1,
       "append_only": 697,
-      "handcrafted": 870,
+      "handcrafted": 865,
       "regenerated": 18,
-      "revision_with_reason": 125,
+      "revision_with_reason": 124,
       "superseded_not_rewritten": 2
     },
-    "classified": 1712,
+    "classified": 1706,
     "conflict": 0,
     "fallback_classified": 903,
-    "fallback_share": 0.5274532710280374,
+    "fallback_share": 0.5293083235638921,
     "fallback_threshold": 0.5,
     "fallback_threshold_status": "warning",
-    "total": 1713,
+    "total": 1707,
     "unknown": 1
   },
   "transition_risk_hints": [],
