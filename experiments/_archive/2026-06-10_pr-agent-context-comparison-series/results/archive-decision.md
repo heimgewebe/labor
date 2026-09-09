@@ -3,6 +3,7 @@ title: "PR Agent Context Comparison — Archive Decision"
 status: archived
 canonicality: historical
 created: "2026-09-09"
+triggered_by: "github:heimgewebe/bureau#442; conversation:user-request-2026-09-09-continue-labor-survivor-audit"
 ---
 
 # PR Agent Context Comparison — Archive Decision
