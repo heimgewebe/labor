@@ -149,7 +149,7 @@ Stand 8. September 2026:
 - deterministischer Effekt-Evaluator als unpromotetes Review-Werkzeug vorhanden;
 - praktisch nicht ausführbarer Operator-Interventions-Pilot archiviert;
 - aktive Custom-Agenten und instruktionsführende Cursor-/Copilot-Projektionsinhalte stillgelegt; generierte Kompatibilitätsmarker und Paritätsverträge bleiben aktiv;
-- Validatorfläche gruppiert: 45 Core, 6 Active, 44 Legacy und 2 Supplemental, insgesamt 95 klassifizierte Validierungsziele;
+- Validatorfläche gruppiert: 45 Core, 6 Active, 40 Legacy und 2 Supplemental, insgesamt 91 klassifizierte Validierungsziele;
 - `experiments/active.v1.json` ist nach dem fälligen Outcome-Bound-Review leer; die nicht ausgeführte Aktivierungsrevision wurde `defer` geschlossen;
 - der frühere RepoBrief-Pilot ist abgeschlossen und historische Evidenz; RepoGround ist das aktuelle Organ für zitierbaren Repository-Kontext.
 
@@ -165,6 +165,8 @@ Stand 8. September 2026:
 Erfolg: Alle maßgeblichen Dokumente einschließlich der kanonischen Steuerungsquellen beschreiben dieselbe begrenzte Rolle und können über denselben überprüften Maschinenpflege-Pfad konsistent gehalten werden.
 
 ### Phase E2 — Legacy-Survivor-Audit
+
+Der eingefrorene Operator-Lab-Bestand ist archiviert. Seine vier dedizierten Run-Card-/Metrics-Frontdoors sind nicht mehr blocking; der deterministische Closeout bleibt als Active-Guard aus dem Archiv erhalten. Historische Karten, fehlende Metadaten und Laufzeiten werden nicht rekonstruiert.
 
 Prüfreihenfolge:
 

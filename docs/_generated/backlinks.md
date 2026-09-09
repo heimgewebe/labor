@@ -747,14 +747,6 @@
 
 - ← `experiments/2026-06-10_pr-agent-context-comparison-series/results/result.md` (references)
 
-## `experiments/2026-07-01_operator-lab-loop/manifest.yml`
-
-- ← `docs/playbooks/operator-lab-loop.md` (references)
-
-## `experiments/2026-07-01_operator-lab-loop/results/cross-run-assessment.v1.json`
-
-- ← `experiments/2026-08-16_outcome-bound-operator-loop-p0/schema-fit.md` (references)
-
 ## `experiments/2026-08-16_outcome-bound-operator-loop-p0/CONTEXT.md`
 
 - ← `experiments/2026-08-16_outcome-bound-operator-loop-p0/results/p0-gate.md` (references)
@@ -812,6 +804,14 @@
 
 - ← `docs/concepts/experiment-ontology.md` (informs)
 - ← `docs/experiments/README.md` (references)
+
+## `experiments/_archive/2026-07-01_operator-lab-loop/manifest.yml`
+
+- ← `docs/playbooks/operator-lab-loop.md` (references)
+
+## `experiments/_archive/2026-07-01_operator-lab-loop/results/cross-run-assessment.v1.json`
+
+- ← `experiments/2026-08-16_outcome-bound-operator-loop-p0/schema-fit.md` (references)
 
 ## `experiments/_archive/2026-07-12_operator-intervention-effect-evaluator/registration.v2.json`
 

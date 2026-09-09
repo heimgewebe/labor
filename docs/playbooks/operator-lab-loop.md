@@ -1,12 +1,13 @@
 ---
 title: "Playbook: Operator Lab Loop"
-status: active
-canonicality: operative
+status: archived
+canonicality: derived
 schema_version: "0.1.0"
 created: "2026-07-01"
-updated: "2026-07-01"
+updated: "2026-09-09"
 author: "heimgewebe"
-triggered_by: "user-request-vibe-lab-operator-lab-loop-2026-07-01"
+triggered_by: "heimgewebe/bureau#442"
+origin_triggered_by: "user-request-vibe-lab-operator-lab-loop-2026-07-01"
 relations:
   - type: references
     target: pr-run-evidence-pack.md
@@ -20,7 +21,7 @@ relations:
   - type: references
     target: ../roadmap.md
   - type: references
-    target: ../../experiments/2026-07-01_operator-lab-loop/manifest.yml
+    target: ../../experiments/_archive/2026-07-01_operator-lab-loop/manifest.yml
   - type: references
     target: ../../experiments/2026-06-10_pr-agent-context-comparison-series/pilot-v1.yml
     reason: "The operator loop should feed the frozen PR-context pilot, not bypass it."
@@ -34,7 +35,9 @@ tags:
 
 # Playbook: Operator Lab Loop
 
-> **Zweck:** Vibe-Lab wird als Messrahmen fuer echte Repo-, PR- und Agentenarbeit genutzt. Es erzeugt keine Freigabe, keinen Merge und kein Erfolgsverdikt. Es macht sichtbar, welche Arbeitsweise geholfen hat, welche Reibung entstand und welche Claims belegt sind.
+> **Archivstatus:** Dieses Playbook dokumentiert den abgeschlossenen Operator Lab Loop. Die 36-Karten-Serie ist eingefroren (`insufficient_evidence`) und liegt im Archiv. Es ist keine operative Anleitung fuer neue Run Cards. Neue Operator-Prozess-Experimente muessen als eigener Versuch prospektiv registriert werden. Archivierung ausgelöst durch `heimgewebe/bureau#442`.
+>
+> **Historischer Zweck:** Vibe-Lab wurde als Messrahmen fuer echte Repo-, PR- und Agentenarbeit genutzt. Es erzeugte keine Freigabe, keinen Merge und kein Erfolgsverdikt.
 
 ## 1. Dialektischer Kern
 
@@ -76,7 +79,9 @@ Der Loop wird genutzt, wenn mindestens eine Bedingung zutrifft:
 
 Nicht nutzen fuer triviale Aenderungen ohne Claim, Entscheidung oder Lernwert.
 
-## 4. Minimaler Ablauf
+## 4. Historischer Ablauf
+
+Die folgenden Schritte beschreiben den frueheren Loop und sind keine aktuelle Run-Card-Anweisung.
 
 1. **Praemissencheck:** Was muesste wahr sein, damit der Arbeitsmodus sinnvoll ist?
 2. **Condition festhalten:** baseline, Vibe-Lab-Handoff, Lenskit-Handoff, decision-first checklist oder other.
@@ -88,31 +93,19 @@ Nicht nutzen fuer triviale Aenderungen ohne Claim, Entscheidung oder Lernwert.
 8. **Entscheiden:** adopt, iterate, defer, reject oder no_decision.
 9. **Rueckfuehren:** Nur bei wiederholtem Nutzen in Playbook, Instruction Block, Agent-Regel oder Bureau-Kandidat uebertragen.
 
-## 4.1 Ablage-Regel fuer Run Cards
+## 4.1 Archivregel fuer Run Cards
 
-Wenn eine Operator-Lab-Run-Card noetig ist, ist die Standard-Zielstruktur im Vibe-Lab:
-
-```text
-experiments/2026-07-01_operator-lab-loop/artifacts/run-XXX-<slug>/run-card.yml
-```
-
-Dazu gehoert in derselben Run-Directory ein `run_meta.json`, sobald der Run als ausgefuehrter Operator-Lab-Arbeitslauf dokumentiert wird.
-
-`raw-vibes/` ist nur Intake: Rohnotizen, erste Beobachtungen oder ungeformte Ideen duerfen dort landen. Ein PR-Body darf `raw-vibes/...` aber nicht als finalen Operator-Lab-Nachweis verwenden, wenn der Trigger-Check `Run Card nötig? yes` ergeben hat. In diesem Fall muss die Rohnotiz entweder vor dem Merge in eine strukturierte Run Card ueberfuehrt werden oder der PR muss sie ausdruecklich als `raw/intake` markieren und einen Follow-up zur Strukturierung nennen.
-
-PR-Body-Regel:
+Die eingefrorene Serie liegt unter:
 
 ```text
-Operator-Lab-Run: vibe-lab: experiments/2026-07-01_operator-lab-loop/artifacts/run-XXX-<slug>/run-card.yml
+experiments/_archive/2026-07-01_operator-lab-loop/artifacts/run-*/run-card.yml
 ```
 
-Nur wenn keine Run Card noetig ist:
+Diese Karten und ihre vorhandenen `run_meta.json`-Dateien sind historische Evidenz. **Keine neue Run Card wird in diese Serie geschrieben und fehlende historische Metadaten oder Laufzeiten werden nicht nachtraeglich rekonstruiert.**
 
-```text
-Operator-Lab-Run: not applicable — <kurzer Grund>
-```
+Die Python-Werkzeuge `validate_operator_lab_run_cards.py` und `operator_lab_metrics.py` samt Regressionstests bleiben fuer manuelle historische Audits erhalten. Ihre vier dedizierten Make-Frontdoors sind nach der Archivierung nicht mehr Teil der blocking Legacy-Validierung. Der deterministische Cross-Run-Closeout bleibt dagegen aktiv und blocking und liest die eingefrorene Serie aus dem Archiv.
 
-Repo-lokale Sicherung: `make validate-operator-lab-run-cards` prueft, dass `raw-vibes/operator-lab-run-*.md` nicht ohne strukturierte Run-Card-Folge im Vibe-Lab bleibt. Dieser Guard ist eng: Er validiert Raw-Note-Linkage, nicht jeden historischen Operator-Lab-Artefaktstil und nicht GitHub-PR-Bodies.
+Ein neuer Operator-Prozess-Vergleich benoetigt einen neuen prospektiv registrierten Experimentordner mit Verbraucher, Entscheidung, Kontrolle/Behandlung, primaerer Messgroesse, materieller Wirkungsschwelle, Review, Ablauf und Closure-Regel.
 
 ## 5. Run Card Mindestfelder
 
@@ -200,13 +193,13 @@ Den Loop abbrechen oder kuerzen, wenn:
 - Evidence nur aus Selbstbericht besteht und trotzdem als PASS wirken wuerde;
 - der Loop selbst eine Blockade erzeugt.
 
-## 9. Erste Umsetzung
+## 9. Erste und abgeschlossene Umsetzung
 
-Der erste verankerte Nutzungsfall ist `experiments/2026-07-01_operator-lab-loop/`.
+Der historische Nutzungsfall liegt unter `experiments/_archive/2026-07-01_operator-lab-loop/`.
 
 Dieser Run beweist nicht, dass der Operator Lab Loop besser ist. Er beweist nur, dass der Loop als leichtgewichtige Repo-Spur angelegt und mit den bestehenden PR-Evidence-Regeln kompatibel dokumentiert werden kann.
 
-## 10. Optimierungsziel
+## 10. Historisches Optimierungsziel
 
 Was: Vibe-Lab als reale Operator-Feedbackschleife nutzbar machen.
 

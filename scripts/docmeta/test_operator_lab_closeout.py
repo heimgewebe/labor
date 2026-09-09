@@ -18,12 +18,12 @@ class OperatorLabCloseoutTests(unittest.TestCase):
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
         root = Path(tmp.name)
-        base = root / "experiments/2026-07-01_operator-lab-loop/artifacts"
+        base = root / "experiments/_archive/2026-07-01_operator-lab-loop/artifacts"
         base.mkdir(parents=True)
         return tmp, root
 
     def card(self, root: Path, name: str, *, changed: str, measured: bool, meta: bool) -> None:
-        path = root / "experiments/2026-07-01_operator-lab-loop/artifacts" / name
+        path = root / "experiments/_archive/2026-07-01_operator-lab-loop/artifacts" / name
         path.mkdir()
         path.joinpath("run-card.yml").write_text(
             "schema_version: '0.1.0'\n"

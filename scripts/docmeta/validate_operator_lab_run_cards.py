@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 """Validate Operator-Lab raw-note to structured run-card linkage.
 
-This guard is intentionally narrow. It does not try to validate every historic
-Operator-Lab artifact shape. It only prevents the failure mode observed after
-introducing the Operator-Lab loop: a raw-vibes operator-lab note being used as
-final PR evidence without a structured run-card follow-up.
+This is a manual historical audit tool for the archived Operator-Lab series.
+It is no longer a blocking Make frontdoor and does not authorize new run cards.
 """
 
 from __future__ import annotations
@@ -17,7 +15,7 @@ from typing import Any
 import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
-ARTIFACTS = ROOT / "experiments/2026-07-01_operator-lab-loop/artifacts"
+ARTIFACTS = ROOT / "experiments/_archive/2026-07-01_operator-lab-loop/artifacts"
 RAW_VIBES = ROOT / "raw-vibes"
 RAW_PATTERN = "operator-lab-run-*.md"
 RECENT_RUN_SLOT_MIN = 15
@@ -42,7 +40,7 @@ def _run_slot(path):
 
 
 def _manifest_execution_refs(repo_root):
-    manifest = repo_root / "experiments/2026-07-01_operator-lab-loop/manifest.yml"
+    manifest = repo_root / "experiments/_archive/2026-07-01_operator-lab-loop/manifest.yml"
     data = _load_yaml(manifest) if manifest.is_file() else {}
     experiment = data.get("experiment")
     refs = experiment.get("execution_refs") if isinstance(experiment, dict) else None
@@ -64,7 +62,7 @@ def _source_note_paths(card: dict[str, Any]) -> set[str]:
 def validate_operator_lab_run_cards(repo_root: Path = ROOT) -> list[str]:
     errors: list[str] = []
     raw_dir = repo_root / "raw-vibes"
-    artifacts_dir = repo_root / "experiments/2026-07-01_operator-lab-loop/artifacts"
+    artifacts_dir = repo_root / "experiments/_archive/2026-07-01_operator-lab-loop/artifacts"
 
     raw_notes = sorted(raw_dir.glob(RAW_PATTERN)) if raw_dir.exists() else []
     run_cards = sorted(artifacts_dir.glob("run-*/run-card.yml")) if artifacts_dir.exists() else []
@@ -80,7 +78,7 @@ def validate_operator_lab_run_cards(repo_root: Path = ROOT) -> list[str]:
 
     manifest_refs = _manifest_execution_refs(repo_root)
     recent_by_slot = {}
-    experiment_dir = repo_root / "experiments/2026-07-01_operator-lab-loop"
+    experiment_dir = repo_root / "experiments/_archive/2026-07-01_operator-lab-loop"
     for run_card in run_cards:
         slot = _run_slot(run_card)
         if slot is None or slot < RECENT_RUN_SLOT_MIN:

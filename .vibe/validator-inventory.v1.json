@@ -6,7 +6,7 @@
     "pull_request_runs_all_groups": true,
     "main_runs_all_groups": true,
     "new_target_requires_classification": true,
-    "classified_target_count": 95,
+    "classified_target_count": 91,
     "max_validate_job_named_steps": 10
   },
   "groups": [
@@ -86,7 +86,7 @@
       ],
       "scope_paths": [
         "experiments/active.v1.json",
-        "experiments/2026-07-01_operator-lab-loop"
+        "experiments/_archive/2026-07-01_operator-lab-loop"
       ],
       "execution_policy": {
         "pull_request": "blocking",
@@ -122,10 +122,6 @@
       "review_at": "2026-09-01",
       "retirement_rule": "A target may be removed only after its protected artifact family is archived or a generic core validator proves equivalent coverage.",
       "targets": [
-        "validate-operator-lab-run-cards-tests",
-        "validate-operator-lab-run-cards",
-        "validate-operator-lab-metrics-tests",
-        "validate-operator-lab-metrics",
         "validate-ecosystem-organ-preflight-tests",
         "validate-ecosystem-organ-preflight",
         "validate-model-lab-control-tests",
