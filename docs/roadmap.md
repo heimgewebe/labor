@@ -1,7 +1,8 @@
 ---
 title: "Roadmap — Koordination offener Arbeitsstränge"
 status: active
-triggered_by: "user-request-vibe-lab-operator-loop-2026-07-01"
+triggered_by: "github:heimgewebe/bureau#442; conversation:user-request-2026-09-09-continue-labor-survivor-audit"
+origin_triggered_by: "user-request-vibe-lab-operator-loop-2026-07-01"
 canonicality: navigation
 role: roadmap_index
 created: "2026-05-10"
