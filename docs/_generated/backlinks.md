@@ -331,7 +331,6 @@
 
 - ← `docs/index.md` (references)
 - ← `docs/playbooks/pr-context-capture.md` (references)
-- ← `docs/policies/agent-reading-protocol.md` (references)
 - ← `docs/roadmap.md` (references)
 
 ## `docs/playbooks/outcome-evidence-replication-series-gate.md`

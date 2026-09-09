@@ -4,7 +4,7 @@ status: active
 canonicality: operative
 schema_version: "0.1.0"
 created: "2026-07-01"
-updated: "2026-07-01"
+updated: "2026-09-09"
 author: "heimgewebe"
 triggered_by: "user-request-vibe-lab-operator-consumption-bridge-2026-07-01"
 relations:
@@ -12,8 +12,6 @@ relations:
     target: ../../AGENTS.md
   - type: references
     target: ../roadmap.md
-  - type: references
-    target: ../playbooks/operator-lab-loop.md
   - type: references
     target: pr-run-evidence-policy.md
   - type: references
@@ -49,10 +47,10 @@ Das Protokoll ist task-profiliert. Kleine Aenderungen bleiben leicht, starke Sta
 |---|---|---|---|
 | `small_docs_change` | betroffene Datei; `AGENTS.md`; `agent-policy.yaml` | `docs/roadmap.md`, wenn Status oder Arbeitsstrang beruehrt ist | nur Diff ohne Kontext |
 | `pr_review` | PR-Diff; betroffene Policies/Schemas; `docs/playbooks/pr-run-evidence-pack.md` | Run-/Evidence-Artefakte; CI-/Test-Evidence; Review-Exports | PR-Beschreibung allein |
-| `operator_lab_run` | `docs/playbooks/operator-lab-loop.md`; bestehende Run Card; betroffene Zielrepo-Doku | `docs/doc-freshness-registry.yml`, wenn Status-/Policy-Claims entstehen | Run Card ohne Evidence-Pfade |
+| `prospective_experiment` | neue Registrierung; betroffene Zielrepo-Doku; Kontroll-/Behandlungsdefinition | primaere Messgroesse, materielle Wirkungsschwelle, Review-/Expiry-/Closure-Regel und vorhandene Vergleichsevidence | historisches Experiment oder einzelne Run Card als Freigabe |
 | `roadmap_status_claim` | `docs/roadmap.md`; die in der Roadmap genannte Quelle | `docs/doc-freshness-registry.yml`, wenn der Claim dort registriert ist | Roadmap-Zeile ohne Quellencheck |
 | `claim_evidence_claim` | Claim-Tabelle oder Registry; Evidence-Artefakt; betroffene Policy | Rohlog ohne Status/Verdict-Bindung | Selbstbericht als PASS |
-| `agent_or_bureau_bridge` | `docs/playbooks/operator-lab-loop.md`; relevante Run Cards; Zielrepo-Kontext | mindestens drei gleichartige Runs, wenn Bureau-Priorisierung behauptet wird | einzelner Run als Systemschluss |
+| `agent_or_bureau_bridge` | konkrete aktuelle Zielrepo-Quelle; relevante Evidence; aktuelle Bureau-Quelle fuer den behaupteten Bridge-Status | mehrere unabhaengige Faelle, wenn Prioritaets- oder Wirkungsclaims behauptet werden | einzelner historischer Run als Systemschluss |
 
 ## 3. Claim-Klassen
 
@@ -63,19 +61,19 @@ Belegt werden darf nur, was durch gelesene Quellen und Evidence gedeckt ist.
 - `missing_evidence`: Der Claim koennte wahr sein, aber die noetige Evidence fehlt.
 - `not_claimed`: Der Lauf erzeugt bewusst keinen starken Claim.
 
-## 4. Operator-Lab-Pflichtlinie
+## 4. Evidence-Pflichtlinie ohne Operator-Lab-Zwang
 
-Bei passenden Repo-, PR- oder Agentenarbeiten gilt am Anfang:
+Normale Repo-, PR- oder Agentenarbeit erzeugt **keinen** Operator-Lab-Trigger-Check und **keine** Run-Card-Pflicht. Ein starker Claim erhoeht die benoetigte Evidence-Tiefe, macht die Arbeit aber nicht automatisch zu einem Experiment.
 
-```text
-Operator-Lab-Trigger-Check:
-- PR-/Agentenlauf? yes/no
-- starker Claim moeglich? yes/no
-- Run Card noetig? yes/no
-- falls nein: kurzer Grund
-```
+Es gilt:
 
-Eine Run Card ist noetig, wenn ein starker Claim ueber Agentenleistung, Review-Nutzen, CI-/Teststatus, Handoff-Qualitaet oder dauerhafte Workflow-Adoption entstehen kann.
+- fuer PR-Claims `pr_review` bzw. `claim_evidence_claim` verwenden;
+- fuer Statusclaims `roadmap_status_claim` verwenden;
+- fuer Agent-/Bureau-Bruecken den aktuellen Zielrepo- und Bureau-Zustand lesen;
+- nur wenn tatsaechlich ein vergleichender Prozessversuch geplant ist, `prospective_experiment` verwenden und einen **neuen** prospektiv registrierten Experimentpfad anlegen;
+- historische oder archivierte Experimentserien werden niemals als neue Schreibflaeche wiederverwendet.
+
+Eine prospektive Registrierung bindet mindestens Verbraucher und Entscheidungsziel, Kontrolle und Behandlung, primaere Messgroesse, materielle Wirkungsschwelle, Reviewdatum, Ablauf und Closure-Ausgang. Fehlende Evidence bleibt ein Gap; sie wird nicht durch eine neue Run Card ersetzt.
 
 ## 5. Answer- und PR-Body-Disziplin
 
@@ -128,7 +126,7 @@ Was: Agentenarbeit konsumierbarer und pruefbarer machen.
 
 Wie: task-profilierte Leseanforderungen statt Universalpflicht.
 
-Wodurch: vorhandene AGENTS-, Roadmap-, Evidence- und Operator-Lab-Flaechen verbinden.
+Wodurch: vorhandene AGENTS-, Roadmap- und Evidence-Flaechen verbinden; prospektive Registrierung nur fuer tatsaechlich geplante Experimente verwenden.
 
 Wirkung: weniger Overclaiming, klarere PR-Bodies, bessere Anschlussfaehigkeit fuer Grabowski, Bureau, Cabinet und Lenskit.
 
