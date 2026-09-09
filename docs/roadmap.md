@@ -5,7 +5,7 @@ triggered_by: "user-request-vibe-lab-operator-loop-2026-07-01"
 canonicality: navigation
 role: roadmap_index
 created: "2026-05-10"
-updated: "2026-09-07"
+updated: "2026-09-09"
 relations:
   - type: references
     target: masterplan.md
@@ -75,13 +75,13 @@ Bei jedem Widerspruch gilt die höher eingestufte Quelle. Historische Blueprints
 
 ## Aktueller Zustand
 
-Stand 8. September 2026:
+Stand 9. September 2026:
 
 - Labor ist auf einen kleinen Experiment- und Evidenzraum verengt; GitHub und Systemkatalog führen das System als `labor`/„Labor“. Historische Pfade und Dateinamen mit `vibe-lab` bleiben Provenienz und werden nicht pauschal umgeschrieben.
 - `experiments/active.v1.json` enthält nach dem fälligen Review des Outcome-Bound-Aktivierungspiloten keinen aktiven Versuch. Der Pilot bleibt `not_executed` und ist mit `closure_outcome: defer` aus dem Aktivregister genommen, weil kein bereits vorhandener Provider den eingefrorenen Slot-Capture-Vertrag erfüllt.
 - Die Custom-Agent-Schicht und instruktionsführende Cursor-/Copilot-Projektionsinhalte sind stillgelegt; generierte Kompatibilitätsmarker und ihre blocking Paritätsverträge bleiben aktiv.
 - Die 36 Operator-Lab-Karten sind mit `insufficient_evidence` eingefroren und nach `experiments/_archive/` verschoben; ihre vier dedizierten Run-Card-/Metrics-Frontdoors sind nicht mehr blocking, der deterministische Closeout bleibt aus dem Archiv aktiv. Frühere Chronik-, Routing-, RepoBrief- und Model-Lab-Versuche sind historische Evidenz, keine aktive Experimentwahrheit.
-- Die maschinenlesbare Validatorfläche besteht aus 45 Core-, 6 Active- und 40 Legacy-Zielen sowie zwei ergänzenden Checks, insgesamt 91 klassifizierten Validierungszielen. `Active` ist dabei eine Validatorgruppe und nicht die Zahl aktiver Experimente; der archivierte Routing-Readiness-Testfrontdoor und die beiden Phase-1c-Archivfrontdoors sind nach belegter Terminalität nicht mehr blocking.
+- Die maschinenlesbare Validatorfläche besteht aus 45 Core-, 6 Active- und 38 Legacy-Zielen sowie zwei ergänzenden Checks, insgesamt 89 klassifizierten Validierungszielen. `Active` ist dabei eine Validatorgruppe und nicht die Zahl aktiver Experimente; der archivierte Routing-Readiness-Testfrontdoor, die beiden Phase-1c-Archivfrontdoors sowie die je zwei dedizierten Frontdoors der nie ausgeführten PR-Context- und rLens-Agent-Context-Designs sind nach belegter Terminalität nicht mehr blocking.
 - Das Bureau führt den Survivor-Audit weiterhin unter `heimgewebe/bureau#442`.
 
 ## Aktiver Repository-Ball
