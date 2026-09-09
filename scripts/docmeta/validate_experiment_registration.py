@@ -331,6 +331,9 @@ def validate_all(*, now: datetime | None = None) -> dict[str, Any]:
         match = DIR_RE.fullmatch(directory.name)
         if not match:
             raise ValueError(f"{directory}: experiment directory name is not date-prefixed")
+        archived = EXPERIMENTS / "_archive" / directory.name
+        if archived.exists() or archived.is_symlink():
+            raise ValueError(f"{directory}: active experiment id collides with archived experiment")
         created = date.fromisoformat(match.group(1))
         v1 = directory / "registration.v1.json"
         v2 = directory / "registration.v2.json"
