@@ -3,22 +3,22 @@
 
 # Metrics Trends (Pilot)
 
-Latest Evidence Timestamp: 2026-07-03T05:25:00Z
+Latest Evidence Timestamp: 2026-09-07T19:12:02.198771Z
 
 ## Gate Snapshot
 
-- Total events: **340**
+- Total events: **382**
 - Distinct event types: **4** (decision, measurement, observation, run)
-- Source evidence files: **19**
+- Source evidence files: **30**
 
 ## Event Type Counts
 
 | event_type | events |
 | --- | ---: |
-| decision | 19 |
-| measurement | 133 |
+| decision | 29 |
+| measurement | 149 |
 | observation | 146 |
-| run | 42 |
+| run | 58 |
 
 ## Metric Aggregates
 
@@ -28,7 +28,6 @@ Latest Evidence Timestamp: 2026-07-03T05:25:00Z
 | M0_task_validity_rate_iteration2 | 1 | 1 | 1 | 1 | 1 |
 | abort_rate_control | 1 | 1 | 0 | 0 | 0 |
 | abort_rate_treatment | 1 | 1 | 0 | 0 | 0 |
-| anchor_run_card_created | 1 | 1 | 1 | 1 | 1 |
 | ap4_execution_verdict | 1 | 0 | - | - | - |
 | ap4_skeleton_status | 1 | 0 | - | - | - |
 | append_only_integrity_check | 1 | 0 | - | - | - |
@@ -36,16 +35,21 @@ Latest Evidence Timestamp: 2026-07-03T05:25:00Z
 | architecture-incremental | 1 | 0 | - | - | - |
 | architecture-single-shot | 1 | 0 | - | - | - |
 | asymmetric_comparison_bias | 1 | 0 | - | - | - |
+| author_revision_frozen | 4 | 0 | - | - | - |
+| author_revision_frozen_after_exact_candidate_qualification | 1 | 0 | - | - | - |
 | blind_review_available | 1 | 1 | 0 | 0 | 0 |
 | branch_coverage_extended | 1 | 0 | - | - | - |
 | branch_setup_completed | 4 | 0 | - | - | - |
 | bug-task2-incremental-cli-parser | 1 | 0 | - | - | - |
-| bureau_runtime_drift_check_bound | 1 | 1 | 1 | 1 | 1 |
+| candidate_pattern | 1 | 0 | - | - | - |
 | candidate_probe_uncaught_count | 1 | 1 | 6 | 6 | 6 |
 | candidate_rehearsal_run_recorded | 2 | 0 | - | - | - |
 | canonical_contract_fix_committed | 1 | 0 | - | - | - |
 | canonical_doc_change_committed | 4 | 0 | - | - | - |
 | canonical_generator_nondeterminism | 2 | 0 | - | - | - |
+| canonical_legacy_identity_escape | 1 | 0 | - | - | - |
+| canonical_legacy_identity_escape_recheck | 1 | 0 | - | - | - |
+| capture_contract_readiness | 1 | 0 | - | - | - |
 | case_A1_outcome | 1 | 0 | - | - | - |
 | case_A2_outcome | 1 | 0 | - | - | - |
 | case_B1_outcome | 1 | 0 | - | - | - |
@@ -60,16 +64,18 @@ Latest Evidence Timestamp: 2026-07-03T05:25:00Z
 | ci_blocking_failures_total | 3 | 3 | 1 | 2 | 2 |
 | ci_fix_applied | 1 | 1 | 1 | 1 | 1 |
 | ci_success_after_fix | 3 | 3 | 0 | 0 | 0 |
+| codex_exact_head_material_findings | 2 | 2 | 1 | 2 | 1.5 |
 | compilation-errors | 1 | 1 | 0 | 0 | 0 |
 | compilation-incremental | 1 | 1 | 0 | 0 | 0 |
 | compilation-single-shot | 1 | 1 | 0 | 0 | 0 |
 | compile_status | 2 | 0 | - | - | - |
 | completeness | 4 | 0 | - | - | - |
-| condition_superiority_claimed | 1 | 1 | 0 | 0 | 0 |
 | consistency | 2 | 0 | - | - | - |
 | control_tasks_executed | 1 | 1 | 3 | 3 | 3 |
 | controlled_run_recorded | 2 | 0 | - | - | - |
 | controlled_schema_deviation_injected | 1 | 1 | 1 | 1 | 1 |
+| controller_reconciliation_reconstruction | 1 | 0 | - | - | - |
+| current_head_codex_material_finding | 1 | 0 | - | - | - |
 | dependency_risk_caveat_scope_status | 1 | 0 | - | - | - |
 | design-sharpening | 1 | 0 | - | - | - |
 | detection_latency_seconds | 3 | 3 | 47 | 97 | 48 |
@@ -86,6 +92,8 @@ Latest Evidence Timestamp: 2026-07-03T05:25:00Z
 | error_path_tests | 1 | 1 | 21 | 21 | 21 |
 | evidence_log_reclassification | 1 | 0 | - | - | - |
 | evidence_revision | 1 | 0 | - | - | - |
+| exact_author_head_github_ci | 1 | 0 | - | - | - |
+| exact_head_ci_additional_material_findings | 1 | 1 | 1 | 1 | 1 |
 | execution-start | 1 | 0 | - | - | - |
 | execution_time_control_minutes | 1 | 1 | 8 | 8 | 8 |
 | execution_time_treatment_minutes | 1 | 1 | 14 | 14 | 14 |
@@ -101,6 +109,8 @@ Latest Evidence Timestamp: 2026-07-03T05:25:00Z
 | fix_steps_required | 2 | 2 | 2 | 2 | 2 |
 | flow_confidence | 2 | 2 | 2.7 | 4 | 3.35 |
 | flow_readability | 2 | 2 | 3.7 | 4.3 | 4 |
+| friction_cost_minutes | 1 | 1 | 6 | 6 | 6 |
+| frozen_author_revision_binding | 1 | 0 | - | - | - |
 | happy_path_tests | 1 | 1 | 19 | 19 | 19 |
 | hidden_bugs_count | 1 | 1 | 3 | 3 | 3 |
 | http_status_coverage_strict | 2 | 0 | - | - | - |
@@ -117,16 +127,30 @@ Latest Evidence Timestamp: 2026-07-03T05:25:00Z
 | independent_auditor_validation_preparation_recorded | 1 | 0 | - | - | - |
 | independent_changes_control | 1 | 1 | 0 | 0 | 0 |
 | independent_changes_treatment | 1 | 1 | 0 | 0 | 0 |
+| independent_closeout_review | 1 | 0 | - | - | - |
+| independent_counter_check_grok_4_5 | 1 | 0 | - | - | - |
+| independent_exact_head_attacks_blocked | 2 | 2 | 8 | 9 | 8.5 |
+| independent_exact_head_review_a | 1 | 0 | - | - | - |
+| independent_exact_head_review_a2 | 1 | 0 | - | - | - |
+| independent_exact_head_review_b | 1 | 0 | - | - | - |
+| independent_exact_head_review_b2 | 1 | 0 | - | - | - |
+| independent_exact_head_semantic_attacks_blocked | 1 | 1 | 7 | 7 | 7 |
+| independent_reviewers_completed | 1 | 1 | 1 | 1 | 1 |
 | instrumentation_started | 1 | 1 | 1 | 1 | 1 |
 | iterability | 1 | 0 | - | - | - |
 | iteration3_taskset_prepared | 1 | 1 | 1 | 1 | 1 |
 | iteration4_execution_claims_rollback | 1 | 1 | 1 | 1 | 1 |
 | iteration4_taskset_prepared | 1 | 1 | 1 | 1 | 1 |
-| lenskit_graph_provenance_tests_rescued | 1 | 1 | 1 | 1 | 1 |
+| live_register_history_truncated | 1 | 1 | 1 | 1 | 1 |
 | local_generation_double_run_completed | 3 | 3 | 0 | 0 | 0 |
 | make_validate | 1 | 0 | - | - | - |
 | manual_regen_steps | 6 | 5 | 0 | 2 | 1 |
+| material_findings | 1 | 1 | 1 | 1 | 1 |
+| material_sampling_contract_disagreement_count | 1 | 1 | 0 | 0 | 0 |
+| material_sampling_unit_disagreement_count | 2 | 2 | 0 | 1 | 0.5 |
+| material_slot_semantics_disagreement_count | 1 | 1 | 1 | 1 | 1 |
 | measurement_object_alignment | 1 | 1 | 1 | 1 | 1 |
+| merge_gate_violation | 1 | 0 | - | - | - |
 | model_lab_baseline_execution_status | 1 | 0 | - | - | - |
 | model_lab_condition_contrast_design_gate_status | 1 | 0 | - | - | - |
 | model_lab_control_execution_status | 1 | 0 | - | - | - |
@@ -143,9 +167,10 @@ Latest Evidence Timestamp: 2026-07-03T05:25:00Z
 | model_lab_run_004_execution_seed_status | 1 | 0 | - | - | - |
 | model_lab_run_004_runtime_binding_status | 1 | 0 | - | - | - |
 | model_lab_run_004_workspace_session_isolation_status | 1 | 0 | - | - | - |
-| operator_lab_loop_playbook_anchored | 1 | 1 | 1 | 1 | 1 |
-| operator_lab_raw_note_validator_added | 1 | 1 | 1 | 1 | 1 |
-| operator_lab_run_slot_guard_added | 1 | 1 | 1 | 1 | 1 |
+| natural_slots_consumed | 1 | 1 | 0 | 0 | 0 |
+| next_step_ambiguity | 1 | 0 | - | - | - |
+| operator_learning_capture_sample | 1 | 0 | - | - | - |
+| organ_preflight_run | 1 | 0 | - | - | - |
 | outcome_evidence_negative_case_recorded | 1 | 0 | - | - | - |
 | outcome_evidence_pilot_recorded | 1 | 0 | - | - | - |
 | patch_size | 1 | 1 | 7 | 7 | 7 |
@@ -173,28 +198,26 @@ Latest Evidence Timestamp: 2026-07-03T05:25:00Z
 | phase_f_rrg03_remediation_boundary | 1 | 0 | - | - | - |
 | phase_result_separation | 1 | 0 | - | - | - |
 | pip_install_pyyaml | 1 | 0 | - | - | - |
-| pr_context_capture_blocker_detail_added | 1 | 1 | 1 | 1 | 1 |
-| pr_context_capture_playbook_added | 1 | 1 | 1 | 1 | 1 |
-| pr_context_capture_status_command_added | 1 | 1 | 1 | 1 | 1 |
 | pr_opened_run_002 | 1 | 0 | - | - | - |
 | pr_opened_run_003 | 1 | 0 | - | - | - |
 | pr_opened_run_004 | 1 | 0 | - | - | - |
 | pr_opened_run_005 | 1 | 0 | - | - | - |
 | pr_opened_run_006 | 1 | 0 | - | - | - |
 | pr_run_recorded | 4 | 0 | - | - | - |
+| preactivation_slot_capture_provider_gate | 1 | 0 | - | - | - |
+| preactivation_slot_capture_provider_review_at_review_boundary | 1 | 0 | - | - | - |
+| predecessor_unit_defects | 1 | 1 | 3 | 3 | 3 |
+| premature_favorable_assessment_count | 1 | 1 | 2 | 2 | 2 |
 | prompts-incremental | 1 | 1 | 6 | 6 | 6 |
 | prompts-single-shot | 1 | 1 | 1 | 1 | 1 |
 | prompts_used | 2 | 2 | 1 | 2 | 1.5 |
-| raw_patch_relay_note_promoted | 1 | 1 | 1 | 1 | 1 |
-| raw_vibes_final_evidence_disallowed | 1 | 1 | 1 | 1 | 1 |
 | replication_status | 1 | 1 | 0 | 0 | 0 |
-| repo_audit_third_pass_recorded | 1 | 1 | 1 | 1 | 1 |
-| repo_candidate_live_verification_recorded | 1 | 1 | 1 | 1 | 1 |
 | resetstore_actually_used | 1 | 1 | 0 | 0 | 0 |
 | result_assessment_readiness_status | 1 | 0 | - | - | - |
 | result_assessment_verdict | 2 | 0 | - | - | - |
 | review_comments_control | 1 | 0 | - | - | - |
 | review_comments_treatment | 1 | 0 | - | - | - |
+| reviewer_attempt | 2 | 0 | - | - | - |
 | rework | 2 | 0 | - | - | - |
 | rework-estimate | 1 | 0 | - | - | - |
 | rework-not-measured | 1 | 0 | - | - | - |
@@ -202,21 +225,33 @@ Latest Evidence Timestamp: 2026-07-03T05:25:00Z
 | rework_commits_treatment | 1 | 0 | - | - | - |
 | rework_compile | 1 | 0 | - | - | - |
 | rework_lines | 2 | 2 | 4 | 23 | 13.5 |
+| rework_loops | 1 | 1 | 0 | 0 | 0 |
 | rework_semantic | 1 | 0 | - | - | - |
 | rework_test_isolation | 1 | 0 | - | - | - |
-| rlens_run_card_structured | 1 | 1 | 1 | 1 | 1 |
 | rrg01_rrg02_cross_diagnosis | 1 | 0 | - | - | - |
-| run004_runtime_candidate_slice_extracted | 1 | 1 | 1 | 1 | 1 |
 | run_002_availability | 1 | 0 | - | - | - |
 | run_003_condition_semantic_calibration | 1 | 0 | - | - | - |
 | run_003_runtime_validation_status | 1 | 0 | - | - | - |
 | run_010_post_audit_reconciliation_recorded | 1 | 0 | - | - | - |
 | run_artifacts_written | 1 | 0 | - | - | - |
 | run_started | 2 | 2 | 1 | 1 | 1 |
+| s1r1_preactivation_gate | 1 | 0 | - | - | - |
+| s1r2_closeout_author_gate | 1 | 0 | - | - | - |
+| s1r2_merge_observation | 1 | 0 | - | - | - |
+| s1r2_natural_activation_preactivation_gate | 1 | 0 | - | - | - |
+| s1r2_terminal_paper_gate | 1 | 0 | - | - | - |
+| safety_value | 1 | 0 | - | - | - |
+| sample_item_count | 1 | 1 | 4 | 4 | 4 |
+| sampling_unit_frozen | 1 | 0 | - | - | - |
+| sampling_unit_r2_revision_result | 1 | 0 | - | - | - |
+| sampling_unit_r3_revision_result | 1 | 0 | - | - | - |
+| sampling_unit_r3_v2_revision_result | 1 | 0 | - | - | - |
+| sampling_unit_r3_v3_revision_result | 1 | 0 | - | - | - |
+| sampling_unit_revision_result | 1 | 0 | - | - | - |
 | scaffold_created | 1 | 1 | 1 | 1 | 1 |
-| schauwerk_raw_receipt_promoted | 1 | 1 | 1 | 1 | 1 |
 | scope_drift_control | 1 | 1 | 0 | 0 | 0 |
 | scope_drift_treatment | 1 | 1 | 0 | 0 | 0 |
+| seed_scope | 1 | 0 | - | - | - |
 | series_agent_handoff_boundary_validation_status | 1 | 0 | - | - | - |
 | series_negative_control_status | 1 | 0 | - | - | - |
 | series_real_validator_effect | 1 | 0 | - | - | - |
@@ -277,7 +312,7 @@ Latest Evidence Timestamp: 2026-07-03T05:25:00Z
 | validator_signal_before_patch | 1 | 1 | 0 | 0 | 0 |
 | verdict | 3 | 0 | - | - | - |
 | verdict-recalibrated | 1 | 0 | - | - | - |
-| weltgewebe_dependency_alert_run_card_structured | 1 | 1 | 1 | 1 | 1 |
+| wrong_organ_corrections | 1 | 1 | 0 | 0 | 0 |
 
 ## Source Paths
 
@@ -299,4 +334,15 @@ Latest Evidence Timestamp: 2026-07-03T05:25:00Z
 - `experiments/2026-05-25_outcome-evidence-replication-series/results/evidence.jsonl`
 - `experiments/2026-05-31_model-lab-replication-series/results/evidence.jsonl`
 - `experiments/2026-06-10_pr-agent-context-comparison-series/results/evidence.jsonl`
-- `experiments/2026-07-01_operator-lab-loop/results/evidence.jsonl`
+- `experiments/2026-07-05_ecosystem-organ-preflight/results/evidence.jsonl`
+- `experiments/2026-07-08_operator-learning-capture-sample/results/evidence.jsonl`
+- `experiments/2026-08-16_outcome-bound-operator-loop-p0/results/evidence.jsonl`
+- `experiments/2026-08-18_outcome-bound-operator-loop-successor-s1r1-natural-identity-shadow/results/evidence.jsonl`
+- `experiments/2026-08-18_outcome-bound-operator-loop-successor-s1r2-paper/results/evidence.jsonl`
+- `experiments/2026-08-20_outcome-bound-natural-pilot-sampling-unit/results/evidence.jsonl`
+- `experiments/2026-08-20_outcome-bound-operator-loop-successor-s1r2-natural-activation/results/evidence.jsonl`
+- `experiments/2026-08-22_outcome-bound-natural-pilot-sampling-unit-r2/results/evidence.jsonl`
+- `experiments/2026-08-24_outcome-bound-natural-pilot-sampling-unit-r3/results/evidence.jsonl`
+- `experiments/2026-08-24_outcome-bound-natural-pilot-sampling-unit-r3-v2/results/evidence.jsonl`
+- `experiments/2026-08-24_outcome-bound-natural-pilot-sampling-unit-r3-v3/results/evidence.jsonl`
+- `experiments/2026-08-30_outcome-bound-natural-pilot-r3v3-activation/results/evidence.jsonl`

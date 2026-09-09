@@ -4,7 +4,7 @@ status: active
 canonicality: operative
 schema_version: "0.1.0"
 created: "2026-07-02"
-updated: "2026-07-02"
+updated: "2026-09-09"
 author: "heimgewebe"
 relations:
   - type: references
@@ -144,12 +144,14 @@ make validate-pr-context-pilot-tests
 make validate-pr-context-pilot
 ```
 
-Bei Operator-Lab-Bezug zusaetzlich:
+Bei historischem Operator-Lab-Bezug zusaetzlich als manuellen Audit:
 
 ```bash
-make validate-operator-lab-run-cards-tests
-make validate-operator-lab-run-cards
+python3 scripts/docmeta/test_validate_operator_lab_run_cards.py
+python3 scripts/docmeta/validate_operator_lab_run_cards.py
 ```
+
+Die archivierte Operator-Lab-Serie hat keine eigenen blocking Make-Frontdoors mehr.
 
 ## 8. Ablage
 
@@ -159,4 +161,4 @@ Standard-Workdir:
 .tmp/pr-context-runs/<run-id>/
 ```
 
-`.tmp` ist bewusst nicht finaler Evidence-Ort. Fuer dauerhafte PR-Claims gehoert die verdichtete Evidence in ein PR-Evidence-Pack oder eine Operator-Lab-Run-Card.
+`.tmp` ist bewusst nicht finaler Evidence-Ort. Fuer dauerhafte PR-Claims gehoert die verdichtete Evidence in ein PR-Evidence-Pack oder in ein neu prospektiv registriertes Experimentartefakt; die archivierte Operator-Lab-Serie ist keine neue Ablageflaeche.
