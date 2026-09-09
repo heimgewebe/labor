@@ -20,7 +20,7 @@ class OperatorLabRunCardValidationTests(unittest.TestCase):
         tmp = tempfile.TemporaryDirectory()
         root = Path(tmp.name)
         (root / "raw-vibes").mkdir(parents=True)
-        (root / "experiments/2026-07-01_operator-lab-loop/artifacts").mkdir(parents=True)
+        (root / "experiments/_archive/2026-07-01_operator-lab-loop/artifacts").mkdir(parents=True)
         return tmp, root
 
     def _raw_note(self, root: Path) -> None:
@@ -29,7 +29,7 @@ class OperatorLabRunCardValidationTests(unittest.TestCase):
         )
 
     def _run_card(self, root: Path, *, source_path: str = "raw-vibes/operator-lab-run-20260701-example.md", with_meta: bool = True) -> None:
-        run_dir = root / "experiments/2026-07-01_operator-lab-loop/artifacts/run-001-example"
+        run_dir = root / "experiments/_archive/2026-07-01_operator-lab-loop/artifacts/run-001-example"
         run_dir.mkdir(parents=True)
         (run_dir / "run-card.yml").write_text(
             f"schema_version: '0.1.0'\nsource_note:\n  path: {source_path!r}\n",
@@ -78,14 +78,14 @@ class OperatorLabRunCardValidationTests(unittest.TestCase):
         self.assertIn("sibling run_meta.json is missing", errors[0])
 
     def _operator_manifest(self, root: Path, refs: list[str]) -> None:
-        manifest = root / "experiments/2026-07-01_operator-lab-loop/manifest.yml"
+        manifest = root / "experiments/_archive/2026-07-01_operator-lab-loop/manifest.yml"
         manifest.parent.mkdir(parents=True, exist_ok=True)
         lines = ["schema_version: '0.1.0'", "experiment:", "  execution_refs:"]
         lines.extend(f"    - {ref}" for ref in refs)
         manifest.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
     def _numbered_run_card(self, root: Path, run_dir_name: str) -> None:
-        run_dir = root / "experiments/2026-07-01_operator-lab-loop/artifacts" / run_dir_name
+        run_dir = root / "experiments/_archive/2026-07-01_operator-lab-loop/artifacts" / run_dir_name
         run_dir.mkdir(parents=True)
         (run_dir / "run-card.yml").write_text(
             f"schema_version: '0.1.0'\nrun_id: {run_dir_name!r}\n",

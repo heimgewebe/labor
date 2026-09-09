@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Summarize and validate Operator-Lab run-card metrics.
 
-This is intentionally narrower than a full run-card schema validator. It checks
-the metrics that are useful for Operator-Lab trend reading and catches semantic
-mismatches around skipped Steuerboard probes changing decisions.
+This is a manual historical audit tool for the archived Operator-Lab series.
+It is intentionally narrower than a full run-card schema validator and is no
+longer a blocking Make frontdoor.
 """
 from __future__ import annotations
 
@@ -16,7 +16,7 @@ from typing import Any
 import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
-ARTIFACTS_REL = Path("experiments/2026-07-01_operator-lab-loop/artifacts")
+ARTIFACTS_REL = Path("experiments/_archive/2026-07-01_operator-lab-loop/artifacts")
 
 COUNT_METRICS = (
     "scope_drift_count",

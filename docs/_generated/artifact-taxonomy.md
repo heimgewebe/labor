@@ -11,10 +11,10 @@ Diagnostic, non-blocking. Classifies all tracked repository artifacts according 
 
 ## Summary
 
-- total: 1707
-- classified: 1706
-  - of which fallback_classified (catch-all rule): 903
-  - fallback_share: 52.9% (903 / 1706)
+- total: 1623
+- classified: 1622
+  - of which fallback_classified (catch-all rule): 856
+  - fallback_share: 52.8% (856 / 1622)
   - fallback_threshold: 50.0% — warning
 
 Fallback classifications come from broad catch-all rules. They are valid diagnostic classifications, but lower confidence than specific path rules.
@@ -33,7 +33,7 @@ Fallback classifications come from broad catch-all rules. They are valid diagnos
 | catalog | 12 |
 | contract | 61 |
 | docs | 50 |
-| experiment | 975 |
+| experiment | 891 |
 | export | 16 |
 | generated | 8 |
 | governance | 94 |
@@ -43,18 +43,18 @@ Fallback classifications come from broad catch-all rules. They are valid diagnos
 
 | authority | count |
 | --- | ---: |
-| decision_record | 33 |
+| decision_record | 32 |
 | diagnostic_signal | 7 |
-| evidence_log | 32 |
+| evidence_log | 31 |
 | generated_projection | 10 |
-| historical_record | 616 |
+| historical_record | 569 |
 | implementation_behavior | 25 |
 | navigation_surface | 28 |
 | normative_contract | 16 |
-| procedure_contract | 184 |
-| raw_capture | 31 |
-| result_interpretation | 71 |
-| runtime_observation | 131 |
+| procedure_contract | 181 |
+| raw_capture | 30 |
+| result_interpretation | 69 |
+| runtime_observation | 102 |
 | schema_truth | 49 |
 | sovereign_source | 3 |
 | test_expectation | 445 |
@@ -65,10 +65,10 @@ Fallback classifications come from broad catch-all rules. They are valid diagnos
 | lifecycle | count |
 | --- | ---: |
 | <none> | 1 |
-| append_only | 697 |
-| handcrafted | 865 |
+| append_only | 649 |
+| handcrafted | 859 |
 | regenerated | 18 |
-| revision_with_reason | 124 |
+| revision_with_reason | 94 |
 | superseded_not_rewritten | 2 |
 
 ### By enforcement
@@ -77,14 +77,14 @@ Fallback classifications come from broad catch-all rules. They are valid diagnos
 | --- | ---: |
 | advisory | 1 |
 | best_effort | 1 |
-| ci_blocking | 676 |
+| ci_blocking | 673 |
 | diagnostic | 2 |
 | no_manual_edit | 18 |
-| no_rewrite | 697 |
+| no_rewrite | 649 |
 | no_silent_edit | 3 |
 | non_blocking_diagnostic | 6 |
 | owner_required | 3 |
-| review_required | 370 |
+| review_required | 336 |
 
 ## Unknown artifacts
 
@@ -598,53 +598,6 @@ _none_
 - `experiments/2026-06-10_pr-agent-context-comparison-series/artifacts/run-004-minimal-decision-first-checklist/condition-input.md`
 - `experiments/2026-06-10_pr-agent-context-comparison-series/artifacts/run-template.md`
 - `experiments/2026-06-10_pr-agent-context-comparison-series/pilot-v1.yml`
-- `experiments/2026-07-01_operator-lab-loop/FROZEN.md`
-- `experiments/2026-07-01_operator-lab-loop/artifacts/README.md`
-- `experiments/2026-07-01_operator-lab-loop/artifacts/run-001-plan-anchor/run-card.yml`
-- `experiments/2026-07-01_operator-lab-loop/artifacts/run-001-plan-anchor/steuerboard-summary.json`
-- `experiments/2026-07-01_operator-lab-loop/artifacts/run-002-bureau-t005-binding/run-card.yml`
-- `experiments/2026-07-01_operator-lab-loop/artifacts/run-002-bureau-t005-binding/steuerboard-summary.json`
-- `experiments/2026-07-01_operator-lab-loop/artifacts/run-002-consumption-bridge/run-card.yml`
-- `experiments/2026-07-01_operator-lab-loop/artifacts/run-002-rlens-agent-ecosystem/run-card.yml`
-- `experiments/2026-07-01_operator-lab-loop/artifacts/run-003-bureau-sync/card.yml`
-- `experiments/2026-07-01_operator-lab-loop/artifacts/run-003-doc-freshness-validator/run-card.yml`
-- `experiments/2026-07-01_operator-lab-loop/artifacts/run-003-grabowski-patch-relay/run-card.yml`
-- `experiments/2026-07-01_operator-lab-loop/artifacts/run-004-run-card-structure-hardening/run-card.yml`
-- `experiments/2026-07-01_operator-lab-loop/artifacts/run-005-run-card-validator/run-card.yml`
-- `experiments/2026-07-01_operator-lab-loop/artifacts/run-006-schauwerk-miro-quality-receipt/run-card.yml`
-- `experiments/2026-07-01_operator-lab-loop/artifacts/run-007-weltgewebe-dependency-alerts/run-card.yml`
-- `experiments/2026-07-01_operator-lab-loop/artifacts/run-008-run004-runtime-candidate-preflight/run-card.yml`
-- `experiments/2026-07-01_operator-lab-loop/artifacts/run-009-bundle-freshness-receipt/example-command.txt`
-- `experiments/2026-07-01_operator-lab-loop/artifacts/run-009-bundle-freshness-receipt/notes.md`
-- `experiments/2026-07-01_operator-lab-loop/artifacts/run-009-bundle-freshness-receipt/run-card.yml`
-- `experiments/2026-07-01_operator-lab-loop/artifacts/run-010-pr-context-capture-blocker-detail/run-card.yml`
-- `experiments/2026-07-01_operator-lab-loop/artifacts/run-011-pr-context-capture-playbook/run-card.yml`
-- `experiments/2026-07-01_operator-lab-loop/artifacts/run-012-pr-context-capture-status/run-card.yml`
-- `experiments/2026-07-01_operator-lab-loop/artifacts/run-013-cabinet-system-organ-observation/run-card.yml`
-- `experiments/2026-07-01_operator-lab-loop/artifacts/run-014-bureau-runtime-drift-check/run-card.yml`
-- `experiments/2026-07-01_operator-lab-loop/artifacts/run-014-bureau-runtime-drift-check/validation-summary.txt`
-- `experiments/2026-07-01_operator-lab-loop/artifacts/run-014-cabinet-observation-candidates/run-card.yml`
-- `experiments/2026-07-01_operator-lab-loop/artifacts/run-015-operator-lab-run-slot-guard/run-card.yml`
-- `experiments/2026-07-01_operator-lab-loop/artifacts/run-016-lenskit-graph-provenance-test-rescue/run-card.yml`
-- `experiments/2026-07-01_operator-lab-loop/artifacts/run-017-repo-audit-third-pass/run-card.yml`
-- `experiments/2026-07-01_operator-lab-loop/artifacts/run-017-repo-audit-third-pass/validation-summary.txt`
-- `experiments/2026-07-01_operator-lab-loop/artifacts/run-018-repo-candidate-live-verification/run-card.yml`
-- `experiments/2026-07-01_operator-lab-loop/artifacts/run-019-bureau-candidate-live-refresh/run-card.yml`
-- `experiments/2026-07-01_operator-lab-loop/artifacts/run-020-lenskit-candidate-live-refresh/run-card.yml`
-- `experiments/2026-07-01_operator-lab-loop/artifacts/run-022-relation-check/run-card.yml`
-- `experiments/2026-07-01_operator-lab-loop/artifacts/run-023-summary/run-card.yml`
-- `experiments/2026-07-01_operator-lab-loop/artifacts/run-024-bureau-plan/run-card.yml`
-- `experiments/2026-07-01_operator-lab-loop/artifacts/run-025-bureau-proposal/run-card.yml`
-- `experiments/2026-07-01_operator-lab-loop/artifacts/run-026-proposal-guard/run-card.yml`
-- `experiments/2026-07-01_operator-lab-loop/artifacts/run-027-bureau-apply/run-card.yml`
-- `experiments/2026-07-01_operator-lab-loop/artifacts/run-028-lenskit-stop/run-card.yml`
-- `experiments/2026-07-01_operator-lab-loop/artifacts/run-029-access-plan/run-card.yml`
-- `experiments/2026-07-01_operator-lab-loop/artifacts/run-031-if-apply/run-card.yml`
-- `experiments/2026-07-01_operator-lab-loop/artifacts/run-032-candidate-refine/run-card.yml`
-- `experiments/2026-07-01_operator-lab-loop/artifacts/run-033-verified-history/run-card.yml`
-- `experiments/2026-07-01_operator-lab-loop/artifacts/run-034-lenskit-conflict-stop/run-card.yml`
-- `experiments/2026-07-01_operator-lab-loop/artifacts/run-template.md`
-- `experiments/2026-07-01_operator-lab-loop/results/cross-run-assessment.v1.json`
 - `experiments/2026-07-05_ecosystem-organ-preflight/artifacts/run-001-pr292-execution-slice/validator-and-tests.txt`
 - `experiments/2026-07-05_ecosystem-organ-preflight/results/runs/TEMPLATE.yml`
 - `experiments/2026-07-05_ecosystem-organ-preflight/results/runs/run-001.yml`
@@ -1058,8 +1011,6 @@ _none_
 - `experiments/2026-05-31_model-lab-replication-series/results/evidence.jsonl`
 - `experiments/2026-06-10_pr-agent-context-comparison-series/results/decision.yml`
 - `experiments/2026-06-10_pr-agent-context-comparison-series/results/evidence.jsonl`
-- `experiments/2026-07-01_operator-lab-loop/results/decision.yml`
-- `experiments/2026-07-01_operator-lab-loop/results/evidence.jsonl`
 - `experiments/2026-07-05_ecosystem-organ-preflight/results/evidence.jsonl`
 - `experiments/2026-07-08_operator-learning-capture-sample/results/evidence.jsonl`
 - `experiments/2026-08-16_outcome-bound-operator-loop-p0/p1/decision.yml`
@@ -1146,10 +1097,10 @@ Counts fallback-classified artifacts per catch-all pattern. Shows which broad ru
 
 | matched_pattern | count | share_of_fallback |
 | --- | ---: | ---: |
-| `experiments/*/artifacts/**` | 529 | 58.6% |
-| `tests/fixtures/**` | 275 | 30.5% |
-| `experiments/**` | 87 | 9.6% |
-| `docs/**` | 12 | 1.3% |
+| `experiments/*/artifacts/**` | 484 | 56.5% |
+| `tests/fixtures/**` | 275 | 32.1% |
+| `experiments/**` | 85 | 9.9% |
+| `docs/**` | 12 | 1.4% |
 
 ## Residual fallback clusters
 
@@ -1164,8 +1115,8 @@ Sorted by high_risk_count desc, then total desc, then matched_pattern asc.
 | matched_pattern | total | high_risk_count | top_basenames | top_parent_dirs |
 | --- | ---: | ---: | --- | --- |
 | `tests/fixtures/**` | 275 | 275 | `evidence-pack.yml`=9, `changed-files.txt`=8, `auditor-output.yml`=7, `comparability.yml`=7, `measurement.yml`=7 | `tests/fixtures/model_lab_next_blocker_triage/invalid`=29, `tests/fixtures/model_lab_condition_contrast_design_gate/_evidence`=16, `tests/fixtures/dependency_risk_caveat_scope/invalid`=15, `tests/fixtures/model_lab_condition_contrast_design_gate/invalid`=15, `tests/fixtures/model_lab_next_blocker_triage/_evidence`=15 |
-| `experiments/*/artifacts/**` | 529 | 0 | `run-card.yml`=36, `evidence-pack.yml`=22, `auditor-output.yml`=21, `measurement.yml`=21, `run.yml`=21 | `experiments/2026-05-01_agent-skill-minimal-layer-instrumentation/artifacts/run-013-replicated-outcome-evidence`=14, `experiments/2026-05-31_model-lab-replication-series/artifacts/run-001-rest-api-spec-first-baseline`=13, `experiments/2026-05-31_model-lab-replication-series/artifacts/run-002-rest-api-code-first-control`=13, `experiments/2026-05-31_model-lab-replication-series/artifacts/run-003-rest-api-independent-model-or-tool-condition`=13, `experiments/2026-05-31_model-lab-replication-series/artifacts/runtime-validation-run-001-run-002`=13 |
-| `experiments/**` | 87 | 0 | `registration.v2.json`=11, `README.md`=5, `sampling-unit-cases.md`=5, `.gitignore`=2, `AGENT_INSTRUCTION.md`=2 | `experiments/2026-04-14_tdd-vibe/results/run-tdd-vibe`=10, `experiments/2026-07-08_operator-learning-capture-sample/results`=7, `experiments/2026-08-16_outcome-bound-operator-loop-p0/p1/cases/P1-02`=5, `experiments/2026-08-18_outcome-bound-operator-loop-successor-s1r2-paper/results`=5, `experiments/2026-04-15_agent-task-validity`=4 |
+| `experiments/*/artifacts/**` | 484 | 0 | `evidence-pack.yml`=22, `auditor-output.yml`=21, `measurement.yml`=21, `run.yml`=21, `comparability.yml`=20 | `experiments/2026-05-01_agent-skill-minimal-layer-instrumentation/artifacts/run-013-replicated-outcome-evidence`=14, `experiments/2026-05-31_model-lab-replication-series/artifacts/run-001-rest-api-spec-first-baseline`=13, `experiments/2026-05-31_model-lab-replication-series/artifacts/run-002-rest-api-code-first-control`=13, `experiments/2026-05-31_model-lab-replication-series/artifacts/run-003-rest-api-independent-model-or-tool-condition`=13, `experiments/2026-05-31_model-lab-replication-series/artifacts/runtime-validation-run-001-run-002`=13 |
+| `experiments/**` | 85 | 0 | `registration.v2.json`=11, `README.md`=5, `sampling-unit-cases.md`=5, `.gitignore`=2, `AGENT_INSTRUCTION.md`=2 | `experiments/2026-04-14_tdd-vibe/results/run-tdd-vibe`=10, `experiments/2026-07-08_operator-learning-capture-sample/results`=7, `experiments/2026-08-16_outcome-bound-operator-loop-p0/p1/cases/P1-02`=5, `experiments/2026-08-18_outcome-bound-operator-loop-successor-s1r2-paper/results`=5, `experiments/2026-04-15_agent-task-validity`=4 |
 | `docs/**` | 12 | 0 | `README.md`=5, `agent-skill-file-fruitfulness.md`=1, `doc-freshness-registry.yml`=1, `replay-gap-cross-diagnosis-rrg01-rrg02.md`=1, `rrg03-remediation-strategy-comparison.md`=1 | `docs/evaluations`=3, `docs/ecosystem`=2, `docs`=1, `docs/experiments`=1, `docs/onboarding`=1 |
 
 ### Volume-first clusters
@@ -1174,9 +1125,9 @@ Sorted by total desc, then high_risk_count desc, then matched_pattern asc.
 
 | matched_pattern | total | high_risk_count | top_basenames | top_parent_dirs |
 | --- | ---: | ---: | --- | --- |
-| `experiments/*/artifacts/**` | 529 | 0 | `run-card.yml`=36, `evidence-pack.yml`=22, `auditor-output.yml`=21, `measurement.yml`=21, `run.yml`=21 | `experiments/2026-05-01_agent-skill-minimal-layer-instrumentation/artifacts/run-013-replicated-outcome-evidence`=14, `experiments/2026-05-31_model-lab-replication-series/artifacts/run-001-rest-api-spec-first-baseline`=13, `experiments/2026-05-31_model-lab-replication-series/artifacts/run-002-rest-api-code-first-control`=13, `experiments/2026-05-31_model-lab-replication-series/artifacts/run-003-rest-api-independent-model-or-tool-condition`=13, `experiments/2026-05-31_model-lab-replication-series/artifacts/runtime-validation-run-001-run-002`=13 |
+| `experiments/*/artifacts/**` | 484 | 0 | `evidence-pack.yml`=22, `auditor-output.yml`=21, `measurement.yml`=21, `run.yml`=21, `comparability.yml`=20 | `experiments/2026-05-01_agent-skill-minimal-layer-instrumentation/artifacts/run-013-replicated-outcome-evidence`=14, `experiments/2026-05-31_model-lab-replication-series/artifacts/run-001-rest-api-spec-first-baseline`=13, `experiments/2026-05-31_model-lab-replication-series/artifacts/run-002-rest-api-code-first-control`=13, `experiments/2026-05-31_model-lab-replication-series/artifacts/run-003-rest-api-independent-model-or-tool-condition`=13, `experiments/2026-05-31_model-lab-replication-series/artifacts/runtime-validation-run-001-run-002`=13 |
 | `tests/fixtures/**` | 275 | 275 | `evidence-pack.yml`=9, `changed-files.txt`=8, `auditor-output.yml`=7, `comparability.yml`=7, `measurement.yml`=7 | `tests/fixtures/model_lab_next_blocker_triage/invalid`=29, `tests/fixtures/model_lab_condition_contrast_design_gate/_evidence`=16, `tests/fixtures/dependency_risk_caveat_scope/invalid`=15, `tests/fixtures/model_lab_condition_contrast_design_gate/invalid`=15, `tests/fixtures/model_lab_next_blocker_triage/_evidence`=15 |
-| `experiments/**` | 87 | 0 | `registration.v2.json`=11, `README.md`=5, `sampling-unit-cases.md`=5, `.gitignore`=2, `AGENT_INSTRUCTION.md`=2 | `experiments/2026-04-14_tdd-vibe/results/run-tdd-vibe`=10, `experiments/2026-07-08_operator-learning-capture-sample/results`=7, `experiments/2026-08-16_outcome-bound-operator-loop-p0/p1/cases/P1-02`=5, `experiments/2026-08-18_outcome-bound-operator-loop-successor-s1r2-paper/results`=5, `experiments/2026-04-15_agent-task-validity`=4 |
+| `experiments/**` | 85 | 0 | `registration.v2.json`=11, `README.md`=5, `sampling-unit-cases.md`=5, `.gitignore`=2, `AGENT_INSTRUCTION.md`=2 | `experiments/2026-04-14_tdd-vibe/results/run-tdd-vibe`=10, `experiments/2026-07-08_operator-learning-capture-sample/results`=7, `experiments/2026-08-16_outcome-bound-operator-loop-p0/p1/cases/P1-02`=5, `experiments/2026-08-18_outcome-bound-operator-loop-successor-s1r2-paper/results`=5, `experiments/2026-04-15_agent-task-validity`=4 |
 | `docs/**` | 12 | 0 | `README.md`=5, `agent-skill-file-fruitfulness.md`=1, `doc-freshness-registry.yml`=1, `replay-gap-cross-diagnosis-rrg01-rrg02.md`=1, `rrg03-remediation-strategy-comparison.md`=1 | `docs/evaluations`=3, `docs/ecosystem`=2, `docs`=1, `docs/experiments`=1, `docs/onboarding`=1 |
 
 ## Fallback classified artifacts requiring review

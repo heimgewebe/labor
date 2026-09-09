@@ -11,7 +11,7 @@ relations:
   - type: references
     target: ../2026-04-19_generated-artifact-contract-validation/results/result.md
   - type: references
-    target: ../2026-07-01_operator-lab-loop/results/cross-run-assessment.v1.json
+    target: ../_archive/2026-07-01_operator-lab-loop/results/cross-run-assessment.v1.json
   - type: references
     target: contracts/outcome-case-spec.v0.schema.json
   - type: references

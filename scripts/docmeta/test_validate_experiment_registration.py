@@ -403,6 +403,25 @@ def test_archived_rlens_id_cannot_reuse_legacy_exemption() -> None:
             MODULE.EXPERIMENTS = original
 
 
+def test_archived_operator_lab_id_cannot_reuse_legacy_exemption() -> None:
+    retired_id = "2026-07-01_operator-lab-loop"
+    assert retired_id not in MODULE.PRE_T005_EXPERIMENTS
+    with tempfile.TemporaryDirectory() as raw:
+        experiments = Path(raw) / "experiments"
+        (experiments / retired_id).mkdir(parents=True)
+        original = MODULE.EXPERIMENTS
+        MODULE.EXPERIMENTS = experiments
+        try:
+            try:
+                MODULE.validate_all(now=T005_NOW)
+            except ValueError as exc:
+                assert "new experiment requires registration.v2.json" in str(exc)
+                return
+            raise AssertionError("archived Operator-Lab experiment ID reused the retired legacy exemption")
+        finally:
+            MODULE.EXPERIMENTS = original
+
+
 def test_repository_v2_count_matches_current_experiment_tree() -> None:
     result = MODULE.validate_all(now=REPOSITORY_NOW)
     expected_v2 = sum(

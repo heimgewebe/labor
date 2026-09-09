@@ -12,7 +12,9 @@ from typing import Any
 import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
-EXPERIMENT = ROOT / "experiments/2026-07-01_operator-lab-loop"
+ARCHIVED_EXPERIMENT_REL = Path("experiments/_archive/2026-07-01_operator-lab-loop")
+HISTORICAL_EXPERIMENT_REL = Path("experiments/2026-07-01_operator-lab-loop")
+EXPERIMENT = ROOT / ARCHIVED_EXPERIMENT_REL
 ARTIFACTS = EXPERIMENT / "artifacts"
 OUTPUT = EXPERIMENT / "results/cross-run-assessment.v1.json"
 COUNT_METRICS = (
@@ -38,7 +40,7 @@ def _load_card(path: Path) -> dict[str, Any]:
 
 
 def build_closeout(repo_root: Path = ROOT) -> dict[str, Any]:
-    experiment = repo_root / "experiments/2026-07-01_operator-lab-loop"
+    experiment = repo_root / ARCHIVED_EXPERIMENT_REL
     cards = sorted((experiment / "artifacts").glob("run-*/run-card.yml"))
     if not cards:
         raise ValueError("Operator-Lab has no run cards")
@@ -55,12 +57,12 @@ def build_closeout(repo_root: Path = ROOT) -> dict[str, Any]:
 
     for path in cards:
         card = _load_card(path)
-        rel = path.relative_to(repo_root).as_posix()
+        rel = (HISTORICAL_EXPERIMENT_REL / path.relative_to(experiment)).as_posix()
         run_dir = path.parent
         meta_path = run_dir / "run_meta.json"
         meta_exists = meta_path.is_file()
         if not meta_exists:
-            missing_run_meta.append(run_dir.relative_to(repo_root).as_posix())
+            missing_run_meta.append((HISTORICAL_EXPERIMENT_REL / run_dir.relative_to(experiment)).as_posix())
 
         conditions[str(card.get("condition", "<missing>"))] += 1
         decisions[str(card.get("decision", "<missing>"))] += 1
@@ -77,7 +79,7 @@ def build_closeout(repo_root: Path = ROOT) -> dict[str, Any]:
                 raise ValueError(f"{rel}: metrics.{name} must be a non-negative integer")
             metrics[name] += value
         if card_metrics.get("task_completion_time_observed") == "not_measured":
-            missing_timing.append(run_dir.relative_to(repo_root).as_posix())
+            missing_timing.append((HISTORICAL_EXPERIMENT_REL / run_dir.relative_to(experiment)).as_posix())
 
         for claim in card.get("claims") or []:
             if not isinstance(claim, dict):

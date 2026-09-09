@@ -8,36 +8,36 @@ does_not_prove:
   - "an agent understood the repository"
   - "a generated claim-evidence map has already been emitted"
 entries:
-  - id: operator-lab-loop-playbook-active
+  - id: operator-lab-loop-playbook-archived
     doc: docs/playbooks/operator-lab-loop.md
     locator: "frontmatter.status"
-    claim: "The Operator Lab Loop playbook remains an operative method anchor."
+    claim: "The Operator Lab Loop playbook is an archived historical method record and does not authorize new run cards."
     status: historical
     normative: false
     owner: heimgewebe
-    last_verified: "2026-07-13"
+    last_verified: "2026-09-09"
     evidence:
       - kind: text
-        target: "docs/playbooks/operator-lab-loop.md::status: active"
+        target: "docs/playbooks/operator-lab-loop.md::status: archived"
         implies: done
       - kind: text
-        target: "docs/playbooks/operator-lab-loop.md::canonicality: operative"
+        target: "docs/playbooks/operator-lab-loop.md::canonicality: derived"
         implies: done
-    notes: "The playbook remains readable as a historical method anchor; the 36-card series is frozen and this entry does not reactivate it or claim usefulness."
+    notes: "The playbook remains readable for provenance; the 36-card series is frozen, archived and not a current operating method."
 
   - id: operator-lab-anchor-run-present
-    doc: experiments/2026-07-01_operator-lab-loop/manifest.yml
+    doc: experiments/_archive/2026-07-01_operator-lab-loop/manifest.yml
     locator: "experiment.execution_refs"
-    claim: "The first Operator Lab Loop anchor run remains recorded with a run card."
+    claim: "The first Operator Lab Loop anchor run remains preserved in the archived series."
     status: historical
     normative: false
     owner: heimgewebe
-    last_verified: "2026-07-13"
+    last_verified: "2026-09-09"
     evidence:
       - kind: file
-        target: experiments/2026-07-01_operator-lab-loop/artifacts/run-001-plan-anchor/run-card.yml
+        target: experiments/_archive/2026-07-01_operator-lab-loop/artifacts/run-001-plan-anchor/run-card.yml
       - kind: text
-        target: "experiments/2026-07-01_operator-lab-loop/manifest.yml::artifacts/run-001-plan-anchor/run-card.yml"
+        target: "experiments/_archive/2026-07-01_operator-lab-loop/manifest.yml::artifacts/run-001-plan-anchor/run-card.yml"
         implies: done
     notes: "Historical provenance only. Run 001 and the frozen series do not prove operator-loop usefulness."
 

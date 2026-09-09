@@ -71,7 +71,6 @@ PRE_T005_EXPERIMENTS = frozenset({
     "2026-05-25_outcome-evidence-replication-series",
     "2026-05-31_model-lab-replication-series",
     "2026-06-10_pr-agent-context-comparison-series",
-    "2026-07-01_operator-lab-loop",
     "2026-07-05_ecosystem-organ-preflight",
     "2026-07-08_operator-learning-capture-sample",
     "2026-07-09_repobrief-workbench-usefulness-eval",
