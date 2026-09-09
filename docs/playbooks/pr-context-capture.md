@@ -5,6 +5,7 @@ canonicality: derived
 schema_version: "0.1.0"
 created: "2026-07-02"
 updated: "2026-09-09"
+triggered_by: "github:heimgewebe/bureau#442; conversation:user-request-2026-09-09-continue-labor-survivor-audit"
 author: "heimgewebe"
 relations:
   - type: references

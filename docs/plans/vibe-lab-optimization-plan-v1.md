@@ -3,8 +3,9 @@ title: "Labor Optimization Plan v1"
 status: active
 canonicality: operative
 created: "2026-07-12"
-updated: "2026-09-08"
-triggered_by: "user-request-2026-07-12"
+updated: "2026-09-09"
+triggered_by: "github:heimgewebe/bureau#442; conversation:user-request-2026-09-09-continue-labor-survivor-audit"
+origin_triggered_by: "user-request-2026-07-12"
 ---
 
 # Labor Optimization Plan v1
