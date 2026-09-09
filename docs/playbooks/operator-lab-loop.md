@@ -23,8 +23,8 @@ relations:
   - type: references
     target: ../../experiments/_archive/2026-07-01_operator-lab-loop/manifest.yml
   - type: references
-    target: ../../experiments/2026-06-10_pr-agent-context-comparison-series/pilot-v1.yml
-    reason: "The operator loop should feed the frozen PR-context pilot, not bypass it."
+    target: ../../experiments/_archive/2026-06-10_pr-agent-context-comparison-series/pilot-v1.yml
+    reason: "Historical Operator-Lab runs referenced the now archived PR-context pilot; this relation is provenance only."
 tags:
   - playbook
   - operator

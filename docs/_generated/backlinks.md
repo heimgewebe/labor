@@ -330,7 +330,6 @@
 ## `docs/playbooks/operator-lab-loop.md`
 
 - ← `docs/index.md` (references)
-- ← `docs/playbooks/pr-context-capture.md` (references)
 - ← `docs/roadmap.md` (references)
 
 ## `docs/playbooks/outcome-evidence-replication-series-gate.md`
@@ -357,7 +356,6 @@
 
 - ← `docs/index.md` (references)
 - ← `docs/playbooks/operator-lab-loop.md` (references)
-- ← `docs/playbooks/pr-context-capture.md` (references)
 
 ## `docs/playbooks/reconciliation.md`
 
@@ -724,28 +722,6 @@
 
 - ← `experiments/2026-05-31_model-lab-replication-series/results/cross-run-assessment.md` (references)
 
-## `experiments/2026-06-10_pr-agent-context-comparison-series/artifacts/run-template.md`
-
-- ← `experiments/2026-06-10_pr-agent-context-comparison-series/method.md` (references)
-
-## `experiments/2026-06-10_pr-agent-context-comparison-series/pilot-v1.yml`
-
-- ← `docs/playbooks/operator-lab-loop.md` (references)
-- ← `docs/playbooks/pr-context-capture.md` (references)
-
-## `experiments/2026-06-10_pr-agent-context-comparison-series/results/cross-run-assessment.md`
-
-- ← `experiments/2026-06-10_pr-agent-context-comparison-series/method.md` (references)
-- ← `experiments/2026-06-10_pr-agent-context-comparison-series/results/result.md` (references)
-
-## `experiments/2026-06-10_pr-agent-context-comparison-series/results/decision.yml`
-
-- ← `experiments/2026-06-10_pr-agent-context-comparison-series/results/result.md` (references)
-
-## `experiments/2026-06-10_pr-agent-context-comparison-series/results/evidence.jsonl`
-
-- ← `experiments/2026-06-10_pr-agent-context-comparison-series/results/result.md` (references)
-
 ## `experiments/2026-08-16_outcome-bound-operator-loop-p0/CONTEXT.md`
 
 - ← `experiments/2026-08-16_outcome-bound-operator-loop-p0/results/p0-gate.md` (references)
@@ -803,6 +779,11 @@
 
 - ← `docs/concepts/experiment-ontology.md` (informs)
 - ← `docs/experiments/README.md` (references)
+
+## `experiments/_archive/2026-06-10_pr-agent-context-comparison-series/pilot-v1.yml`
+
+- ← `docs/playbooks/operator-lab-loop.md` (references)
+- ← `docs/playbooks/pr-context-capture.md` (references)
 
 ## `experiments/_archive/2026-07-01_operator-lab-loop/manifest.yml`
 
@@ -904,6 +885,10 @@
 
 - ← `docs/playbooks/evidence-control-plane-post-pr189-diagnosis.md` (references)
 
+## `scripts/docmeta/validate_pr_context_pilot.py`
+
+- ← `docs/playbooks/pr-context-capture.md` (references)
+
 ## `scripts/docmeta/validate_run_bundle.py`
 
 - ← `docs/playbooks/evidence-control-plane-post-pr189-diagnosis.md` (references)
@@ -935,10 +920,6 @@
 ## `tools/vibe-cli/test_capture_effect_observation.py`
 
 - ← `docs/playbooks/effect-observation-capture.md` (validated_by)
-
-## `tools/vibe-cli/test_pr_context_capture.py`
-
-- ← `docs/playbooks/pr-context-capture.md` (references)
 
 ## `tools/vibe-cli/test_replay_trace_contract.py`
 

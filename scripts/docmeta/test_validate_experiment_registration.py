@@ -422,6 +422,44 @@ def test_archived_operator_lab_id_cannot_reuse_legacy_exemption() -> None:
             MODULE.EXPERIMENTS = original
 
 
+def test_archived_pr_context_id_cannot_reuse_legacy_exemption() -> None:
+    retired_id = "2026-06-10_pr-agent-context-comparison-series"
+    assert retired_id not in MODULE.PRE_T005_EXPERIMENTS
+    with tempfile.TemporaryDirectory() as raw:
+        experiments = Path(raw) / "experiments"
+        (experiments / retired_id).mkdir(parents=True)
+        original = MODULE.EXPERIMENTS
+        MODULE.EXPERIMENTS = experiments
+        try:
+            try:
+                MODULE.validate_all(now=T005_NOW)
+            except ValueError as exc:
+                assert "new experiment requires registration.v2.json" in str(exc)
+                return
+            raise AssertionError("archived PR-context experiment ID reused the retired legacy exemption")
+        finally:
+            MODULE.EXPERIMENTS = original
+
+
+def test_active_experiment_id_cannot_collide_with_archive() -> None:
+    retired_id = "2026-06-10_pr-agent-context-comparison-series"
+    with tempfile.TemporaryDirectory() as raw:
+        experiments = Path(raw) / "experiments"
+        (experiments / "_archive" / retired_id).mkdir(parents=True)
+        _valid_v2(experiments / retired_id)
+        original = MODULE.EXPERIMENTS
+        MODULE.EXPERIMENTS = experiments
+        try:
+            try:
+                MODULE.validate_all(now=T005_NOW)
+            except ValueError as exc:
+                assert "active experiment id collides with archived experiment" in str(exc)
+                return
+            raise AssertionError("valid v2 registration reused an archived experiment ID")
+        finally:
+            MODULE.EXPERIMENTS = original
+
+
 def test_repository_v2_count_matches_current_experiment_tree() -> None:
     result = MODULE.validate_all(now=REPOSITORY_NOW)
     expected_v2 = sum(

@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-"""Validate the frozen B-vs-D PR-context pilot contract.
+"""Validate the archived B-vs-D PR-context pilot as historical evidence.
 
-The validator distinguishes structural validity from execution readiness.
-A prepared-but-blocked pilot is valid by default. ``--require-ready`` turns the
-open bindings into a non-zero exit so an operator can use the same contract as
-an execution preflight.
+This remains a manual audit tool. The pilot is retired and is no longer a
+blocking repository frontdoor. ``--require-ready`` is retained only for
+historical negative-preflight tests and must remain non-zero for the archive.
 """
 
 from __future__ import annotations
@@ -20,7 +19,7 @@ from typing import Any
 import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-EXPERIMENT_REL = Path("experiments/2026-06-10_pr-agent-context-comparison-series")
+EXPERIMENT_REL = Path("experiments/_archive/2026-06-10_pr-agent-context-comparison-series")
 DEFAULT_PILOT = REPO_ROOT / EXPERIMENT_REL / "pilot-v1.yml"
 EXPECTED_CONDITIONS = {"B", "D"}
 EXPECTED_TASK_CLASSES = {

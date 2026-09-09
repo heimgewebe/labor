@@ -70,7 +70,6 @@ PRE_T005_EXPERIMENTS = frozenset({
     "2026-05-01_agent-skill-minimal-layer-instrumentation",
     "2026-05-25_outcome-evidence-replication-series",
     "2026-05-31_model-lab-replication-series",
-    "2026-06-10_pr-agent-context-comparison-series",
     "2026-07-05_ecosystem-organ-preflight",
     "2026-07-08_operator-learning-capture-sample",
     "2026-07-09_repobrief-workbench-usefulness-eval",
@@ -332,6 +331,9 @@ def validate_all(*, now: datetime | None = None) -> dict[str, Any]:
         match = DIR_RE.fullmatch(directory.name)
         if not match:
             raise ValueError(f"{directory}: experiment directory name is not date-prefixed")
+        archived = EXPERIMENTS / "_archive" / directory.name
+        if archived.exists() or archived.is_symlink():
+            raise ValueError(f"{directory}: active experiment id collides with archived experiment")
         created = date.fromisoformat(match.group(1))
         v1 = directory / "registration.v1.json"
         v2 = directory / "registration.v2.json"

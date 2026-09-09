@@ -1,164 +1,42 @@
 ---
 title: "Playbook: PR Context Capture"
-status: active
-canonicality: operative
+status: archived
+canonicality: derived
 schema_version: "0.1.0"
 created: "2026-07-02"
 updated: "2026-09-09"
+triggered_by: "github:heimgewebe/bureau#442; conversation:user-request-2026-09-09-continue-labor-survivor-audit"
 author: "heimgewebe"
 relations:
   - type: references
-    target: operator-lab-loop.md
-  - type: references
-    target: pr-run-evidence-pack.md
-  - type: references
-    target: ../../experiments/2026-06-10_pr-agent-context-comparison-series/pilot-v1.yml
+    target: ../../experiments/_archive/2026-06-10_pr-agent-context-comparison-series/pilot-v1.yml
   - type: references
     target: ../../tools/vibe-cli/pr_context_capture.py
   - type: references
-    target: ../../tools/vibe-cli/test_pr_context_capture.py
-tags:
-  - playbook
-  - pr
-  - evidence
-  - operator
+    target: ../../scripts/docmeta/validate_pr_context_pilot.py
+tags: [playbook, pr, evidence, historical]
 ---
 
 # Playbook: PR Context Capture
 
-> Zweck: `tools/vibe-cli/pr_context_capture.py` erfasst kleine, repo-lokale Timing- und Review-Spuren fuer den frozen PR-context pilot. Es ist ein Capture-Helfer, kein Freigabeautomat.
+## Status
 
-## 1. Wann nutzen
+Historical only. The B-vs-D PR-context pilot was never executed and is archived. Its frozen `pilot-v1.yml` remained `execution_allowed: false` because task and role bindings were absent. No new run may be admitted under that revision.
 
-Nutze den Capture-Helfer nur fuer Runs, die wirklich in den PR-context pilot gehoeren:
+`tools/vibe-cli/pr_context_capture.py`, `scripts/docmeta/validate_pr_context_pilot.py` and their regression tests remain available solely to inspect or reproduce the historical contract. They are not blocking Make frontdoors and do not authorize new capture runs.
 
-- ein Pair aus `experiments/2026-06-10_pr-agent-context-comparison-series/pilot-v1.yml` wird ausgefuehrt;
-- ein konkreter Task-Slot ist gebunden;
-- Rollen sind gebunden;
-- der Pilot-Validator erlaubt Ausfuehrung.
-
-Wenn der Pilot blockiert ist, muss `prepare` stoppen und den Grund melden. Ein blockierter Pilot darf keine halb angelegte Run-Directory erzeugen.
-
-## 2. Minimaler Ablauf
-
-Beispiel:
+## Historical audit
 
 ```bash
-python3 tools/vibe-cli/pr_context_capture.py prepare \
-  --run-id run-example \
-  --pair-id pair-01 \
-  --slot 1 \
-  --executor operator:example \
-  --base-commit abcdef0
-
-python3 tools/vibe-cli/pr_context_capture.py start --run-id run-example --phase preparation
-python3 tools/vibe-cli/pr_context_capture.py stop --run-id run-example
+python3 scripts/docmeta/test_validate_pr_context_pilot.py
+python3 tools/vibe-cli/test_pr_context_capture.py
+python3 scripts/docmeta/validate_pr_context_pilot.py
 ```
 
-Phasen sind fest:
+The expected result is a structurally valid but execution-blocked archived pilot. `--require-ready` must fail for that frozen revision.
 
-```text
-preparation
-execution
-validation
-review
-rework
-```
+## Boundary
 
-Jede Phase muss gestartet und gestoppt werden, bevor `finalize` erfolgreich sein darf.
+A future PR-context comparison requires a new prospective experiment with a current external consumer, fresh task and role bindings, current decision target, review/expiry and explicit outcome criteria. The archived experiment id and its old condition assignments must not be reused as an active shortcut.
 
-Zwischenstand lesen:
-
-```bash
-python3 tools/vibe-cli/pr_context_capture.py status --run-id run-example
-```
-
-Der Status zeigt beobachtete Phasen, fehlende Phasen, Evidence-Pruefpunkte und `ready_to_finalize`.
-
-## 3. Pflichtartefakte vor Finalize
-
-Vor `finalize` muessen im Run-Verzeichnis mindestens diese Dateien vorhanden sein:
-
-```text
-agent-output.md
-review-events.yml
-```
-
-Zusaetzlich braucht der Run Validierungs- und Scope-Evidence:
-
-```text
-targeted-tests.txt oder diagnostic-checks.txt
-changed-files.txt oder no-changes.txt
-```
-
-Fehlt eines davon, bleibt der Run unfinalisiert. Das ist gewollt: fehlende Evidence ist ein sichtbarer Mangel, kein stiller Erfolg.
-
-## 4. Review-Evidence
-
-Review-Evidence wird ueber `review` geschrieben:
-
-```bash
-python3 tools/vibe-cli/pr_context_capture.py review \
-  --run-id run-example \
-  --pr-ref PR-123 \
-  --rounds 2 \
-  --rework-commit abcdef1
-```
-
-`rounds` zaehlt beobachtete Review-Friction. `rework-commit` ist nur fuer konkrete Rework-Commits gedacht. Mehrfachangabe ist erlaubt; doppelte Commits sind ungueltig.
-
-## 5. Was `prepare` garantiert
-
-`prepare` macht vor dem Schreiben einen Validator-Preflight:
-
-- Pilot-YAML muss strukturell valide sein.
-- `execution_allowed` muss wahr sein.
-- Bedingungsdatei muss innerhalb des Experiments liegen.
-- Bedingungs-Hash muss zu den eingefrorenen Bytes passen.
-- Run-ID darf noch nicht existieren.
-
-Bei blockiertem Pilot meldet der Fehler die abgeleiteten Blocker, zum Beispiel:
-
-```text
-pilot execution is blocked: tasks_not_bound, role_bindings_missing
-```
-
-## 6. Was nicht behauptet wird
-
-Ein finalisierter Capture-Run belegt nur, dass die angegebenen Phasen und Evidence-Dateien repo-lokal erfasst wurden.
-
-Er belegt nicht:
-
-- dass eine Condition besser ist;
-- dass ein Agent generell zuverlaessig ist;
-- dass der PR korrekt ist;
-- dass ein Review unabhaengig genug war;
-- dass die Capture-Metriken bereits Outcome-Nutzen beweisen.
-
-## 7. Validierung
-
-Vor einem PR mit Capture-Aenderungen mindestens ausfuehren:
-
-```bash
-make validate-pr-context-pilot-tests
-make validate-pr-context-pilot
-```
-
-Bei historischem Operator-Lab-Bezug zusaetzlich als manuellen Audit:
-
-```bash
-python3 scripts/docmeta/test_validate_operator_lab_run_cards.py
-python3 scripts/docmeta/validate_operator_lab_run_cards.py
-```
-
-Die archivierte Operator-Lab-Serie hat keine eigenen blocking Make-Frontdoors mehr.
-
-## 8. Ablage
-
-Standard-Workdir:
-
-```text
-.tmp/pr-context-runs/<run-id>/
-```
-
-`.tmp` ist bewusst nicht finaler Evidence-Ort. Fuer dauerhafte PR-Claims gehoert die verdichtete Evidence in ein PR-Evidence-Pack oder in ein neu prospektiv registriertes Experimentartefakt; die archivierte Operator-Lab-Serie ist keine neue Ablageflaeche.
+Nothing in this archive establishes condition superiority, general agent quality, Lenskit necessity, adoption readiness or the absence of value in repository context.
