@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Stage timing and review evidence for the B-vs-D PR-context pilot."""
+"""Historical capture helper for the archived B-vs-D PR-context pilot."""
 
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ from typing import Any
 import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
-EXPERIMENT = ROOT / "experiments/2026-06-10_pr-agent-context-comparison-series"
+EXPERIMENT = ROOT / "experiments/_archive/2026-06-10_pr-agent-context-comparison-series"
 PILOT = EXPERIMENT / "pilot-v1.yml"
 VALIDATOR = ROOT / "scripts/docmeta/validate_pr_context_pilot.py"
 WORK = ROOT / ".tmp/pr-context-runs"

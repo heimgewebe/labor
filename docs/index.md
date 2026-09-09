@@ -208,7 +208,7 @@ Warum Exporte abgeleitete Artefakte sind: Sie enthalten keinen eigenständigen I
 - [Reconciliation](playbooks/reconciliation.md)
 - [Build a Reliable Prompt](playbooks/build-reliable-prompt.md)
 - [PR Run Evidence Pack](playbooks/pr-run-evidence-pack.md)
-- [PR Context Capture](playbooks/pr-context-capture.md)
+- [PR Context Capture — archived](playbooks/pr-context-capture.md)
 - [Operator Lab Loop](playbooks/operator-lab-loop.md)
 - [Bundle Freshness Receipt](playbooks/bundle-freshness-receipt.md)
 - [Evidence-Control-Plane v1 — Roadmap](playbooks/evidence-control-plane-roadmap-checklist.md)

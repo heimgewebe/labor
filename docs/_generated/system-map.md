@@ -15,7 +15,7 @@
 | `decisions/` | 🏛️ Governance | 13 | 4 |
 | `docs/` | 📖 Dokumentation | 57 | 47 |
 | `docs/_generated/` | ⚙️ Generiert | 9 | 6 |
-| `experiments/` | 🔬 Labor | 984 | 250 |
+| `experiments/` | 🔬 Labor | 900 | 241 |
 | `exports/` | ⚙️ Generiert | 10 | 10 |
 | `instruction-blocks/` | 📚 Bibliothek | 6 | 6 |
 | `prompts/` | 📚 Bibliothek | 2 | 2 |
@@ -25,4 +25,4 @@
 | `tests/` | 📁 Root | 382 | 16 |
 | `tools/` | 🔧 Tooling | 12 | 0 |
 
-**Total:** 1695 files in 17 directories
+**Total:** 1611 files in 17 directories

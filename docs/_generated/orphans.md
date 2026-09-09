@@ -3,7 +3,7 @@
 
 # Unreferenced Documents
 
-Unexpected orphans (116 found):
+Unexpected orphans (110 found):
 
 - `docs/ecosystem/README.md`
 - `docs/ecosystem/vibe-lab-productive-role.md`
@@ -62,12 +62,6 @@ Unexpected orphans (116 found):
 - `experiments/2026-05-31_model-lab-replication-series/artifacts/run-004-runtime-binding/agent-protocol.md`
 - `experiments/2026-05-31_model-lab-replication-series/artifacts/runtime-validation-run-001-run-002/README.md`
 - `experiments/2026-05-31_model-lab-replication-series/artifacts/runtime-validation-run-003/README.md`
-- `experiments/2026-06-10_pr-agent-context-comparison-series/AGENT_INSTRUCTION.md`
-- `experiments/2026-06-10_pr-agent-context-comparison-series/artifacts/README.md`
-- `experiments/2026-06-10_pr-agent-context-comparison-series/artifacts/run-001-baseline-no-structured-handoff/condition-input.md`
-- `experiments/2026-06-10_pr-agent-context-comparison-series/artifacts/run-002-vibe-lab-handoff/condition-input.md`
-- `experiments/2026-06-10_pr-agent-context-comparison-series/artifacts/run-003-lenskit-plus-vibe-lab-handoff/condition-input.md`
-- `experiments/2026-06-10_pr-agent-context-comparison-series/artifacts/run-004-minimal-decision-first-checklist/condition-input.md`
 - `experiments/2026-07-08_operator-learning-capture-sample/AGENT_NOTE.md`
 - `experiments/2026-07-08_operator-learning-capture-sample/README.md`
 - `experiments/2026-07-08_operator-learning-capture-sample/artifacts/README.md`
@@ -122,7 +116,7 @@ Unexpected orphans (116 found):
 - `tests/fixtures/model_lab_next_blocker_triage/_evidence/assessment-context.md`
 - `tests/fixtures/pr_scope/valid/summary.md`
 
-Expected orphans (116 found):
+Expected orphans (111 found):
 
 - `experiments/2026-04-08_spec-first/CONTEXT.md` — experiment_bundle_local_context
 - `experiments/2026-04-08_spec-first/INITIAL.md` — experiment_bundle_initial_prompt
@@ -198,11 +192,6 @@ Expected orphans (116 found):
 - `experiments/2026-05-31_model-lab-replication-series/CONTEXT.md` — experiment_bundle_local_context
 - `experiments/2026-05-31_model-lab-replication-series/INITIAL.md` — experiment_bundle_initial_prompt
 - `experiments/2026-05-31_model-lab-replication-series/failure_modes.md` — experiment_bundle_local_analysis
-- `experiments/2026-06-10_pr-agent-context-comparison-series/CONTEXT.md` — experiment_bundle_local_context
-- `experiments/2026-06-10_pr-agent-context-comparison-series/INITIAL.md` — experiment_bundle_initial_prompt
-- `experiments/2026-06-10_pr-agent-context-comparison-series/failure_modes.md` — experiment_bundle_local_analysis
-- `experiments/2026-06-10_pr-agent-context-comparison-series/method.md` — experiment_bundle_method
-- `experiments/2026-06-10_pr-agent-context-comparison-series/results/result.md` — experiment_result_local_surface
 - `experiments/2026-07-05_ecosystem-organ-preflight/CONTEXT.md` — experiment_bundle_local_context
 - `experiments/2026-07-05_ecosystem-organ-preflight/failure_modes.md` — experiment_bundle_local_analysis
 - `experiments/2026-07-05_ecosystem-organ-preflight/method.md` — experiment_bundle_method

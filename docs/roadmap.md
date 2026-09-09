@@ -116,7 +116,7 @@ Die Reihenfolge ist verbindlich, soweit Bureau keine neue Prioritätsentscheidun
 
 ### RL-002 — Legacy-Validator-Survivor-Audit
 
-Jedes der 40 verbleibenden Legacy-Ziele erhält eine Disposition:
+Jedes der 38 verbleibenden Legacy-Ziele erhält eine Disposition:
 
 - `retain_with_consumer`;
 - `covered_by_core`;
@@ -127,9 +127,9 @@ Prüfreihenfolge:
 1. Agent-Handoff-, Agent-Command- und Command-Chain-Verträge;
 2. Model-Lab-Spezialprüfungen erst nach separater terminaler Disposition; das aktuelle Model-Lab-Manifest bleibt `testing` und seine Guards bleiben blocking;
 3. historische Replay-, Fixture- und Cross-Contract-Semantik;
-4. historische PR-Context-Prüfungen und verbleibende rLens-Flächen nur mit separater Consumer-/Archivevidenz; das nie ausgeführte rLens-Agent-Context-Design ist inzwischen archiviert und seine zwei dedizierten Frontdoors sind nicht mehr blocking.
+4. die nie ausgeführten PR-Context- und rLens-Agent-Context-Designs sind archiviert und ihre je zwei dedizierten Frontdoors nicht mehr blocking; verbleibende historische Spezialflächen nur mit separater Consumer-/Archivevidenz reduzieren.
 
-Der Reviewtermin 1. September 2026 ist überschritten. Von der früheren 48er-Baseline bleiben nach der Operator-Lab-Archivierung 40 blocking Legacy-Ziele; weitere Reduktion erfolgt nur mit Archiv- oder Äquivalenzevidenz. Der Review eines Entfernungs-PR prüft diesen materiellen Beleg, ersetzt ihn aber nicht.
+Der Reviewtermin 1. September 2026 ist überschritten. Von der früheren 48er-Baseline bleiben nach der Operator-Lab- und PR-Context-Archivierung 38 blocking Legacy-Ziele; weitere Reduktion erfolgt nur mit Archiv- oder Äquivalenzevidenz. Der Review eines Entfernungs-PR prüft diesen materiellen Beleg, ersetzt ihn aber nicht.
 
 ### RL-003 — fällige Experimentabschlüsse erzwingen
 

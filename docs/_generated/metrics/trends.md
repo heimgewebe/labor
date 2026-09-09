@@ -7,9 +7,9 @@ Latest Evidence Timestamp: 2026-09-07T19:12:02.198771Z
 
 ## Gate Snapshot
 
-- Total events: **382**
+- Total events: **381**
 - Distinct event types: **4** (decision, measurement, observation, run)
-- Source evidence files: **30**
+- Source evidence files: **29**
 
 ## Event Type Counts
 
@@ -17,7 +17,7 @@ Latest Evidence Timestamp: 2026-09-07T19:12:02.198771Z
 | --- | ---: |
 | decision | 29 |
 | measurement | 149 |
-| observation | 146 |
+| observation | 145 |
 | run | 58 |
 
 ## Metric Aggregates
@@ -101,7 +101,6 @@ Latest Evidence Timestamp: 2026-09-07T19:12:02.198771Z
 | exotic_blindspot_count | 2 | 2 | 0 | 1 | 0.5 |
 | experiment-setup | 2 | 0 | - | - | - |
 | experiment-verdict | 1 | 0 | - | - | - |
-| experiment_series_scaffold_status | 1 | 0 | - | - | - |
 | external_cross_family_audit_status | 1 | 0 | - | - | - |
 | first_failing_input_index | 1 | 0 | - | - | - |
 | fix-verification | 1 | 0 | - | - | - |
@@ -333,7 +332,6 @@ Latest Evidence Timestamp: 2026-09-07T19:12:02.198771Z
 - `experiments/2026-05-01_agent-skill-minimal-layer-instrumentation/results/evidence.jsonl`
 - `experiments/2026-05-25_outcome-evidence-replication-series/results/evidence.jsonl`
 - `experiments/2026-05-31_model-lab-replication-series/results/evidence.jsonl`
-- `experiments/2026-06-10_pr-agent-context-comparison-series/results/evidence.jsonl`
 - `experiments/2026-07-05_ecosystem-organ-preflight/results/evidence.jsonl`
 - `experiments/2026-07-08_operator-learning-capture-sample/results/evidence.jsonl`
 - `experiments/2026-08-16_outcome-bound-operator-loop-p0/results/evidence.jsonl`
