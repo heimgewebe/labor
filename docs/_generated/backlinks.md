@@ -137,9 +137,6 @@
 - ← `docs/evaluations/replay-gap-cross-diagnosis-rrg01-rrg02.md` (references)
 - ← `docs/evaluations/rrg03-remediation-strategy-comparison.md` (references)
 - ← `docs/reference/agent-operability-fixture-matrix.md` (references)
-- ← `experiments/2026-04-23_agent-failure-surface/CONTEXT.md` (references)
-- ← `experiments/2026-04-23_agent-failure-surface/results/phase5-adversarial-agent-simulation.md` (references)
-- ← `experiments/2026-04-23_agent-failure-surface/results/result.md` (references)
 
 ## `decisions/README.md`
 
@@ -185,7 +182,6 @@
 - ← `docs/index.md` (references)
 - ← `docs/playbooks/plan-execution-checklist.md` (references)
 - ← `docs/roadmap.md` (references)
-- ← `experiments/2026-04-23_agent-failure-surface/CONTEXT.md` (references)
 
 ## `docs/blueprints/blueprint-agent-operability.md`
 
@@ -405,9 +401,6 @@
 ## `docs/reference/agent-operability-fixture-matrix.md`
 
 - ← `docs/index.md` (references)
-- ← `experiments/2026-04-23_agent-failure-surface/CONTEXT.md` (references)
-- ← `experiments/2026-04-23_agent-failure-surface/results/phase5-adversarial-agent-simulation.md` (references)
-- ← `experiments/2026-04-23_agent-failure-surface/results/result.md` (references)
 
 ## `docs/reference/manifest-schema.md`
 
@@ -458,7 +451,6 @@
 
 - ← `docs/blueprints/blueprint-agent-operability-phase-1c.md` (derived_from)
 - ← `docs/blueprints/blueprint-agent-operability.md` (derived_from)
-- ← `experiments/2026-04-23_agent-failure-surface/CONTEXT.md` (informed_by)
 
 ## `experiments/2026-04-15_agent-task-validity/method.md`
 
@@ -484,109 +476,6 @@
 
 - ← `experiments/2026-04-19_generated-artifact-contract-validation/results/cross-run-assessment.md` (informed_by)
 - ← `experiments/2026-08-16_outcome-bound-operator-loop-p0/schema-fit.md` (references)
-
-## `experiments/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg01-real/observed.json`
-
-- ← `docs/evaluations/replay-gap-cross-diagnosis-rrg01-rrg02.md` (references)
-- ← `docs/evaluations/rrg03-remediation-strategy-comparison.md` (references)
-
-## `experiments/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg02-real/observed.json`
-
-- ← `docs/evaluations/replay-gap-cross-diagnosis-rrg01-rrg02.md` (references)
-- ← `docs/evaluations/rrg03-remediation-strategy-comparison.md` (references)
-
-## `experiments/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg03-real-02/execution-real.txt`
-
-- ← `experiments/2026-04-23_agent-failure-surface/results/phase-f-rrg03-locator-drift.md` (references)
-
-## `experiments/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg03-real-02/observed.json`
-
-- ← `docs/evaluations/rrg03-remediation-strategy-comparison.md` (references)
-- ← `experiments/2026-04-23_agent-failure-surface/results/phase-f-rrg03-locator-drift.md` (references)
-
-## `experiments/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg03-real-02/run_meta.json`
-
-- ← `experiments/2026-04-23_agent-failure-surface/results/phase-f-rrg03-locator-drift.md` (references)
-
-## `experiments/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg03-real/execution-real.txt`
-
-- ← `experiments/2026-04-23_agent-failure-surface/results/phase-f-rrg03-locator-drift.md` (references)
-
-## `experiments/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg03-real/observed.json`
-
-- ← `docs/evaluations/rrg03-remediation-strategy-comparison.md` (references)
-- ← `experiments/2026-04-23_agent-failure-surface/results/phase-f-rrg03-locator-drift.md` (references)
-
-## `experiments/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg03-real/run_meta.json`
-
-- ← `experiments/2026-04-23_agent-failure-surface/results/phase-f-rrg03-locator-drift.md` (references)
-
-## `experiments/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg03/execution.txt`
-
-- ← `experiments/2026-04-23_agent-failure-surface/results/phase-f-rrg03-locator-drift.md` (references)
-
-## `experiments/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg03/run_meta.json`
-
-- ← `experiments/2026-04-23_agent-failure-surface/results/phase-f-rrg03-locator-drift.md` (references)
-
-## `experiments/2026-04-23_agent-failure-surface/artifacts/run-phase5/execution.txt`
-
-- ← `experiments/2026-04-23_agent-failure-surface/results/phase5-adversarial-agent-simulation.md` (references)
-
-## `experiments/2026-04-23_agent-failure-surface/method.md`
-
-- ← `experiments/2026-04-23_agent-failure-surface/results/phase-f-rrg03-locator-drift.md` (references)
-- ← `experiments/2026-04-23_agent-failure-surface/results/phase2-semantic-contradiction.md` (references)
-- ← `experiments/2026-04-23_agent-failure-surface/results/phase3-chain-integrity-stress.md` (references)
-- ← `experiments/2026-04-23_agent-failure-surface/results/phase5-adversarial-agent-simulation.md` (references)
-- ← `experiments/2026-04-23_agent-failure-surface/results/replay-gap-candidates.md` (references)
-- ← `experiments/2026-04-23_agent-failure-surface/results/result.md` (references)
-
-## `experiments/2026-04-23_agent-failure-surface/results/decision.yml`
-
-- ← `experiments/2026-04-23_agent-failure-surface/results/phase2-semantic-contradiction.md` (references)
-- ← `experiments/2026-04-23_agent-failure-surface/results/phase3-chain-integrity-stress.md` (references)
-- ← `experiments/2026-04-23_agent-failure-surface/results/phase5-adversarial-agent-simulation.md` (references)
-- ← `experiments/2026-04-23_agent-failure-surface/results/replay-gap-candidates.md` (references)
-- ← `experiments/2026-04-23_agent-failure-surface/results/result.md` (references)
-
-## `experiments/2026-04-23_agent-failure-surface/results/evidence.jsonl`
-
-- ← `docs/evaluations/replay-gap-cross-diagnosis-rrg01-rrg02.md` (references)
-- ← `experiments/2026-04-23_agent-failure-surface/results/phase-f-rrg03-locator-drift.md` (references)
-- ← `experiments/2026-04-23_agent-failure-surface/results/phase5-adversarial-agent-simulation.md` (references)
-
-## `experiments/2026-04-23_agent-failure-surface/results/phase-f-rrg03-locator-drift.md`
-
-- ← `docs/evaluations/replay-gap-cross-diagnosis-rrg01-rrg02.md` (references)
-- ← `docs/evaluations/rrg03-remediation-strategy-comparison.md` (references)
-- ← `experiments/2026-04-23_agent-failure-surface/results/result.md` (references)
-
-## `experiments/2026-04-23_agent-failure-surface/results/phase2-semantic-contradiction.md`
-
-- ← `experiments/2026-04-23_agent-failure-surface/results/result.md` (references)
-
-## `experiments/2026-04-23_agent-failure-surface/results/phase3-chain-integrity-stress.md`
-
-- ← `experiments/2026-04-23_agent-failure-surface/results/result.md` (references)
-
-## `experiments/2026-04-23_agent-failure-surface/results/phase5-adversarial-agent-simulation.md`
-
-- ← `experiments/2026-04-23_agent-failure-surface/results/result.md` (references)
-
-## `experiments/2026-04-23_agent-failure-surface/results/replay-gap-candidates.md`
-
-- ← `docs/evaluations/replay-gap-cross-diagnosis-rrg01-rrg02.md` (references)
-- ← `experiments/2026-04-23_agent-failure-surface/results/phase-f-rrg03-locator-drift.md` (references)
-- ← `experiments/2026-04-23_agent-failure-surface/results/result.md` (references)
-
-## `experiments/2026-04-23_agent-failure-surface/results/result.md`
-
-- ← `experiments/2026-04-23_agent-failure-surface/results/phase-f-rrg03-locator-drift.md` (references)
-- ← `experiments/2026-04-23_agent-failure-surface/results/phase2-semantic-contradiction.md` (references)
-- ← `experiments/2026-04-23_agent-failure-surface/results/phase3-chain-integrity-stress.md` (references)
-- ← `experiments/2026-04-23_agent-failure-surface/results/phase5-adversarial-agent-simulation.md` (references)
-- ← `experiments/2026-04-23_agent-failure-surface/results/replay-gap-candidates.md` (references)
 
 ## `experiments/2026-04-23_phase-1-drift-injection/artifacts/README.md`
 
@@ -779,6 +668,37 @@
 
 - ← `docs/concepts/experiment-ontology.md` (informs)
 - ← `docs/experiments/README.md` (references)
+
+## `experiments/_archive/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg01-real/observed.json`
+
+- ← `docs/evaluations/replay-gap-cross-diagnosis-rrg01-rrg02.md` (references)
+- ← `docs/evaluations/rrg03-remediation-strategy-comparison.md` (references)
+
+## `experiments/_archive/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg02-real/observed.json`
+
+- ← `docs/evaluations/replay-gap-cross-diagnosis-rrg01-rrg02.md` (references)
+- ← `docs/evaluations/rrg03-remediation-strategy-comparison.md` (references)
+
+## `experiments/_archive/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg03-real-02/observed.json`
+
+- ← `docs/evaluations/rrg03-remediation-strategy-comparison.md` (references)
+
+## `experiments/_archive/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg03-real/observed.json`
+
+- ← `docs/evaluations/rrg03-remediation-strategy-comparison.md` (references)
+
+## `experiments/_archive/2026-04-23_agent-failure-surface/results/evidence.jsonl`
+
+- ← `docs/evaluations/replay-gap-cross-diagnosis-rrg01-rrg02.md` (references)
+
+## `experiments/_archive/2026-04-23_agent-failure-surface/results/phase-f-rrg03-locator-drift.md`
+
+- ← `docs/evaluations/replay-gap-cross-diagnosis-rrg01-rrg02.md` (references)
+- ← `docs/evaluations/rrg03-remediation-strategy-comparison.md` (references)
+
+## `experiments/_archive/2026-04-23_agent-failure-surface/results/replay-gap-candidates.md`
+
+- ← `docs/evaluations/replay-gap-cross-diagnosis-rrg01-rrg02.md` (references)
 
 ## `experiments/_archive/2026-06-10_pr-agent-context-comparison-series/pilot-v1.yml`
 

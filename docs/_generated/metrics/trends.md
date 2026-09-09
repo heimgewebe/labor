@@ -7,18 +7,18 @@ Latest Evidence Timestamp: 2026-09-07T19:12:02.198771Z
 
 ## Gate Snapshot
 
-- Total events: **381**
+- Total events: **351**
 - Distinct event types: **4** (decision, measurement, observation, run)
-- Source evidence files: **29**
+- Source evidence files: **28**
 
 ## Event Type Counts
 
 | event_type | events |
 | --- | ---: |
-| decision | 29 |
-| measurement | 149 |
-| observation | 145 |
-| run | 58 |
+| decision | 23 |
+| measurement | 138 |
+| observation | 136 |
+| run | 54 |
 
 ## Metric Aggregates
 
@@ -30,7 +30,6 @@ Latest Evidence Timestamp: 2026-09-07T19:12:02.198771Z
 | abort_rate_treatment | 1 | 1 | 0 | 0 | 0 |
 | ap4_execution_verdict | 1 | 0 | - | - | - |
 | ap4_skeleton_status | 1 | 0 | - | - | - |
-| append_only_integrity_check | 1 | 0 | - | - | - |
 | apt_install_python3_yaml | 1 | 0 | - | - | - |
 | architecture-incremental | 1 | 0 | - | - | - |
 | architecture-single-shot | 1 | 0 | - | - | - |
@@ -38,11 +37,9 @@ Latest Evidence Timestamp: 2026-09-07T19:12:02.198771Z
 | author_revision_frozen | 4 | 0 | - | - | - |
 | author_revision_frozen_after_exact_candidate_qualification | 1 | 0 | - | - | - |
 | blind_review_available | 1 | 1 | 0 | 0 | 0 |
-| branch_coverage_extended | 1 | 0 | - | - | - |
 | branch_setup_completed | 4 | 0 | - | - | - |
 | bug-task2-incremental-cli-parser | 1 | 0 | - | - | - |
 | candidate_pattern | 1 | 0 | - | - | - |
-| candidate_probe_uncaught_count | 1 | 1 | 6 | 6 | 6 |
 | candidate_rehearsal_run_recorded | 2 | 0 | - | - | - |
 | canonical_contract_fix_committed | 1 | 0 | - | - | - |
 | canonical_doc_change_committed | 4 | 0 | - | - | - |
@@ -79,7 +76,6 @@ Latest Evidence Timestamp: 2026-09-07T19:12:02.198771Z
 | dependency_risk_caveat_scope_status | 1 | 0 | - | - | - |
 | design-sharpening | 1 | 0 | - | - | - |
 | detection_latency_seconds | 3 | 3 | 47 | 97 | 48 |
-| diagnosis_baseline | 1 | 0 | - | - | - |
 | diagnosis_clarity_score | 4 | 4 | 4 | 5 | 5 |
 | discovery_defined_a0_1 | 1 | 1 | 1 | 1 | 1 |
 | duration_seconds | 3 | 3 | 14 | 113 | 85 |
@@ -115,7 +111,6 @@ Latest Evidence Timestamp: 2026-09-07T19:12:02.198771Z
 | http_status_coverage_strict | 2 | 0 | - | - | - |
 | http_status_coverage_structural | 1 | 0 | - | - | - |
 | hypothesis_confirmed | 3 | 3 | 1 | 1 | 1 |
-| hypothesis_selection | 1 | 0 | - | - | - |
 | implementation_lines | 2 | 2 | 196 | 288 | 242 |
 | incremental-input1 | 1 | 0 | - | - | - |
 | incremental-input2 | 1 | 0 | - | - | - |
@@ -175,27 +170,6 @@ Latest Evidence Timestamp: 2026-09-07T19:12:02.198771Z
 | patch_size | 1 | 1 | 7 | 7 | 7 |
 | phase0-setup | 1 | 0 | - | - | - |
 | phase1_execution_run | 1 | 0 | - | - | - |
-| phase_2_outcome | 1 | 0 | - | - | - |
-| phase_3_candidate_classification | 1 | 0 | - | - | - |
-| phase_3_candidate_uncaught_count | 1 | 1 | 0 | 0 | 0 |
-| phase_3_diagnosis_baseline | 1 | 0 | - | - | - |
-| phase_3_outcome | 1 | 0 | - | - | - |
-| phase_3_test_suite_status | 1 | 0 | - | - | - |
-| phase_4_candidate_scope_clarification | 1 | 0 | - | - | - |
-| phase_4_outcome | 1 | 0 | - | - | - |
-| phase_4_replay_gap_inventory | 1 | 0 | - | - | - |
-| phase_5_diagnosis_baseline | 1 | 0 | - | - | - |
-| phase_5_outcome | 1 | 0 | - | - | - |
-| phase_5_patch_gate | 1 | 0 | - | - | - |
-| phase_5_simulation_results | 1 | 0 | - | - | - |
-| phase_5_test_suite_status | 1 | 0 | - | - | - |
-| phase_f_rrg01_real_run_result | 1 | 0 | - | - | - |
-| phase_f_rrg02_real_run_result | 1 | 0 | - | - | - |
-| phase_f_rrg03_planning_started | 1 | 0 | - | - | - |
-| phase_f_rrg03_real_execution_result | 1 | 0 | - | - | - |
-| phase_f_rrg03_real_run02_result | 1 | 0 | - | - | - |
-| phase_f_rrg03_remediation_boundary | 1 | 0 | - | - | - |
-| phase_result_separation | 1 | 0 | - | - | - |
 | pip_install_pyyaml | 1 | 0 | - | - | - |
 | pr_opened_run_002 | 1 | 0 | - | - | - |
 | pr_opened_run_003 | 1 | 0 | - | - | - |
@@ -227,7 +201,6 @@ Latest Evidence Timestamp: 2026-09-07T19:12:02.198771Z
 | rework_loops | 1 | 1 | 0 | 0 | 0 |
 | rework_semantic | 1 | 0 | - | - | - |
 | rework_test_isolation | 1 | 0 | - | - | - |
-| rrg01_rrg02_cross_diagnosis | 1 | 0 | - | - | - |
 | run_002_availability | 1 | 0 | - | - | - |
 | run_003_condition_semantic_calibration | 1 | 0 | - | - | - |
 | run_003_runtime_validation_status | 1 | 0 | - | - | - |
@@ -295,7 +268,6 @@ Latest Evidence Timestamp: 2026-09-07T19:12:02.198771Z
 | test_pass_rate_spec_first | 2 | 2 | 1 | 1 | 1 |
 | test_pass_rate_test_first | 1 | 1 | 1 | 1 | 1 |
 | test_pass_rate_unpatched | 1 | 0 | - | - | - |
-| test_suite_status | 1 | 0 | - | - | - |
 | testability-incremental | 1 | 0 | - | - | - |
 | testability-single-shot | 1 | 0 | - | - | - |
 | tests-missing | 1 | 0 | - | - | - |
@@ -307,8 +279,6 @@ Latest Evidence Timestamp: 2026-09-07T19:12:02.198771Z
 | unnecessary_commit_delta | 4 | 4 | 0 | 2 | 1.5 |
 | validation-completeness | 1 | 0 | - | - | - |
 | validation_completeness | 1 | 0 | - | - | - |
-| validator_signal_after_patch | 1 | 1 | 1 | 1 | 1 |
-| validator_signal_before_patch | 1 | 1 | 0 | 0 | 0 |
 | verdict | 3 | 0 | - | - | - |
 | verdict-recalibrated | 1 | 0 | - | - | - |
 | wrong_organ_corrections | 1 | 1 | 0 | 0 | 0 |
@@ -327,7 +297,6 @@ Latest Evidence Timestamp: 2026-09-07T19:12:02.198771Z
 - `experiments/2026-04-14_upfront-structuring-replication/results/evidence.jsonl`
 - `experiments/2026-04-15_agent-task-validity/results/evidence.jsonl`
 - `experiments/2026-04-19_generated-artifact-contract-validation/results/evidence.jsonl`
-- `experiments/2026-04-23_agent-failure-surface/results/evidence.jsonl`
 - `experiments/2026-04-23_phase-1-drift-injection/results/evidence.jsonl`
 - `experiments/2026-05-01_agent-skill-minimal-layer-instrumentation/results/evidence.jsonl`
 - `experiments/2026-05-25_outcome-evidence-replication-series/results/evidence.jsonl`

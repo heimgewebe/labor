@@ -65,7 +65,6 @@ PRE_T005_EXPERIMENTS = frozenset({
     "2026-04-14_upfront-structuring-replication",
     "2026-04-15_agent-task-validity",
     "2026-04-19_generated-artifact-contract-validation",
-    "2026-04-23_agent-failure-surface",
     "2026-04-23_phase-1-drift-injection",
     "2026-05-01_agent-skill-minimal-layer-instrumentation",
     "2026-05-25_outcome-evidence-replication-series",

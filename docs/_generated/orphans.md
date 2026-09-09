@@ -3,7 +3,7 @@
 
 # Unreferenced Documents
 
-Unexpected orphans (110 found):
+Unexpected orphans (105 found):
 
 - `docs/ecosystem/README.md`
 - `docs/ecosystem/vibe-lab-productive-role.md`
@@ -38,11 +38,6 @@ Unexpected orphans (110 found):
 - `experiments/2026-04-19_generated-artifact-contract-validation/artifacts/README.md`
 - `experiments/2026-04-19_generated-artifact-contract-validation/artifacts/contract-v2-reconciliation.md`
 - `experiments/2026-04-19_generated-artifact-contract-validation/artifacts/run-template.md`
-- `experiments/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg01-real/fixtures/before.md`
-- `experiments/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg02-real/fixtures/before.md`
-- `experiments/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg03-real-02/fixtures/before.md`
-- `experiments/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg03-real/fixtures/before.md`
-- `experiments/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg03/fixtures/before.md`
 - `experiments/2026-04-23_phase-1-drift-injection/artifacts/run-template.md`
 - `experiments/2026-04-23_phase-1-drift-injection/fixtures/README.md`
 - `experiments/2026-05-01_agent-skill-minimal-layer-instrumentation/artifacts/run-001-promotion-readiness-prepared-without-measurement/auditor-output.md`
@@ -116,7 +111,7 @@ Unexpected orphans (110 found):
 - `tests/fixtures/model_lab_next_blocker_triage/_evidence/assessment-context.md`
 - `tests/fixtures/pr_scope/valid/summary.md`
 
-Expected orphans (111 found):
+Expected orphans (108 found):
 
 - `experiments/2026-04-08_spec-first/CONTEXT.md` — experiment_bundle_local_context
 - `experiments/2026-04-08_spec-first/INITIAL.md` — experiment_bundle_initial_prompt
@@ -171,9 +166,6 @@ Expected orphans (111 found):
 - `experiments/2026-04-19_generated-artifact-contract-validation/INITIAL.md` — experiment_bundle_initial_prompt
 - `experiments/2026-04-19_generated-artifact-contract-validation/failure_modes.md` — experiment_bundle_local_analysis
 - `experiments/2026-04-19_generated-artifact-contract-validation/method.md` — experiment_bundle_method
-- `experiments/2026-04-23_agent-failure-surface/CONTEXT.md` — experiment_bundle_local_context
-- `experiments/2026-04-23_agent-failure-surface/INITIAL.md` — experiment_bundle_initial_prompt
-- `experiments/2026-04-23_agent-failure-surface/failure_modes.md` — experiment_bundle_local_analysis
 - `experiments/2026-04-23_phase-1-drift-injection/INITIAL.md` — experiment_bundle_initial_prompt
 - `experiments/2026-04-23_phase-1-drift-injection/failure_modes.md` — experiment_bundle_local_analysis
 - `experiments/2026-05-01_agent-skill-minimal-layer-instrumentation/CONTEXT.md` — experiment_bundle_local_context

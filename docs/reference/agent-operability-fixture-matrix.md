@@ -372,7 +372,7 @@ nicht als Validator- oder Schema-Gate implementiert.
 
 **Audit:**
 - `covered: false`
-- `test_ref: experiments/2026-04-23_agent-failure-surface/results/replay-gap-candidates.md`
+- `test_ref: experiments/_archive/2026-04-23_agent-failure-surface/results/replay-gap-candidates.md`
 - `gap: intentional (v0.2)`
 
 ### 5.5 Inhaltliche Tiefe von `extracted_facts` (P5-A)
@@ -436,7 +436,7 @@ Phase 2 schließt den Fall „gesetzt + leer"; Phase 5 bestätigt, dass
 
 ### 5.9 RRG-03 Locator Drift After Partial Apply
 
-Phase F des Experiments `2026-04-23_agent-failure-surface` hat im Real-Run
+Phase F des archivierten Experiments `2026-04-23_agent-failure-surface` hat im Real-Run
 fixture-spezifisch belegt, dass ein in C1 etablierter Locator nach realer
 Step-A-Mutation auf einen anderen Treffer re-resolved (`classification:
 drifted`, `patch_gate.triggered: true`). Der Beleg ist auf die Fixture
@@ -450,7 +450,7 @@ CI-Eingriff. Vertragliche Ergänzung: `contracts/command-semantics.md`
 
 **Audit:**
 - `covered: true`
-- `test_ref: experiments/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg03-real/observed.json`
+- `test_ref: experiments/_archive/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg03-real/observed.json`
 - `gap: intentional (v0.1)`
 - `evidence: classification=drifted; patch_gate.triggered=true`
 - `boundary: fixture-specific proof only`

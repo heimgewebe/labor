@@ -6,15 +6,15 @@ created: "2026-04-30"
 updated: "2026-05-01"
 relations:
   - type: references
-    target: "../../experiments/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg01-real/observed.json"
+    target: "../../experiments/_archive/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg01-real/observed.json"
   - type: references
-    target: "../../experiments/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg02-real/observed.json"
+    target: "../../experiments/_archive/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg02-real/observed.json"
   - type: references
-    target: "../../experiments/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg03-real/observed.json"
+    target: "../../experiments/_archive/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg03-real/observed.json"
   - type: references
-    target: "../../experiments/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg03-real-02/observed.json"
+    target: "../../experiments/_archive/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg03-real-02/observed.json"
   - type: references
-    target: "../../experiments/2026-04-23_agent-failure-surface/results/phase-f-rrg03-locator-drift.md"
+    target: "../../experiments/_archive/2026-04-23_agent-failure-surface/results/phase-f-rrg03-locator-drift.md"
   - type: references
     target: "../../decisions/process/2026-04-30-rrg03-remediation-boundary.yml"
   - type: references
@@ -40,11 +40,11 @@ Ist-Zustand bewertet werden, der den Befund erzeugt hat.
 
 Alle drei RRGs sind seit 2026-05-01 fixture-proven. Quellen:
 
-- `experiments/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg01-real/observed.json`
-- `experiments/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg02-real/observed.json`
-- `experiments/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg03-real/observed.json`
-- `experiments/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg03-real-02/observed.json`
-- `experiments/2026-04-23_agent-failure-surface/results/phase-f-rrg03-locator-drift.md`
+- `experiments/_archive/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg01-real/observed.json`
+- `experiments/_archive/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg02-real/observed.json`
+- `experiments/_archive/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg03-real/observed.json`
+- `experiments/_archive/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg03-real-02/observed.json`
+- `experiments/_archive/2026-04-23_agent-failure-surface/results/phase-f-rrg03-locator-drift.md`
 - `decisions/process/2026-04-30-rrg03-remediation-boundary.yml`
 
 | RRG | classification | patch_gate.triggered | Belegumfang (abgeleitet) | Drift-Achse |
@@ -169,7 +169,7 @@ Decision Preimage, nicht für eine abgeschlossene Entscheidung.
 
 ## Zusatzbeleg Run 02 (Injection-Before Pattern)
 
-Quelle: `experiments/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg03-real-02/observed.json`
+Quelle: `experiments/_archive/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg03-real-02/observed.json`
 
 Run 02 prüft ein anderes Drift-Muster als Run 01:
 

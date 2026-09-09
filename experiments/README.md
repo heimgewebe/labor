@@ -36,12 +36,12 @@ Dies ist das operative Labor des Vibe-Labs. Hier werden Hypothesen getestet und 
 - [Upfront Structuring Replication](2026-04-14_upfront-structuring-replication/CONTEXT.md)
 - [Prompt-Length Control](2026-04-14_prompt-length-control/CONTEXT.md)
 
-## In Design (noch nicht ausgeführt)
-- [Agent Failure Surface Mapping](2026-04-23_agent-failure-surface/CONTEXT.md) —
-  fünfphasige Reihe zur adversarialen Härtung des Agent-Operability-Layers
-  (Drift Injection, Semantic Contradiction, Chain Integrity Stress,
-  Replay Reality Gap, Adversarial Agent Simulation). `status: designed`,
-  jede Phase operativ gekoppelt an Fixture/Test/Validator-Konsequenz.
+## Archivierte Evidenzreihen
+- [Agent Failure Surface Mapping](_archive/2026-04-23_agent-failure-surface/CONTEXT.md) —
+  historische, ausgeführte Agent-Operability-Evidenzreihe. RRG-01/02/03 sind
+  fixture-spezifisch belegt; die vorgeschlagenen v0.2-Remediationen wurden nie
+  accepted oder adopted. Die Archivierung beendet die aktive Experimentfläche,
+  nicht den offenen technischen RRG-Befund; siehe `results/archive-decision.md`.
 
 ---
 
