@@ -63,7 +63,7 @@ Jeder Beitrag ordnet sich einem dieser Typen zu:
 | **Experiment**       | Issue: `experiment-proposal.yml`| `experiments/<name>/`        | Manifest und Methode initialisiert, `evidence.jsonl` vorhanden   |
 | **Catalog Entry**    | PR: `promotion.md`             | `catalog/`                   | Experiment abgeschlossen, Evidenz belastbar, Schema valide       |
 | **Combo**            | PR: `promotion.md`             | `catalog/combos/`            | Mindestens zwei Practices referenziert, eigene Evidenz vorhanden |
-| **Prompt**           | PR: `promotion.md`             | `prompts/adopted/`           | Experiment-Rückverweis, menschenlesbar, realer Verbraucher       |
+| **Prompt**           | PR: `promotion.md`             | `prompts/adopted/`           | Experiment-Rückverweis; Frontmatter: `consumer` + `decision_target` |
 | **Decision Artifact**| PR / Review / Governance        | `decisions/`                 | Entsteht aus Prozess, nicht über eigenes Intake-Formular         |
 
 > **Hinweis:** Decision Artifacts haben kein eigenes Issue-Formular. Sie entstehen typischerweise aus PR-Reviews, Governance-Diskussionen oder Prozess-Retrospektiven.

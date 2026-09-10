@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
-"""Direkte Regressionstests für die P2-Kreuzregel in validate_schema.py.
+"""Direkte Regressionstests für zusätzliche Kreuzregeln in validate_schema.py.
 
-Die Regel:
+Neben der historischen P2-Gegenbelegregel prüft diese Datei die aktive
+Prompt-Promotion-Grenze: ``prompts/adopted/`` verlangt einen realen Consumer
+und ein explizites Decision Target.
+
+Historische P2-Regel:
   decision_type=result_assessment
     + counterevidence_checked=False + verdict='confirms'  → Fehler
     + counter_hypothesis_outcome='found_and_confirming' + verdict='confirms' → Fehler
@@ -160,6 +164,54 @@ class P2CounterevidenceRuleTests(unittest.TestCase):
         result = vs.check_counterevidence_rule(data, rel)
         self.assertIsNotNone(result)
         self.assertIn(rel, result)
+
+
+class AdoptedPromptPromotionFieldTests(unittest.TestCase):
+    """Active adopted prompts need explicit consumer and decision target."""
+
+    def setUp(self) -> None:
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.repo_root = Path(self.tmp.name)
+        self.prompt = self.repo_root / "prompts" / "adopted" / "example.md"
+
+    def _check(self, fm: dict) -> list[str]:
+        return vs.check_adopted_prompt_promotion_fields(
+            self.prompt, fm, repo_root=self.repo_root
+        )
+
+    def test_consumer_and_decision_target_are_required(self) -> None:
+        errors = self._check({"title": "Example", "status": "adopted"})
+        self.assertEqual(len(errors), 2)
+        self.assertTrue(any("consumer" in error for error in errors))
+        self.assertTrue(any("decision_target" in error for error in errors))
+
+    def test_non_empty_consumer_and_decision_target_pass(self) -> None:
+        errors = self._check(
+            {
+                "title": "Example",
+                "status": "adopted",
+                "consumer": "heimgewebe/example:prompt-runner",
+                "decision_target": "Use this prompt for bounded API-spec generation.",
+            }
+        )
+        self.assertEqual(errors, [])
+
+    def test_blank_values_fail_closed(self) -> None:
+        errors = self._check(
+            {
+                "consumer": "  ",
+                "decision_target": "",
+            }
+        )
+        self.assertEqual(len(errors), 2)
+
+    def test_non_adopted_prompt_path_is_unaffected(self) -> None:
+        candidate = self.repo_root / "docs" / "example.md"
+        errors = vs.check_adopted_prompt_promotion_fields(
+            candidate, {}, repo_root=self.repo_root
+        )
+        self.assertEqual(errors, [])
 
 
 class CanonicalDecisionPathTests(unittest.TestCase):

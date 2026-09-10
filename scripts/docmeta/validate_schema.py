@@ -116,6 +116,34 @@ def check_counterevidence_rule(data: dict, rel: str) -> str | None:
     return None
 
 
+def check_adopted_prompt_promotion_fields(
+    md_file: Path, fm: dict, *, repo_root: Path = REPO_ROOT
+) -> list[str]:
+    """Require explicit consumer/decision intent for active adopted prompts.
+
+    ``prompts/adopted/`` is a library promotion surface, not a projection of
+    experiment status. A prompt may enter that surface only when both its real
+    consumer and the decision/use target are explicit in frontmatter.
+    """
+    try:
+        rel_path = md_file.relative_to(repo_root)
+    except ValueError:
+        return []
+
+    if len(rel_path.parts) < 3 or rel_path.parts[:2] != ("prompts", "adopted"):
+        return []
+
+    problems: list[str] = []
+    for field in ("consumer", "decision_target"):
+        value = fm.get(field)
+        if not isinstance(value, str) or not value.strip():
+            problems.append(
+                f"  ❌ {rel_path.as_posix()}: {field} muss für aktive adopted Prompts "
+                "als nicht-leerer String im Frontmatter gesetzt sein."
+            )
+    return problems
+
+
 def load_schema(schema_path: Path) -> dict:
     with open(schema_path) as f:
         return json.load(f)
@@ -738,10 +766,17 @@ def validate_docmeta_frontmatter():
 
         try:
             validator.validate(fm)
-            print(f"  ✅ {md_file.relative_to(REPO_ROOT)}")
-            checked += 1
         except ValidationError as e:
             errors.append(f"  ❌ {md_file.relative_to(REPO_ROOT)}: {e.message}")
+            continue
+
+        promotion_errors = check_adopted_prompt_promotion_fields(md_file, fm)
+        if promotion_errors:
+            errors.extend(promotion_errors)
+            continue
+
+        print(f"  ✅ {md_file.relative_to(REPO_ROOT)}")
+        checked += 1
 
     if checked == 0:
         print("  (keine Markdown-Dateien mit Frontmatter in den Zielzonen gefunden)")
