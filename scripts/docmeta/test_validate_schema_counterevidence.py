@@ -205,6 +205,29 @@ class AdoptedPromptPromotionFieldTests(unittest.TestCase):
             vs.REPO_ROOT = original_root
             vs.errors.clear()
 
+    def test_docmeta_scan_accepts_adopted_prompt_with_required_metadata(self) -> None:
+        self.prompt.parent.mkdir(parents=True)
+        self.prompt.write_text(
+            "---\n"
+            "title: Example\n"
+            "status: adopted\n"
+            "consumer: heimgewebe/example:prompt-runner\n"
+            "decision_target: Use this prompt for bounded API-spec generation.\n"
+            "---\n"
+            "# Example\n",
+            encoding="utf-8",
+        )
+
+        original_root = vs.REPO_ROOT
+        try:
+            vs.REPO_ROOT = self.repo_root
+            vs.errors.clear()
+            vs.validate_docmeta_frontmatter()
+            self.assertEqual(vs.errors, [])
+        finally:
+            vs.REPO_ROOT = original_root
+            vs.errors.clear()
+
     def test_non_empty_consumer_and_decision_target_pass(self) -> None:
         errors = self._check(
             {
