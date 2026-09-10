@@ -37,6 +37,18 @@ Relevante Constraints werden vor der Implementierung explizit und prüfbar gemac
 
 Im einzelnen Quell-Setup wurden für Spec-First, Ramble-First und Code-First `test_pass_rate`-Werte von `1.0`, `0.8` und `0.8` beobachtet. Die Prompt-Arme unterschieden sich in mehreren Merkmalen; quantitative Tokenzahlen und ein interner Mechanismus wurden nicht gemessen.
 
+## Beispiel
+
+```
+Bevor du Code schreibst, definiere:
+1. Input-Constraints: [Format, Grenzen, Sonderfälle]
+2. Output-Constraints: [Struktur, Typen, Formatierung]
+3. Fehlerverhalten: [Ungültige Inputs → erwartetes Verhalten]
+4. Edge Cases: [Leere Eingabe, Maximalwerte, Sonderzeichen]
+
+Erst dann: Implementiere.
+```
+
 ## Nicht-Claims
 
 - Ein allgemeiner Qualitätseffekt ist nicht belegt.
