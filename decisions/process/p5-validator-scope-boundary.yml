@@ -93,8 +93,8 @@ next_steps:
   - "Kein weiterer Validator-Eingriff ohne konkreten passed_but_wrong-Beleg."
 
 evidence_refs:
-  - path: "experiments/2026-04-23_agent-failure-surface/results/phase5-adversarial-agent-simulation.md"
+  - path: "experiments/_archive/2026-04-23_agent-failure-surface/results/phase5-adversarial-agent-simulation.md"
     section: "Gesamtbewertung"
-  - path: "experiments/2026-04-23_agent-failure-surface/artifacts/run-phase5/execution.txt"
-  - path: "experiments/2026-04-23_agent-failure-surface/results/evidence.jsonl"
+  - path: "experiments/_archive/2026-04-23_agent-failure-surface/artifacts/run-phase5/execution.txt"
+  - path: "experiments/_archive/2026-04-23_agent-failure-surface/results/evidence.jsonl"
     section: "phase_5_*"

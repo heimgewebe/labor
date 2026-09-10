@@ -31,8 +31,8 @@ rationale: |
   bleibt vorbehaltlich weiterer Diagnose.
 
 evidence_refs:
-  - path: "experiments/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg03-real/observed.json"
-  - path: "experiments/2026-04-23_agent-failure-surface/results/phase-f-rrg03-locator-drift.md"
+  - path: "experiments/_archive/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg03-real/observed.json"
+  - path: "experiments/_archive/2026-04-23_agent-failure-surface/results/phase-f-rrg03-locator-drift.md"
 
 finding:
   classification: drifted

@@ -378,12 +378,12 @@ durch das Fixture-Korpus unter `tests/fixtures/cross_contract/`.
 
 ### RRG-03 — Locator Drift After Partial Apply
 
-Phase F des Experiments `2026-04-23_agent-failure-surface` hat im Real-Run
+Phase F des archivierten Experiments `2026-04-23_agent-failure-surface` hat im Real-Run
 fixture-spezifisch belegt, dass ein in C1 etablierter Locator nach realer
 Step-A-Mutation auf einen anderen Treffer re-resolved werden kann
 (`classification: drifted`, `patch_gate.triggered: true`). Belege:
-`experiments/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg03-real/observed.json`,
-`experiments/2026-04-23_agent-failure-surface/results/phase-f-rrg03-locator-drift.md`.
+`experiments/_archive/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg03-real/observed.json`,
+`experiments/_archive/2026-04-23_agent-failure-surface/results/phase-f-rrg03-locator-drift.md`.
 
 **Klarstellungen für v0.1:**
 

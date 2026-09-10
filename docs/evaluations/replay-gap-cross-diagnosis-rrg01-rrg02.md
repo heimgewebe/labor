@@ -9,19 +9,19 @@ relations:
   - type: references
     target: "rrg03-remediation-strategy-comparison.md"
   - type: references
-    target: "../../experiments/2026-04-23_agent-failure-surface/results/replay-gap-candidates.md"
+    target: "../../experiments/_archive/2026-04-23_agent-failure-surface/results/replay-gap-candidates.md"
   - type: references
-    target: "../../experiments/2026-04-23_agent-failure-surface/results/phase-f-rrg03-locator-drift.md"
+    target: "../../experiments/_archive/2026-04-23_agent-failure-surface/results/phase-f-rrg03-locator-drift.md"
   - type: references
-    target: "../../experiments/2026-04-23_agent-failure-surface/results/evidence.jsonl"
+    target: "../../experiments/_archive/2026-04-23_agent-failure-surface/results/evidence.jsonl"
   - type: references
     target: "../../decisions/process/2026-04-30-rrg03-remediation-boundary.yml"
   - type: references
     target: "../../contracts/command-semantics.md"
   - type: references
-    target: "../../experiments/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg01-real/observed.json"
+    target: "../../experiments/_archive/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg01-real/observed.json"
   - type: references
-    target: "../../experiments/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg02-real/observed.json"
+    target: "../../experiments/_archive/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg02-real/observed.json"
 ---
 
 # Cross-Diagnosis RRG-01 / RRG-02 gegen RRG-03-Remediation-Kandidaten
@@ -51,7 +51,7 @@ Grundlage für spätere Real-Runs und eventuelle Entscheidungen dienen kann.
 ### RRG-03 Real-Runs (belegt)
 
 Quelle:
-`experiments/2026-04-23_agent-failure-surface/results/phase-f-rrg03-locator-drift.md`
+`experiments/_archive/2026-04-23_agent-failure-surface/results/phase-f-rrg03-locator-drift.md`
 
 | | Run 01 (removal-drift) | Run 02 (injection-before-drift) |
 |---|---|---|
@@ -73,7 +73,7 @@ Anker ist — keine stabile Identität.
 ### RRG-01: Disk-State-Apply-Delta (Real-Run-Beleg vorhanden seit 2026-05-01)
 
 Quelle:
-`experiments/2026-04-23_agent-failure-surface/results/replay-gap-candidates.md`
+`experiments/_archive/2026-04-23_agent-failure-surface/results/replay-gap-candidates.md`
 Spalte: `RRG-01 Disk-State-Apply-Delta`
 
 | Feld | Wert |
@@ -81,7 +81,7 @@ Spalte: `RRG-01 Disk-State-Apply-Delta`
 | Betroffene Achse | Disk-State, Idempotenz vs. Nicht-Idempotenz, Validierung nach Mutation |
 | Status in replay-gap-candidates.md | `fixture_proven (was candidate_for_phase_f)` |
 | Priorität | Phase F: nach RRG-03 |
-| Real-Run-Beleg | `experiments/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg01-real/observed.json` |
+| Real-Run-Beleg | `experiments/_archive/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg01-real/observed.json` |
 
 **Beschreibung (aus replay-gap-candidates.md):**
 Reale `write_change`-Anwendung kann Disk-Inhalt verändern (z.B. line endings,
@@ -107,7 +107,7 @@ Vorher-Zustand schlicht nicht mehr dem Ist-Zustand auf Disk entspricht.
 ### RRG-02: Git-Working-Tree-Index-Effects (fixture_proven seit 2026-05-01)
 
 Quelle:
-`experiments/2026-04-23_agent-failure-surface/results/replay-gap-candidates.md`
+`experiments/_archive/2026-04-23_agent-failure-surface/results/replay-gap-candidates.md`
 Spalte: `RRG-02 Git-Working-Tree-Index-Effects`
 
 | Feld | Wert |
@@ -115,7 +115,7 @@ Spalte: `RRG-02 Git-Working-Tree-Index-Effects`
 | Betroffene Achse | Git-Index / Working Tree, Reihenfolge realer Mutationen |
 | Status in replay-gap-candidates.md | `fixture_proven` (war: `intentional_gap`) |
 | Priorität | Phase F: nach RRG-01 |
-| Real-Run-Beleg | `experiments/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg02-real/observed.json` |
+| Real-Run-Beleg | `experiments/_archive/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg02-real/observed.json` |
 
 **Beschreibung (aus replay-gap-candidates.md):**
 Reale Mutationen können untracked/modified/indexed Nebenwirkungen haben.
@@ -291,7 +291,7 @@ Geprüfte Pfade:
 - `tests/fixtures/command_chains/`
 - `tests/fixtures/agent_commands/write_change/`
 - `tests/fixtures/agent_handoff/`
-- `experiments/2026-04-23_agent-failure-surface/artifacts/*/fixtures/`
+- `experiments/_archive/2026-04-23_agent-failure-surface/artifacts/*/fixtures/`
 
 **Ergebnis:**
 
@@ -405,7 +405,7 @@ RRG-01/RRG-02 partially overlap and are now separately fixture-proven
 
 ### Durchgeführter Real-Run
 
-Artefakt: `experiments/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg01-real/`
+Artefakt: `experiments/_archive/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg01-real/`
 
 **Szenario:** CRLF-to-LF-Normalisierung durch den Apply-Layer.
 
@@ -457,7 +457,7 @@ allgemeine Locator-Sicherheit. Kein Patch, kein Decision Preimage, kein accepted
 
 ### Durchgeführter Real-Run
 
-Artefakt: `experiments/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg02-real/`
+Artefakt: `experiments/_archive/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg02-real/`
 
 **Szenario:** Git-Working-Tree-Index-Drift durch gestufte + nicht-gestufte Mutation.
 

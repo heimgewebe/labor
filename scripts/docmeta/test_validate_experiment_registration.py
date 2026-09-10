@@ -422,6 +422,25 @@ def test_archived_operator_lab_id_cannot_reuse_legacy_exemption() -> None:
             MODULE.EXPERIMENTS = original
 
 
+def test_archived_agent_failure_id_cannot_reuse_legacy_exemption() -> None:
+    retired_id = "2026-04-23_agent-failure-surface"
+    assert retired_id not in MODULE.PRE_T005_EXPERIMENTS
+    with tempfile.TemporaryDirectory() as raw:
+        experiments = Path(raw) / "experiments"
+        (experiments / retired_id).mkdir(parents=True)
+        original = MODULE.EXPERIMENTS
+        MODULE.EXPERIMENTS = experiments
+        try:
+            try:
+                MODULE.validate_all(now=T005_NOW)
+            except ValueError as exc:
+                assert "new experiment requires registration.v2.json" in str(exc)
+                return
+            raise AssertionError("archived Agent-Failure experiment ID reused the retired legacy exemption")
+        finally:
+            MODULE.EXPERIMENTS = original
+
+
 def test_archived_pr_context_id_cannot_reuse_legacy_exemption() -> None:
     retired_id = "2026-06-10_pr-agent-context-comparison-series"
     assert retired_id not in MODULE.PRE_T005_EXPERIMENTS

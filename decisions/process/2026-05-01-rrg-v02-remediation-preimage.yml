@@ -41,13 +41,13 @@ references:
     role: "Strategie-Vergleich der v0.2-Kandidaten gegen alle drei Drift-Klassen"
   - path: "docs/evaluations/replay-gap-cross-diagnosis-rrg01-rrg02.md"
     role: "Cross-Diagnosis RRG-01/RRG-02 gegen RRG-03-Kandidaten; Breaking-Change-Scan"
-  - path: "experiments/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg01-real/observed.json"
+  - path: "experiments/_archive/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg01-real/observed.json"
     role: "Fixture-Beleg RRG-01: content_drifted (CRLF→LF-Normalisierung)"
-  - path: "experiments/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg02-real/observed.json"
+  - path: "experiments/_archive/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg02-real/observed.json"
     role: "Fixture-Beleg RRG-02: git_state_drifted (HEAD/Index/WT-Divergenz)"
-  - path: "experiments/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg03-real/observed.json"
+  - path: "experiments/_archive/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg03-real/observed.json"
     role: "Fixture-Beleg RRG-03 Run 01: drifted (Removal-Drift)"
-  - path: "experiments/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg03-real-02/observed.json"
+  - path: "experiments/_archive/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg03-real-02/observed.json"
     role: "Fixture-Beleg RRG-03 Run 02: drifted (Injection-Before-Drift)"
   - path: "contracts/command-semantics.md"
     role: "Vertraglicher Ist-Zustand v0.1; Ausgangspunkt für v0.2-Hypothesen"
@@ -78,7 +78,7 @@ evidence_layer:
           Zeilenenden während Step-A-Write. Step-B exact_before (CRLF-Variante)
           findet nach dem Write keinen Match auf Disk. LF-Variante ist noch
           vorhanden; der Locator-Text ist unverändert.
-        source: "experiments/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg01-real/observed.json"
+        source: "experiments/_archive/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg01-real/observed.json"
         drift_axis: "Content-/Snapshot-Drift durch Apply-Layer-Normalisierung"
       - id: RRG-02
         classification: git_state_drifted
@@ -91,7 +91,7 @@ evidence_layer:
           Step-B exact_before ist in HEAD und Index vorhanden, aber nicht
           im Working Tree. Welcher Git-State autoritativ ist, bleibt im
           Dry-Run-Contract undefiniert.
-        source: "experiments/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg02-real/observed.json"
+        source: "experiments/_archive/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg02-real/observed.json"
         drift_axis: "Git-State-Drift: HEAD / Index / Working-Tree-Divergenz"
       - id: RRG-03-run-01
         classification: drifted
@@ -102,7 +102,7 @@ evidence_layer:
           Removal-Drift: Step-A-Mutation entfernt einen Treffer, der Step-B-
           Locator "Validate token" wechselt von C1-Zeile 4 auf C3-Zeile 7
           (match_count 2→1, Index-0 rückt nach unten).
-        source: "experiments/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg03-real/observed.json"
+        source: "experiments/_archive/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg03-real/observed.json"
         drift_axis: "Locator-Positionsdrift: Removal-Drift"
       - id: RRG-03-run-02
         classification: drifted
@@ -113,7 +113,7 @@ evidence_layer:
           Injection-Before-Drift: Step-A-Mutation injiziert oberhalb einen
           neuen Treffer, der Step-B-Locator "Process request" wechselt von
           C1-Zeile 7 auf C3-Zeile 4 (match_count 3→4, Index-0 verschoben).
-        source: "experiments/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg03-real-02/observed.json"
+        source: "experiments/_archive/2026-04-23_agent-failure-surface/artifacts/run-phase-f-rrg03-real-02/observed.json"
         drift_axis: "Locator-Positionsdrift: Injection-Before-Drift"
 
   plausibel_abgeleitet:
