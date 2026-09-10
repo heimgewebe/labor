@@ -38,7 +38,7 @@ Es stellt keine Wirksamkeitsbehauptung auf.
 ## Relevante Vorarbeiten
 
 - `docs/evaluations/agent-skill-file-fruitfulness.md` — Metriken und Interpretation Budget
-- `experiments/2026-04-23_agent-failure-surface/` — Vorgänger-Experiment zur Agent-Fehlerflächenkartierung
+- `experiments/_archive/2026-04-23_agent-failure-surface/` — Vorgänger-Experiment zur Agent-Fehlerflächenkartierung
 - `experiments/2026-04-15_agent-task-validity/` — Task-Validity-Experiment als methodischer Vorläufer
 
 ## Einschränkungen
