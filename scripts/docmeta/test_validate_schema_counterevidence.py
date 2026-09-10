@@ -174,6 +174,17 @@ class AdoptedPromptPromotionFieldTests(unittest.TestCase):
         self.addCleanup(self.tmp.cleanup)
         self.repo_root = Path(self.tmp.name)
         self.prompt = self.repo_root / "prompts" / "adopted" / "example.md"
+        self.evidence = (
+            self.repo_root / "experiments" / "2026-04-14_base" / "results" / "result.md"
+        )
+        self.evidence.parent.mkdir(parents=True)
+        self.evidence.write_text("# Evidence\n", encoding="utf-8")
+        self.valid_relation = [
+            {
+                "type": "validated_by",
+                "target": "../../experiments/2026-04-14_base/results/result.md",
+            }
+        ]
 
     def _check(self, fm: dict) -> list[str]:
         return vs.check_adopted_prompt_promotion_fields(
@@ -181,14 +192,17 @@ class AdoptedPromptPromotionFieldTests(unittest.TestCase):
         )
 
     def test_consumer_and_decision_target_are_required(self) -> None:
-        errors = self._check({"title": "Example", "status": "adopted"})
+        errors = self._check(
+            {"title": "Example", "status": "adopted", "relations": self.valid_relation}
+        )
         self.assertEqual(len(errors), 2)
         self.assertTrue(any("consumer" in error for error in errors))
         self.assertTrue(any("decision_target" in error for error in errors))
 
     def test_missing_frontmatter_fails_closed(self) -> None:
         errors = self._check({})
-        self.assertEqual(len(errors), 2)
+        self.assertEqual(len(errors), 3)
+        self.assertTrue(any("validated_by" in error for error in errors))
 
     def test_docmeta_scan_rejects_adopted_prompt_without_frontmatter(self) -> None:
         self.prompt.parent.mkdir(parents=True)
@@ -199,8 +213,9 @@ class AdoptedPromptPromotionFieldTests(unittest.TestCase):
             vs.REPO_ROOT = self.repo_root
             vs.errors.clear()
             vs.validate_docmeta_frontmatter()
-            self.assertEqual(len(vs.errors), 2)
+            self.assertEqual(len(vs.errors), 3)
             self.assertTrue(all("prompts/adopted/example.md" in error for error in vs.errors))
+            self.assertTrue(any("validated_by" in error for error in vs.errors))
         finally:
             vs.REPO_ROOT = original_root
             vs.errors.clear()
@@ -213,6 +228,9 @@ class AdoptedPromptPromotionFieldTests(unittest.TestCase):
             "status: adopted\n"
             "consumer: heimgewebe/example:prompt-runner\n"
             "decision_target: Use this prompt for bounded API-spec generation.\n"
+            "relations:\n"
+            "  - type: validated_by\n"
+            "    target: ../../experiments/2026-04-14_base/results/result.md\n"
             "---\n"
             "# Example\n",
             encoding="utf-8",
@@ -235,6 +253,7 @@ class AdoptedPromptPromotionFieldTests(unittest.TestCase):
                 "status": "adopted",
                 "consumer": "heimgewebe/example:prompt-runner",
                 "decision_target": "Use this prompt for bounded API-spec generation.",
+                "relations": self.valid_relation,
             }
         )
         self.assertEqual(errors, [])
@@ -244,9 +263,53 @@ class AdoptedPromptPromotionFieldTests(unittest.TestCase):
             {
                 "consumer": "  ",
                 "decision_target": "",
+                "relations": self.valid_relation,
             }
         )
         self.assertEqual(len(errors), 2)
+
+    def test_missing_experiment_evidence_backlink_fails_closed(self) -> None:
+        errors = self._check(
+            {
+                "consumer": "heimgewebe/example:prompt-runner",
+                "decision_target": "Use this prompt.",
+                "relations": [],
+            }
+        )
+        self.assertEqual(len(errors), 1)
+        self.assertIn("validated_by", errors[0])
+
+    def test_nonexistent_experiment_evidence_target_fails_closed(self) -> None:
+        errors = self._check(
+            {
+                "consumer": "heimgewebe/example:prompt-runner",
+                "decision_target": "Use this prompt.",
+                "relations": [
+                    {
+                        "type": "validated_by",
+                        "target": "../../experiments/missing/results/result.md",
+                    }
+                ],
+            }
+        )
+        self.assertEqual(len(errors), 1)
+        self.assertIn("validated_by", errors[0])
+
+    def test_validated_by_outside_experiments_fails_closed(self) -> None:
+        outside = self.repo_root / "docs" / "result.md"
+        outside.parent.mkdir(parents=True)
+        outside.write_text("# Not experiment evidence\n", encoding="utf-8")
+        errors = self._check(
+            {
+                "consumer": "heimgewebe/example:prompt-runner",
+                "decision_target": "Use this prompt.",
+                "relations": [
+                    {"type": "validated_by", "target": "../../docs/result.md"}
+                ],
+            }
+        )
+        self.assertEqual(len(errors), 1)
+        self.assertIn("experiments/**/results/", errors[0])
 
     def test_non_adopted_prompt_path_is_unaffected(self) -> None:
         candidate = self.repo_root / "docs" / "example.md"

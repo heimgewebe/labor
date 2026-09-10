@@ -22,7 +22,7 @@ from pathlib import Path
 
 # Gemeinsame Pfad-Logik aus _paths.py
 sys.path.insert(0, str(Path(__file__).parent))
-from _paths import extract_frontmatter  # noqa: E402
+from _paths import extract_frontmatter, resolve_relation_target  # noqa: E402
 
 try:
     import yaml
@@ -122,8 +122,9 @@ def check_adopted_prompt_promotion_fields(
     """Require explicit consumer/decision intent for active adopted prompts.
 
     ``prompts/adopted/`` is a library promotion surface, not a projection of
-    experiment status. A prompt may enter that surface only when both its real
-    consumer and the decision/use target are explicit in frontmatter.
+    experiment status. A prompt may enter that surface only when its real
+    consumer, decision/use target and an evidence backlink into an experiment
+    results surface are explicit in frontmatter.
     """
     root = repo_root or REPO_ROOT
     try:
@@ -142,6 +143,37 @@ def check_adopted_prompt_promotion_fields(
                 f"  ❌ {rel_path.as_posix()}: {field} muss für aktive adopted Prompts "
                 "als nicht-leerer String im Frontmatter gesetzt sein."
             )
+
+    has_experiment_evidence = False
+    relations = fm.get("relations")
+    if isinstance(relations, list):
+        for relation in relations:
+            if not isinstance(relation, dict) or relation.get("type") != "validated_by":
+                continue
+            target = relation.get("target")
+            if not isinstance(target, str) or not target.strip():
+                continue
+            resolved = resolve_relation_target(md_file, target, root)
+            if resolved is None or not resolved.is_file():
+                continue
+            try:
+                target_rel = resolved.relative_to(root)
+            except ValueError:
+                continue
+            if (
+                target_rel.parts
+                and target_rel.parts[0] == "experiments"
+                and "results" in target_rel.parts[1:]
+            ):
+                has_experiment_evidence = True
+                break
+
+    if not has_experiment_evidence:
+        problems.append(
+            f"  ❌ {rel_path.as_posix()}: aktive adopted Prompts brauchen mindestens eine "
+            "validated_by-Relation auf eine existierende Datei unter experiments/**/results/."
+        )
+
     return problems
 
 
@@ -727,7 +759,8 @@ def validate_docmeta_frontmatter():
     - experiments/*/*.md    (außer _template/, _archive/)
     - experiments/*/results/result.md (außer _template/, _archive/)
 
-    Dateien ohne Frontmatter werden übersprungen (kein Fehler).
+    Dateien ohne Frontmatter werden grundsätzlich übersprungen; unter
+    ``prompts/adopted/`` sind Frontmatter und Promotion-Bindungen dagegen Pflicht.
     Dateien mit Frontmatter müssen gegen das Schema validieren.
     """
     if not DOCMETA_SCHEMA_PATH.exists():

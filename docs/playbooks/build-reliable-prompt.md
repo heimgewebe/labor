@@ -112,7 +112,7 @@ Danach:
 
 Wenn der Prompt bei mindestens 2 Aufgaben nachweislich funktioniert **und ein konkreter realer Verbraucher ihn übernehmen soll**:
 
-1. Als `prompts/adopted/<name>.md` ablegen; `consumer` und `decision_target` im Frontmatter setzen und im Promotion-PR benennen
+1. Als `prompts/adopted/<name>.md` ablegen; `consumer`, `decision_target` und eine `validated_by`-Relation auf die tragende Evidenz unter `experiments/**/results/` im Frontmatter setzen und im Promotion-PR benennen
 2. Technique-Eintrag in `catalog/techniques/` erstellen oder referenzieren
 3. Instruction-Blocks extrahieren (portierbare Bausteine)
 4. Anti-Pattern dokumentieren (was funktioniert **nicht**?)
