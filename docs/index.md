@@ -1,6 +1,7 @@
 ---
 title: "Dokumentation — Navigation"
 status: active
+triggered_by: "github:heimgewebe/bureau#442; conversation:user-request-2026-09-10-continue-labor-survivor-audit"
 canonicality: navigation
 relations:
   - type: references
@@ -227,7 +228,7 @@ Warum Exporte abgeleitete Artefakte sind: Sie enthalten keinen eigenständigen I
 | [catalog/combos/](../catalog/combos/) | Kuratierte Technique-Kombinationen |
 | [catalog/workflows/](../catalog/workflows/) | Operative Workflows |
 | [catalog/styles/](../catalog/styles/) | Prompting-Stile |
-| [prompts/adopted/](../prompts/adopted/) | Adoptierte Prompt-Templates |
+| `prompts/adopted/` | Promotionziel für consumergebundene Prompt-Templates |
 
 ### Instruction Blocks
 

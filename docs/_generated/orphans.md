@@ -3,7 +3,7 @@
 
 # Unreferenced Documents
 
-Unexpected orphans (105 found):
+Unexpected orphans (103 found):
 
 - `docs/ecosystem/README.md`
 - `docs/ecosystem/vibe-lab-productive-role.md`
@@ -92,8 +92,6 @@ Unexpected orphans (105 found):
 - `experiments/2026-08-24_outcome-bound-natural-pilot-sampling-unit-r3-v3/sampling-unit-cases.md`
 - `experiments/2026-08-24_outcome-bound-natural-pilot-sampling-unit-r3/sampling-unit-cases.md`
 - `instruction-blocks/evidence-bound-status.md`
-- `prompts/adopted/prompt-length-control.md`
-- `prompts/adopted/spec-first-api.md`
 - `tests/fixtures/challenge_versions/invalid/challenges/missing-version.md`
 - `tests/fixtures/challenge_versions/invalid/challenges/wrong-name.md`
 - `tests/fixtures/challenge_versions/valid/challenges/rest-api-v1.md`

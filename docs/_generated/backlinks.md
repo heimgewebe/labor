@@ -108,7 +108,6 @@
 - ← `docs/playbooks/build-reliable-prompt.md` (references)
 - ← `instruction-blocks/constraint-before-code.md` (derived_from)
 - ← `instruction-blocks/edge-case-enumeration.md` (references)
-- ← `prompts/adopted/prompt-length-control.md` (derived_from)
 
 ## `catalog/techniques/spec-first-prompting.md`
 
@@ -122,7 +121,6 @@
 - ← `instruction-blocks/edge-case-enumeration.md` (derived_from)
 - ← `instruction-blocks/spec-first.md` (derived_from)
 - ← `instruction-blocks/validate-against-spec.md` (derived_from)
-- ← `prompts/adopted/spec-first-api.md` (derived_from)
 
 ## `catalog/workflows/causal-control-study.md`
 
@@ -433,7 +431,6 @@
 - ← `catalog/styles/structured-specification.md` (validated_by)
 - ← `catalog/techniques/spec-first-prompting.md` (validated_by)
 - ← `catalog/workflows/spec-first-api-generation.md` (validated_by)
-- ← `prompts/adopted/spec-first-api.md` (validated_by)
 
 ## `experiments/2026-04-14_incremental-refinement/results/result.md`
 
@@ -445,7 +442,6 @@
 - ← `catalog/styles/constraint-first.md` (validated_by)
 - ← `catalog/techniques/prompt-length-control.md` (validated_by)
 - ← `catalog/workflows/causal-control-study.md` (validated_by)
-- ← `prompts/adopted/prompt-length-control.md` (validated_by)
 
 ## `experiments/2026-04-15_agent-task-validity/CONTEXT.md`
 

@@ -38,9 +38,9 @@ Lege eine Markdown-Datei in `raw-vibes/` an. Schreib auf, was dir auffällt — 
 
 ### Phase 3: Adoption / Bibliothek (`catalog/`, `prompts/adopted/`)
 
-**Anforderung: volle Evidenz + harte Prüfung.**
+**Anforderung: volle Evidenz + realer Verbraucher + harte Prüfung.**
 
-Erst wenn ein Experiment belastbare Ergebnisse liefert, wird es zur Übernahme vorgeschlagen:
+Erst wenn ein Experiment belastbare Ergebnisse liefert und ein konkreter realer Verbraucher die Übernahme benötigt, wird es zur Bibliotheks-Promotion vorgeschlagen:
 
 1. Erstelle einen PR mit dem Template **Promotion** (`promotion.md`)
 2. **Alle** Pflichtartefakte müssen vollständig sein:
@@ -50,7 +50,7 @@ Erst wenn ein Experiment belastbare Ergebnisse liefert, wird es zur Übernahme v
    - `failure_modes.md` — ausgefüllt, keine Template-Platzhalter
 3. Schema-Validierung muss bestehen (`make validate`)
 
-**Keine Evidenz, keine Promotion.** Katalogeinträge ohne belastbare Experimentdaten werden nicht akzeptiert.
+**Keine Evidenz oder kein realer Verbraucher, keine Promotion.** Bibliotheksartefakte ohne belastbare Experimentdaten oder konkrete aktuelle Nutzung werden nicht akzeptiert.
 
 ## Contribution Contract
 
@@ -63,7 +63,7 @@ Jeder Beitrag ordnet sich einem dieser Typen zu:
 | **Experiment**       | Issue: `experiment-proposal.yml`| `experiments/<name>/`        | Manifest und Methode initialisiert, `evidence.jsonl` vorhanden   |
 | **Catalog Entry**    | PR: `promotion.md`             | `catalog/`                   | Experiment abgeschlossen, Evidenz belastbar, Schema valide       |
 | **Combo**            | PR: `promotion.md`             | `catalog/combos/`            | Mindestens zwei Practices referenziert, eigene Evidenz vorhanden |
-| **Prompt**           | PR: `promotion.md`             | `prompts/adopted/`           | Experiment-Rückverweis, menschenlesbar                           |
+| **Prompt**           | PR: `promotion.md`             | `prompts/adopted/`           | Experiment-Rückverweis, menschenlesbar, realer Verbraucher       |
 | **Decision Artifact**| PR / Review / Governance        | `decisions/`                 | Entsteht aus Prozess, nicht über eigenes Intake-Formular         |
 
 > **Hinweis:** Decision Artifacts haben kein eigenes Issue-Formular. Sie entstehen typischerweise aus PR-Reviews, Governance-Diskussionen oder Prozess-Retrospektiven.

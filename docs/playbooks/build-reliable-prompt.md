@@ -4,7 +4,7 @@ status: active
 canonicality: operative
 created: "2026-04-20"
 updated: "2026-09-10"
-triggered_by: "github:heimgewebe/bureau#442; github:heimgewebe/labor#371:review"
+triggered_by: "github:heimgewebe/bureau#442; conversation:user-request-2026-09-10-continue-labor-survivor-audit"
 relations:
   - type: references
     target: ../../catalog/techniques/spec-first-prompting.md
@@ -110,9 +110,9 @@ Danach:
 
 **Ziel:** Erfolgreichen Prompt in die Bibliothek aufnehmen.
 
-Wenn der Prompt bei mindestens 2 Aufgaben nachweislich funktioniert:
+Wenn der Prompt bei mindestens 2 Aufgaben nachweislich funktioniert **und ein konkreter realer Verbraucher ihn übernehmen soll**:
 
-1. Als `prompts/adopted/<name>.md` ablegen
+1. Als `prompts/adopted/<name>.md` ablegen und den Verbraucher im Promotion-PR benennen
 2. Technique-Eintrag in `catalog/techniques/` erstellen oder referenzieren
 3. Instruction-Blocks extrahieren (portierbare Bausteine)
 4. Anti-Pattern dokumentieren (was funktioniert **nicht**?)
@@ -126,5 +126,6 @@ Wenn der Prompt bei mindestens 2 Aufgaben nachweislich funktioniert:
 - [ ] Combo als Heuristik geprüft (Synergie nicht vorausgesetzt)
 - [ ] Prompt mit Instruction-Blocks gebaut
 - [ ] An mindestens 2 Aufgaben getestet
+- [ ] Konkreter realer Verbraucher für eine Bibliotheks-Promotion benannt
 - [ ] Ergebnis dokumentiert
 - [ ] Anti-Patterns vermieden (Vague-Prompt, Token-Bloat)
