@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Regression tests for the Run-004 local tool broker.
+"""Deterministic regression tests for the historical Run-004 local tool broker.
 
-Most tests use a fake transport. One host-capability integration test uses the
-bound loopback Ollama model when it is installed; CI may skip only when absent.
+The default Labor validation must not contact a live model runtime. Historical
+loopback/Ollama observations remain preserved in the Run-004 evidence bundle;
+these regression tests exercise the broker with fake transports only.
 """
 from __future__ import annotations
 
@@ -133,38 +134,6 @@ class BrokerToolTests(unittest.TestCase):
             with self.subTest(content=content):
                 with self.assertRaises(broker.BrokerError):
                     broker.normalize_tool_calls({"role": "assistant", "content": content})
-
-    def test_real_loopback_transport_returns_usable_normalized_action(self):
-        if not broker.MODEL_MANIFEST.is_file():
-            self.skipTest("bound local Ollama model is unavailable")
-        try:
-            message = broker.OllamaTransport().chat(
-                [
-                    {"role": "system", "content": "Call exactly one supplied tool and output no prose."},
-                    {"role": "user", "content": "Call list_files with path exactly the empty string."},
-                ],
-                broker.tool_definitions(),
-            )
-        except broker.BrokerError as exc:
-            if "Connection refused" in str(exc):
-                self.skipTest("local Ollama daemon is unavailable")
-            raise
-        calls = broker.normalize_tool_calls(message)
-        self.assertEqual(
-            [{"function": {"name": "list_files", "arguments": {"path": ""}}}],
-            calls,
-        )
-        follow_up = broker.OllamaTransport().chat(
-            [
-                {"role": "system", "content": "Call one tool, then reply DONE after its result."},
-                {"role": "user", "content": "Call list_files with path exactly the empty string."},
-                message,
-                {"role": "tool", "content": '{"path":"","entries":[]}'},
-            ],
-            broker.tool_definitions(),
-        )
-        self.assertEqual("DONE", follow_up.get("content", "").strip())
-        self.assertEqual([], broker.normalize_tool_calls(follow_up))
 
     def test_workspace_file_tools_are_relative_and_utf8(self):
         with self.workspace() as root:
