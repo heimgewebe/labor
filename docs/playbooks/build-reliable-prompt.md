@@ -123,7 +123,7 @@ Wenn der Prompt bei mindestens 2 Aufgaben nachweislich funktioniert:
 - [ ] Problem in einem Satz definiert
 - [ ] Input/Output/Edge Cases dokumentiert
 - [ ] Passende Technique gewählt (nicht bloß „viel Text")
-- [ ] Combo geprüft (Synergien nutzen)
+- [ ] Combo als Heuristik geprüft (Synergie nicht vorausgesetzt)
 - [ ] Prompt mit Instruction-Blocks gebaut
 - [ ] An mindestens 2 Aufgaben getestet
 - [ ] Ergebnis dokumentiert
