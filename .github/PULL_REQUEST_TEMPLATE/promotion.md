@@ -24,7 +24,7 @@
 - [ ] Schema- und Execution-Proof-Validierung bestanden (`make validate`)
 - [ ] Katalogeintrag / Prompt / Combo liegt im korrekten Zielordner
 - [ ] Ein konkreter realer Consumer und ein konkretes Decision Target sind benannt
-- [ ] Für `prompts/adopted/`: Frontmatter enthält nicht-leere `consumer`- und `decision_target`-Felder sowie eine `validated_by`-Relation auf bestehende Evidenz unter `experiments/**/results/`
+- [ ] Für `prompts/adopted/`: Frontmatter enthält nicht-leere `consumer`- und `decision_target`-Felder sowie eine `validated_by`-Relation auf Evidenz eines `adopted` + `executed|replicated` Experiments mit `adoption_assessment: adopt`
 - [ ] Frontmatter entspricht dem jeweiligen Schema (`catalog.entry.schema.json` / `combo.schema.json` / `docmeta.schema.json` für Prompts)
 - [ ] Keine manuellen Edits an generierten Artefakten
 

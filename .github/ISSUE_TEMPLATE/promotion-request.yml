@@ -80,7 +80,7 @@ body:
           required: true
         - label: "Ein konkreter realer Consumer und ein konkretes Decision Target sind benannt"
           required: true
-        - label: "Für Prompt-Promotionen enthält das Zielartefakt nicht-leere `consumer`- und `decision_target`-Felder sowie eine `validated_by`-Relation auf bestehende Evidenz unter `experiments/**/results/`"
+        - label: "Für Prompt-Promotionen enthält das Zielartefakt nicht-leere `consumer`- und `decision_target`-Felder sowie eine `validated_by`-Relation auf Evidenz eines `adopted` + `executed|replicated` Experiments mit `adoption_assessment: adopt`"
           required: true
         - label: "Schema-Validierung bestanden (`make validate`)"
           required: true

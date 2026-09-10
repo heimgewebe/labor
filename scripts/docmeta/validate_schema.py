@@ -123,8 +123,8 @@ def check_adopted_prompt_promotion_fields(
 
     ``prompts/adopted/`` is a library promotion surface, not a projection of
     experiment status. A prompt may enter that surface only when its real
-    consumer, decision/use target and an evidence backlink into an experiment
-    results surface are explicit in frontmatter.
+    consumer, decision/use target and a promoting adopted/executed experiment
+    outcome are explicit and verifiable.
     """
     root = repo_root or REPO_ROOT
     try:
@@ -136,6 +136,11 @@ def check_adopted_prompt_promotion_fields(
         return []
 
     problems: list[str] = []
+    if fm.get("status") != "adopted":
+        problems.append(
+            f"  ❌ {rel_path.as_posix()}: status muss unter prompts/adopted/ exakt adopted sein."
+        )
+
     for field in ("consumer", "decision_target"):
         value = fm.get(field)
         if not isinstance(value, str) or not value.strip():
@@ -160,18 +165,51 @@ def check_adopted_prompt_promotion_fields(
                 target_rel = resolved.relative_to(root)
             except ValueError:
                 continue
-            if (
-                target_rel.parts
+            if not (
+                len(target_rel.parts) >= 4
                 and target_rel.parts[0] == "experiments"
-                and "results" in target_rel.parts[1:]
+                and target_rel.parts[2] == "results"
             ):
-                has_experiment_evidence = True
-                break
+                continue
+
+            experiment_dir = root / "experiments" / target_rel.parts[1]
+            manifest_path = experiment_dir / "manifest.yml"
+            if not manifest_path.is_file():
+                continue
+
+            manifest = load_yaml(manifest_path)
+            experiment = manifest.get("experiment")
+            if not isinstance(experiment, dict):
+                continue
+            if experiment.get("status") != "adopted":
+                continue
+            if experiment.get("execution_status") not in ADOPTION_ALLOWED_EXECUTION_STATUSES:
+                continue
+
+            try:
+                decision_path = resolve_current_decision_path(
+                    experiment_dir, repo_root=root
+                )
+            except ValueError:
+                continue
+            if decision_path is None:
+                continue
+            decision = load_yaml(decision_path)
+            if decision.get("decision_type") != "adoption_assessment":
+                continue
+            if decision.get("verdict") != "adopt":
+                continue
+
+            has_experiment_evidence = True
+            break
 
     if not has_experiment_evidence:
         problems.append(
             f"  ❌ {rel_path.as_posix()}: aktive adopted Prompts brauchen mindestens eine "
-            "validated_by-Relation auf eine existierende Datei unter experiments/**/results/."
+            "validated_by-Relation auf eine existierende Datei unter experiments/<id>/results/, "
+            "deren Experiment status=adopted, execution_status=executed|replicated und deren "
+            "aktuelle kanonische Decision-Surface decision_type=adoption_assessment + "
+            "verdict=adopt trägt."
         )
 
     return problems
