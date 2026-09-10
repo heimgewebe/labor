@@ -11,10 +11,10 @@ Diagnostic, non-blocking. Classifies all tracked repository artifacts according 
 
 ## Summary
 
-- total: 1545
-- classified: 1544
+- total: 1543
+- classified: 1542
   - of which fallback_classified (catch-all rule): 812
-  - fallback_share: 52.6% (812 / 1544)
+  - fallback_share: 52.7% (812 / 1542)
   - fallback_threshold: 50.0% — warning
 
 Fallback classifications come from broad catch-all rules. They are valid diagnostic classifications, but lower confidence than specific path rules.
@@ -30,7 +30,7 @@ Fallback classifications come from broad catch-all rules. They are valid diagnos
 | agent | 10 |
 | archive | 25 |
 | capture | 10 |
-| catalog | 12 |
+| catalog | 10 |
 | contract | 61 |
 | docs | 50 |
 | experiment | 813 |
@@ -51,7 +51,7 @@ Fallback classifications come from broad catch-all rules. They are valid diagnos
 | implementation_behavior | 25 |
 | navigation_surface | 28 |
 | normative_contract | 16 |
-| procedure_contract | 175 |
+| procedure_contract | 173 |
 | raw_capture | 28 |
 | result_interpretation | 59 |
 | runtime_observation | 90 |
@@ -66,7 +66,7 @@ Fallback classifications come from broad catch-all rules. They are valid diagnos
 | --- | ---: |
 | <none> | 1 |
 | append_only | 599 |
-| handcrafted | 841 |
+| handcrafted | 839 |
 | regenerated | 18 |
 | revision_with_reason | 84 |
 | superseded_not_rewritten | 2 |
@@ -84,7 +84,7 @@ Fallback classifications come from broad catch-all rules. They are valid diagnos
 | no_silent_edit | 3 |
 | non_blocking_diagnostic | 6 |
 | owner_required | 3 |
-| review_required | 308 |
+| review_required | 306 |
 
 ## Unknown artifacts
 

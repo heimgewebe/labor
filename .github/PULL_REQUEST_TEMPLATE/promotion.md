@@ -9,6 +9,8 @@
 - **Experiment:** `experiments/<name>/`
 - **Issue:** #<!-- Nr -->
 - **Evidenz:** `experiments/<name>/results/evidence.jsonl`
+- **Consumer:** <!-- Konkreter realer Verbraucher, z. B. owner/repo:surface -->
+- **Decision Target:** <!-- Welche konkrete Entscheidung oder Arbeitsaktion soll die Promotion beeinflussen? -->
 
 ### Promotion-Gate Checkliste
 
@@ -21,7 +23,9 @@
 - [ ] Falls `execution_status ∈ {executed, replicated}`: `artifacts/<run-id>/run_meta.json` vorhanden und schema-valide; `test_output_file` existiert
 - [ ] Schema- und Execution-Proof-Validierung bestanden (`make validate`)
 - [ ] Katalogeintrag / Prompt / Combo liegt im korrekten Zielordner
-- [ ] Frontmatter entspricht dem jeweiligen Schema (`catalog.entry.schema.json` / `combo.schema.json`)
+- [ ] Ein konkreter realer Consumer und ein konkretes Decision Target sind benannt
+- [ ] Für `prompts/adopted/`: Frontmatter enthält nicht-leere `consumer`- und `decision_target`-Felder sowie eine `validated_by`-Relation auf Evidenz eines `adopted` + `executed|replicated` Experiments mit `adoption_assessment: adopt`
+- [ ] Frontmatter entspricht dem jeweiligen Schema (`catalog.entry.schema.json` / `combo.schema.json` / `docmeta.schema.json` für Prompts)
 - [ ] Keine manuellen Edits an generierten Artefakten
 
 ### Evidenz-Zusammenfassung

@@ -22,7 +22,7 @@ from pathlib import Path
 
 # Gemeinsame Pfad-Logik aus _paths.py
 sys.path.insert(0, str(Path(__file__).parent))
-from _paths import extract_frontmatter  # noqa: E402
+from _paths import extract_frontmatter, resolve_relation_target  # noqa: E402
 
 try:
     import yaml
@@ -114,6 +114,105 @@ def check_counterevidence_rule(data: dict, rel: str) -> str | None:
         )
 
     return None
+
+
+def check_adopted_prompt_promotion_fields(
+    md_file: Path, fm: dict, *, repo_root: Path | None = None
+) -> list[str]:
+    """Require explicit consumer/decision intent for active adopted prompts.
+
+    ``prompts/adopted/`` is a library promotion surface, not a projection of
+    experiment status. A prompt may enter that surface only when its real
+    consumer, decision/use target and a promoting adopted/executed experiment
+    outcome are explicit and verifiable.
+    """
+    root = repo_root or REPO_ROOT
+    try:
+        rel_path = md_file.relative_to(root)
+    except ValueError:
+        return []
+
+    if len(rel_path.parts) < 3 or rel_path.parts[:2] != ("prompts", "adopted"):
+        return []
+
+    problems: list[str] = []
+    if fm.get("status") != "adopted":
+        problems.append(
+            f"  ❌ {rel_path.as_posix()}: status muss unter prompts/adopted/ exakt adopted sein."
+        )
+
+    for field in ("consumer", "decision_target"):
+        value = fm.get(field)
+        if not isinstance(value, str) or not value.strip():
+            problems.append(
+                f"  ❌ {rel_path.as_posix()}: {field} muss für aktive adopted Prompts "
+                "als nicht-leerer String im Frontmatter gesetzt sein."
+            )
+
+    has_experiment_evidence = False
+    relations = fm.get("relations")
+    if isinstance(relations, list):
+        for relation in relations:
+            if not isinstance(relation, dict) or relation.get("type") != "validated_by":
+                continue
+            target = relation.get("target")
+            if not isinstance(target, str) or not target.strip():
+                continue
+            resolved = resolve_relation_target(md_file, target, root)
+            if resolved is None or not resolved.is_file():
+                continue
+            try:
+                target_rel = resolved.relative_to(root)
+            except ValueError:
+                continue
+            if not (
+                len(target_rel.parts) >= 4
+                and target_rel.parts[0] == "experiments"
+                and target_rel.parts[2] == "results"
+            ):
+                continue
+
+            experiment_dir = root / "experiments" / target_rel.parts[1]
+            manifest_path = experiment_dir / "manifest.yml"
+            if not manifest_path.is_file():
+                continue
+
+            manifest = load_yaml(manifest_path)
+            experiment = manifest.get("experiment")
+            if not isinstance(experiment, dict):
+                continue
+            if experiment.get("status") != "adopted":
+                continue
+            if experiment.get("execution_status") not in ADOPTION_ALLOWED_EXECUTION_STATUSES:
+                continue
+
+            try:
+                decision_path = resolve_current_decision_path(
+                    experiment_dir, repo_root=root
+                )
+            except ValueError:
+                continue
+            if decision_path is None:
+                continue
+            decision = load_yaml(decision_path)
+            if decision.get("decision_type") != "adoption_assessment":
+                continue
+            if decision.get("verdict") != "adopt":
+                continue
+
+            has_experiment_evidence = True
+            break
+
+    if not has_experiment_evidence:
+        problems.append(
+            f"  ❌ {rel_path.as_posix()}: aktive adopted Prompts brauchen mindestens eine "
+            "validated_by-Relation auf eine existierende Datei unter experiments/<id>/results/, "
+            "deren Experiment status=adopted, execution_status=executed|replicated und deren "
+            "aktuelle kanonische Decision-Surface decision_type=adoption_assessment + "
+            "verdict=adopt trägt."
+        )
+
+    return problems
 
 
 def load_schema(schema_path: Path) -> dict:
@@ -698,7 +797,8 @@ def validate_docmeta_frontmatter():
     - experiments/*/*.md    (außer _template/, _archive/)
     - experiments/*/results/result.md (außer _template/, _archive/)
 
-    Dateien ohne Frontmatter werden übersprungen (kein Fehler).
+    Dateien ohne Frontmatter werden grundsätzlich übersprungen; unter
+    ``prompts/adopted/`` sind Frontmatter und Promotion-Bindungen dagegen Pflicht.
     Dateien mit Frontmatter müssen gegen das Schema validieren.
     """
     if not DOCMETA_SCHEMA_PATH.exists():
@@ -734,14 +834,24 @@ def validate_docmeta_frontmatter():
     for md_file in sorted(candidates):
         fm = extract_frontmatter(md_file)
         if fm is None:
-            continue  # kein Frontmatter — kein Fehler in dieser Zone
+            promotion_errors = check_adopted_prompt_promotion_fields(md_file, {})
+            if promotion_errors:
+                errors.extend(promotion_errors)
+            continue  # sonst: kein Frontmatter — kein Fehler in dieser Zone
 
         try:
             validator.validate(fm)
-            print(f"  ✅ {md_file.relative_to(REPO_ROOT)}")
-            checked += 1
         except ValidationError as e:
             errors.append(f"  ❌ {md_file.relative_to(REPO_ROOT)}: {e.message}")
+            continue
+
+        promotion_errors = check_adopted_prompt_promotion_fields(md_file, fm)
+        if promotion_errors:
+            errors.extend(promotion_errors)
+            continue
+
+        print(f"  ✅ {md_file.relative_to(REPO_ROOT)}")
+        checked += 1
 
     if checked == 0:
         print("  (keine Markdown-Dateien mit Frontmatter in den Zielzonen gefunden)")

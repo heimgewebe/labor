@@ -15560,38 +15560,6 @@
       "status": "classified"
     },
     {
-      "authority": "procedure_contract",
-      "catchall_match": false,
-      "enforcement": [
-        "review_required"
-      ],
-      "kind": "adopted_prompt",
-      "layer": "catalog",
-      "lifecycle": "handcrafted",
-      "matched_patterns": [
-        "prompts/**/*.md"
-      ],
-      "origin": "handcrafted",
-      "path": "prompts/adopted/prompt-length-control.md",
-      "status": "classified"
-    },
-    {
-      "authority": "procedure_contract",
-      "catchall_match": false,
-      "enforcement": [
-        "review_required"
-      ],
-      "kind": "adopted_prompt",
-      "layer": "catalog",
-      "lifecycle": "handcrafted",
-      "matched_patterns": [
-        "prompts/**/*.md"
-      ],
-      "origin": "handcrafted",
-      "path": "prompts/adopted/spec-first-api.md",
-      "status": "classified"
-    },
-    {
       "authority": "raw_capture",
       "catchall_match": false,
       "enforcement": [
@@ -26168,7 +26136,7 @@
       "implementation_behavior": 25,
       "navigation_surface": 28,
       "normative_contract": 16,
-      "procedure_contract": 175,
+      "procedure_contract": 173,
       "raw_capture": 28,
       "result_interpretation": 59,
       "runtime_observation": 90,
@@ -26187,14 +26155,14 @@
       "no_silent_edit": 3,
       "non_blocking_diagnostic": 6,
       "owner_required": 3,
-      "review_required": 308
+      "review_required": 306
     },
     "by_layer": {
       "<none>": 1,
       "agent": 10,
       "archive": 25,
       "capture": 10,
-      "catalog": 12,
+      "catalog": 10,
       "contract": 61,
       "docs": 50,
       "experiment": 813,
@@ -26206,18 +26174,18 @@
     "by_lifecycle": {
       "<none>": 1,
       "append_only": 599,
-      "handcrafted": 841,
+      "handcrafted": 839,
       "regenerated": 18,
       "revision_with_reason": 84,
       "superseded_not_rewritten": 2
     },
-    "classified": 1544,
+    "classified": 1542,
     "conflict": 0,
     "fallback_classified": 812,
-    "fallback_share": 0.5259067357512953,
+    "fallback_share": 0.5265888456549935,
     "fallback_threshold": 0.5,
     "fallback_threshold_status": "warning",
-    "total": 1545,
+    "total": 1543,
     "unknown": 1
   },
   "transition_risk_hints": [],

@@ -183,19 +183,16 @@ class PrefixCollisionIntegrationTests(unittest.TestCase):
 
             # Patche Modulkonstanten auf tmp-Verzeichnisse
             original_catalog = self.mod.CATALOG_DIR
-            original_prompts = self.mod.PROMPTS_DIR
             original_iblocks = self.mod.INSTRUCTION_BLOCKS_DIR
             original_repo_root = self.mod.REPO_ROOT
             try:
                 self.mod.CATALOG_DIR = tmp_path / "catalog"
-                self.mod.PROMPTS_DIR = tmp_path / "prompts" / "adopted"
                 self.mod.INSTRUCTION_BLOCKS_DIR = tmp_path / "instruction-blocks"
                 self.mod.REPO_ROOT = tmp_path  # evidence_source resolves against tmp_path
 
                 errors, warnings = self.mod.validate_experiment(base_dir)
             finally:
                 self.mod.CATALOG_DIR = original_catalog
-                self.mod.PROMPTS_DIR = original_prompts
                 self.mod.INSTRUCTION_BLOCKS_DIR = original_iblocks
                 self.mod.REPO_ROOT = original_repo_root
 
@@ -206,6 +203,52 @@ class PrefixCollisionIntegrationTests(unittest.TestCase):
                 "validate_experiment soll Fehler melden, da Technique nur für Replikation existiert, "
                 f"nicht für Basis-Experiment. Errors: {errors}",
             )
+
+    def test_adopted_experiment_does_not_require_prompt_projection(self) -> None:
+        """Ein adopted Experiment mit Technique bleibt ohne Prompt vollständig."""
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            exp_dir = tmp_path / "experiments" / "2026-04-14_base"
+            exp_dir.mkdir(parents=True)
+            _write(
+                exp_dir / "manifest.yml",
+                """\
+                experiment:
+                  status: adopted
+                  execution_status: executed
+                  evidence_level: experimental
+                  adoption_basis: executed
+                """,
+            )
+
+            tech_dir = tmp_path / "catalog" / "techniques"
+            tech_dir.mkdir(parents=True)
+            _write(
+                tech_dir / "base.md",
+                """\
+                ---
+                title: "Base"
+                status: adopted
+                evidence_source: "experiments/2026-04-14_base/"
+                ---
+                # Base
+                """,
+            )
+
+            original_catalog = self.mod.CATALOG_DIR
+            original_iblocks = self.mod.INSTRUCTION_BLOCKS_DIR
+            original_repo_root = self.mod.REPO_ROOT
+            try:
+                self.mod.CATALOG_DIR = tmp_path / "catalog"
+                self.mod.INSTRUCTION_BLOCKS_DIR = tmp_path / "instruction-blocks"
+                self.mod.REPO_ROOT = tmp_path
+                errors, _warnings = self.mod.validate_experiment(exp_dir)
+            finally:
+                self.mod.CATALOG_DIR = original_catalog
+                self.mod.INSTRUCTION_BLOCKS_DIR = original_iblocks
+                self.mod.REPO_ROOT = original_repo_root
+
+            self.assertEqual(errors, [])
 
 
 if __name__ == "__main__":

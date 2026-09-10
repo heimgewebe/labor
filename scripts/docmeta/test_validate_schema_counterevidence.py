@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
-"""Direkte Regressionstests für die P2-Kreuzregel in validate_schema.py.
+"""Direkte Regressionstests für zusätzliche Kreuzregeln in validate_schema.py.
 
-Die Regel:
+Neben der historischen P2-Gegenbelegregel prüft diese Datei die aktive
+Prompt-Promotion-Grenze: ``prompts/adopted/`` verlangt einen realen Consumer
+und ein explizites Decision Target.
+
+Historische P2-Regel:
   decision_type=result_assessment
     + counterevidence_checked=False + verdict='confirms'  → Fehler
     + counter_hypothesis_outcome='found_and_confirming' + verdict='confirms' → Fehler
@@ -160,6 +164,255 @@ class P2CounterevidenceRuleTests(unittest.TestCase):
         result = vs.check_counterevidence_rule(data, rel)
         self.assertIsNotNone(result)
         self.assertIn(rel, result)
+
+
+class AdoptedPromptPromotionFieldTests(unittest.TestCase):
+    """Active adopted prompts need explicit consumer and decision target."""
+
+    def setUp(self) -> None:
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.repo_root = Path(self.tmp.name)
+        self.prompt = self.repo_root / "prompts" / "adopted" / "example.md"
+        self.evidence = (
+            self.repo_root / "experiments" / "2026-04-14_base" / "results" / "result.md"
+        )
+        self.evidence.parent.mkdir(parents=True)
+        self.evidence.write_text("# Evidence\n", encoding="utf-8")
+        (self.evidence.parents[1] / "manifest.yml").write_text(
+            "experiment:\n  status: adopted\n  execution_status: executed\n",
+            encoding="utf-8",
+        )
+        (self.evidence.parent / "decision.yml").write_text(
+            "decision_type: adoption_assessment\nverdict: adopt\n",
+            encoding="utf-8",
+        )
+        self.valid_relation = [
+            {
+                "type": "validated_by",
+                "target": "../../experiments/2026-04-14_base/results/result.md",
+            }
+        ]
+
+    def _check(self, fm: dict) -> list[str]:
+        return vs.check_adopted_prompt_promotion_fields(
+            self.prompt, fm, repo_root=self.repo_root
+        )
+
+    def test_consumer_and_decision_target_are_required(self) -> None:
+        errors = self._check(
+            {"title": "Example", "status": "adopted", "relations": self.valid_relation}
+        )
+        self.assertEqual(len(errors), 2)
+        self.assertTrue(any("consumer" in error for error in errors))
+        self.assertTrue(any("decision_target" in error for error in errors))
+
+    def test_missing_frontmatter_fails_closed(self) -> None:
+        errors = self._check({})
+        self.assertEqual(len(errors), 4)
+        self.assertTrue(any("status" in error for error in errors))
+        self.assertTrue(any("validated_by" in error for error in errors))
+
+    def test_docmeta_scan_rejects_adopted_prompt_without_frontmatter(self) -> None:
+        self.prompt.parent.mkdir(parents=True)
+        self.prompt.write_text("# No frontmatter\n", encoding="utf-8")
+
+        original_root = vs.REPO_ROOT
+        try:
+            vs.REPO_ROOT = self.repo_root
+            vs.errors.clear()
+            vs.validate_docmeta_frontmatter()
+            self.assertEqual(len(vs.errors), 4)
+            self.assertTrue(all("prompts/adopted/example.md" in error for error in vs.errors))
+            self.assertTrue(any("validated_by" in error for error in vs.errors))
+        finally:
+            vs.REPO_ROOT = original_root
+            vs.errors.clear()
+
+    def test_docmeta_scan_accepts_adopted_prompt_with_required_metadata(self) -> None:
+        self.prompt.parent.mkdir(parents=True)
+        self.prompt.write_text(
+            "---\n"
+            "title: Example\n"
+            "status: adopted\n"
+            "consumer: heimgewebe/example:prompt-runner\n"
+            "decision_target: Use this prompt for bounded API-spec generation.\n"
+            "relations:\n"
+            "  - type: validated_by\n"
+            "    target: ../../experiments/2026-04-14_base/results/result.md\n"
+            "---\n"
+            "# Example\n",
+            encoding="utf-8",
+        )
+
+        original_root = vs.REPO_ROOT
+        try:
+            vs.REPO_ROOT = self.repo_root
+            vs.errors.clear()
+            vs.validate_docmeta_frontmatter()
+            self.assertEqual(vs.errors, [])
+        finally:
+            vs.REPO_ROOT = original_root
+            vs.errors.clear()
+
+    def test_non_empty_consumer_and_decision_target_pass(self) -> None:
+        errors = self._check(
+            {
+                "title": "Example",
+                "status": "adopted",
+                "consumer": "heimgewebe/example:prompt-runner",
+                "decision_target": "Use this prompt for bounded API-spec generation.",
+                "relations": self.valid_relation,
+            }
+        )
+        self.assertEqual(errors, [])
+
+    def test_blank_values_fail_closed(self) -> None:
+        errors = self._check(
+            {
+                "status": "adopted",
+                "consumer": "  ",
+                "decision_target": "",
+                "relations": self.valid_relation,
+            }
+        )
+        self.assertEqual(len(errors), 2)
+
+    def test_missing_experiment_evidence_backlink_fails_closed(self) -> None:
+        errors = self._check(
+            {
+                "status": "adopted",
+                "consumer": "heimgewebe/example:prompt-runner",
+                "decision_target": "Use this prompt.",
+                "relations": [],
+            }
+        )
+        self.assertEqual(len(errors), 1)
+        self.assertIn("validated_by", errors[0])
+
+    def test_nonexistent_experiment_evidence_target_fails_closed(self) -> None:
+        errors = self._check(
+            {
+                "status": "adopted",
+                "consumer": "heimgewebe/example:prompt-runner",
+                "decision_target": "Use this prompt.",
+                "relations": [
+                    {
+                        "type": "validated_by",
+                        "target": "../../experiments/missing/results/result.md",
+                    }
+                ],
+            }
+        )
+        self.assertEqual(len(errors), 1)
+        self.assertIn("validated_by", errors[0])
+
+    def test_validated_by_outside_experiments_fails_closed(self) -> None:
+        outside = self.repo_root / "docs" / "result.md"
+        outside.parent.mkdir(parents=True)
+        outside.write_text("# Not experiment evidence\n", encoding="utf-8")
+        errors = self._check(
+            {
+                "status": "adopted",
+                "consumer": "heimgewebe/example:prompt-runner",
+                "decision_target": "Use this prompt.",
+                "relations": [
+                    {"type": "validated_by", "target": "../../docs/result.md"}
+                ],
+            }
+        )
+        self.assertEqual(len(errors), 1)
+        self.assertIn("experiments/<id>/results/", errors[0])
+
+    def test_non_adopted_status_is_rejected_from_adopted_surface(self) -> None:
+        for status in ("draft", "testing", "rejected", "deprecated"):
+            errors = self._check(
+                {
+                    "status": status,
+                    "consumer": "heimgewebe/example:prompt-runner",
+                    "decision_target": "Use this prompt.",
+                    "relations": self.valid_relation,
+                }
+            )
+            self.assertEqual(len(errors), 1, status)
+            self.assertIn("status", errors[0])
+
+    def test_non_adopted_experiment_cannot_promote_prompt(self) -> None:
+        manifest = self.evidence.parents[1] / "manifest.yml"
+        manifest.write_text(
+            "experiment:\n  status: rejected\n  execution_status: executed\n",
+            encoding="utf-8",
+        )
+        errors = self._check(
+            {
+                "status": "adopted",
+                "consumer": "heimgewebe/example:prompt-runner",
+                "decision_target": "Use this prompt.",
+                "relations": self.valid_relation,
+            }
+        )
+        self.assertEqual(len(errors), 1)
+        self.assertIn("execution_status=executed|replicated", errors[0])
+
+    def test_non_executed_experiment_cannot_promote_prompt(self) -> None:
+        manifest = self.evidence.parents[1] / "manifest.yml"
+        manifest.write_text(
+            "experiment:\n  status: adopted\n  execution_status: reconstructed\n",
+            encoding="utf-8",
+        )
+        errors = self._check(
+            {
+                "status": "adopted",
+                "consumer": "heimgewebe/example:prompt-runner",
+                "decision_target": "Use this prompt.",
+                "relations": self.valid_relation,
+            }
+        )
+        self.assertEqual(len(errors), 1)
+        self.assertIn("execution_status=executed|replicated", errors[0])
+
+    def test_non_adopt_decision_cannot_promote_prompt(self) -> None:
+        decision = self.evidence.parent / "decision.yml"
+        decision.write_text(
+            "decision_type: adoption_assessment\nverdict: defer\n", encoding="utf-8"
+        )
+        errors = self._check(
+            {
+                "status": "adopted",
+                "consumer": "heimgewebe/example:prompt-runner",
+                "decision_target": "Use this prompt.",
+                "relations": self.valid_relation,
+            }
+        )
+        self.assertEqual(len(errors), 1)
+        self.assertIn("verdict=adopt", errors[0])
+
+    def test_phase_local_current_adoption_decision_can_promote_prompt(self) -> None:
+        root_decision = self.evidence.parent / "decision.yml"
+        root_decision.write_text(
+            "decision_type: result_assessment\nverdict: mixed\n", encoding="utf-8"
+        )
+        phase = self.evidence.parents[1] / "p1"
+        phase.mkdir()
+        (phase / "decision.yml").write_text(
+            "decision_type: adoption_assessment\nverdict: adopt\n", encoding="utf-8"
+        )
+        errors = self._check(
+            {
+                "status": "adopted",
+                "consumer": "heimgewebe/example:prompt-runner",
+                "decision_target": "Use this prompt.",
+                "relations": self.valid_relation,
+            }
+        )
+        self.assertEqual(errors, [])
+
+    def test_non_adopted_prompt_path_is_unaffected(self) -> None:
+        candidate = self.repo_root / "docs" / "example.md"
+        errors = vs.check_adopted_prompt_promotion_fields(
+            candidate, {}, repo_root=self.repo_root
+        )
+        self.assertEqual(errors, [])
 
 
 class CanonicalDecisionPathTests(unittest.TestCase):

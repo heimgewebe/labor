@@ -8,9 +8,12 @@ Bibliothek verdichtet wurden.
 
 Erwartete Extraktion pro adopted Experiment:
   - ≥1 Technique  (catalog/techniques/)
-  - ≥1 Prompt     (prompts/adopted/)
   - ≥1 Anti-Pattern (catalog/anti-patterns/) — sofern failure_modes.md
     Substanz enthält
+
+Prompts sind ein eigener Promotion-Typ und kein universelles Pflichtartefakt
+einer Adoption. Ob ein Prompt in ``prompts/adopted/`` gehört, wird daher nicht
+aus ``status: adopted`` abgeleitet.
 
 Optionale Extraktion (kein harter Fehler, aber Warnung):
   - Combo             (catalog/combos/)
@@ -42,7 +45,6 @@ from _paths import extract_frontmatter as _extract_frontmatter  # noqa: E402
 
 EXPERIMENTS_DIR = REPO_ROOT / "experiments"
 CATALOG_DIR = REPO_ROOT / "catalog"
-PROMPTS_DIR = REPO_ROOT / "prompts" / "adopted"
 INSTRUCTION_BLOCKS_DIR = REPO_ROOT / "instruction-blocks"
 
 # Mindestgröße für failure_modes.md "mit Substanz"
@@ -96,10 +98,10 @@ def _matches_experiment(value: str, base_dir: Path, exp_dir: Path) -> bool:
 
 
 def _find_catalog_references(exp_dir: Path) -> dict[str, list[str]]:
-    """Durchsucht Katalog und Prompts nach Referenzen auf ein Experiment.
+    """Durchsucht Katalog und Instruction Blocks nach Referenzen auf ein Experiment.
 
     Gibt ein Dict zurück: { category: [dateiname, ...] }
-    category ∈ {technique, anti-pattern, prompt, combo, workflow, style, instruction-block}
+    category ∈ {technique, anti-pattern, combo, workflow, style, instruction-block}
 
     Pfad-Matching ist exakt (kein Substring-Match), um Falsch-Positive bei
     ähnlich benannten Experimenten zu verhindern.
@@ -107,7 +109,6 @@ def _find_catalog_references(exp_dir: Path) -> dict[str, list[str]]:
     refs: dict[str, list[str]] = {
         "technique": [],
         "anti-pattern": [],
-        "prompt": [],
         "combo": [],
         "workflow": [],
         "style": [],
@@ -142,18 +143,7 @@ def _find_catalog_references(exp_dir: Path) -> dict[str, list[str]]:
                     refs[category].append(md_file.name)
                     break
 
-    # 2. prompts/adopted/ durchsuchen
-    if PROMPTS_DIR.exists():
-        for md_file in sorted(PROMPTS_DIR.glob("*.md")):
-            fm = _extract_frontmatter(md_file)
-            if fm is None:
-                continue
-            for rel in fm.get("relations", []) or []:
-                if _matches_experiment(rel.get("target", ""), md_file.parent, exp_dir):
-                    refs["prompt"].append(md_file.name)
-                    break
-
-    # 3. instruction-blocks/ durchsuchen
+    # 2. instruction-blocks/ durchsuchen
     if INSTRUCTION_BLOCKS_DIR.exists():
         for md_file in sorted(INSTRUCTION_BLOCKS_DIR.glob("*.md")):
             fm = _extract_frontmatter(md_file)
@@ -198,13 +188,6 @@ def validate_experiment(exp_dir: Path) -> tuple[list[str], list[str]]:
         errors.append(
             f"{exp_name}: Kein Technique-Eintrag in catalog/techniques/ referenziert dieses Experiment."
             f" Jedes adopted Experiment muss ≥1 Technique extrahieren."
-        )
-
-    # Hard: ≥1 Prompt
-    if not refs["prompt"]:
-        errors.append(
-            f"{exp_name}: Kein Prompt in prompts/adopted/ referenziert dieses Experiment."
-            f" Jedes adopted Experiment muss ≥1 Prompt extrahieren."
         )
 
     # Conditional hard: ≥1 Anti-Pattern wenn failure_modes.md Substanz hat

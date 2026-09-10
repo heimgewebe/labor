@@ -302,8 +302,6 @@
 | `instruction-blocks/no-vague-prompts.md` | No-Vague-Prompts | adopted | operative |
 | `instruction-blocks/spec-first.md` | Spec-First | adopted | operative |
 | `instruction-blocks/validate-against-spec.md` | Validate-Against-Spec | adopted | operative |
-| `prompts/adopted/prompt-length-control.md` | Prompt-Length-Control Prompt | adopted | operative |
-| `prompts/adopted/spec-first-api.md` | Spec-First API Prompt | adopted | operative |
 | `tests/fixtures/challenge_versions/invalid/challenges/missing-version.md` | Challenge — REST API | testing | derived |
 | `tests/fixtures/challenge_versions/invalid/challenges/wrong-name.md` | Challenge — REST API v1 | testing | derived |
 | `tests/fixtures/challenge_versions/valid/challenges/rest-api-v1.md` | Challenge — REST API v1 | testing | derived |
