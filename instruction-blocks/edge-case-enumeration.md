@@ -5,7 +5,8 @@ status: adopted
 canonicality: operative
 evidence_source: "experiments/2026-04-14_prompt-length-control/"
 created: "2026-04-20"
-updated: "2026-04-20"
+updated: "2026-09-10"
+triggered_by: "github:heimgewebe/bureau#442; github:heimgewebe/labor#371:review"
 tags:
   - edge-cases
   - completeness
@@ -17,13 +18,13 @@ relations:
     target: ../catalog/techniques/prompt-length-control.md
 ---
 
-Before implementation, enumerate edge cases explicitly:
-1. Empty/null inputs
-2. Maximum/minimum values and boundary conditions
-3. Special characters and encoding edge cases
-4. Concurrent or repeated operations
-5. Invalid or malformed input data
+Before implementation, enumerate relevant edge cases explicitly:
+1. Empty or absent values.
+2. Minimum, maximum, and boundary values.
+3. Special characters and encoding cases.
+4. Repeated operations when relevant.
+5. Inputs outside the expected format.
 
-For each edge case, define the expected behavior. This is not optional padding — explicit edge case enumeration is part of the constraint structure that drives code quality.
+For each relevant case, define expected behavior and verify the result against it.
 
-Missing edge cases in the specification = missing edge cases in the output.
+Evidence boundary: one text-parsing run observed complete coverage of the tested cases in the Spec-First arm, while Code-First and Ramble-First each missed one. This supports explicit enumeration only as a bounded heuristic. It does not prove that an omitted specification case necessarily becomes an omitted output case or that the heuristic has a general causal quality effect.

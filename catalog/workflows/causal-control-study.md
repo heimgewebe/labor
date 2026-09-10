@@ -3,10 +3,11 @@ schema_version: "0.1.0"
 title: "Kausale Kontrollstudie"
 status: adopted
 category: workflow
-summary: "Workflow für kausale Kontrollstudien in Vibe-Coding-Experimenten: Isolierung einzelner Variablen durch gezieltes Kontrollarm-Design."
+summary: "Workflow-Heuristik für Kontrollarm-Vergleiche; alternative Erklärungen werden prüfbar gemacht, aber nicht allein durch das Design kausal ausgeschlossen."
 evidence_source: "experiments/2026-04-14_prompt-length-control/"
 created: "2026-04-20"
-updated: "2026-04-20"
+updated: "2026-09-10"
+triggered_by: "github:heimgewebe/bureau#442; github:heimgewebe/labor#371:review"
 author: "heimgewebe"
 tags:
   - workflow
@@ -22,46 +23,47 @@ relations:
 
 ## Übersicht
 
-Ein Workflow für die Durchführung kausaler Kontrollstudien in Vibe-Coding-Experimenten. Ziel: Eine einzelne Variable isolieren und alternative Erklärungen systematisch ausschließen.
+Eine operative Heuristik für Vergleiche mit Kontrollarmen. Ziel ist, alternative Erklärungen explizit prüfbar zu machen und verbleibende Unterschiede sichtbar zu halten. Ein Kontrollarm isoliert nicht automatisch eine Ursache.
 
 ## Schritte
 
 ### 1. Hypothese formulieren
 
-- Welche Variable soll isoliert werden?
-- Welche alternativen Erklärungen existieren?
-- Beispiel: „Ist es die Struktur oder das Token-Volumen?"
+- Zu untersuchenden Faktor benennen.
+- Alternative Erklärungen benennen.
+- Vorab festlegen, welche Beobachtung welche Erklärung stützen oder schwächen würde.
 
 ### 2. Kontrollarm designen
 
-- Einen Arm gestalten, der die alternative Erklärung testet
-- Der Kontrollarm muss die Konfundierungsvariable reproduzieren, ohne die eigentliche Variable zu enthalten
-- Beispiel: Ramble-First reproduziert hohes Token-Volumen ohne Constraint-Struktur
+- Einen Arm gestalten, der die alternative Erklärung gezielt prüft.
+- Dokumentieren, welche Merkmale angeglichen sind und welche Unterschiede verbleiben.
+- Nicht behaupten, eine Variable sei isoliert, solange relevante Confounder offen sind.
 
 ### 3. Messbare Metriken definieren
 
-- Objektive Metrik wählen (z.B. test_pass_rate)
-- Gleiche Messmethodik für alle Arme
-- Baseline-Arm (z.B. Code-First) als Referenz
+- Objektive Metrik wählen, z.B. `test_pass_rate`.
+- Gleiche Messmethodik für alle Arme verwenden.
+- Baseline als Referenz festlegen.
 
 ### 4. Durchführen und dokumentieren
 
-- Alle Arme unter gleichen Bedingungen ausführen
-- evidence.jsonl zeitnah befüllen
-- Abweichungen vom Plan dokumentieren
+- Bedingungen soweit möglich konstant halten und Abweichungen dokumentieren.
+- Rohbeobachtungen zeitnah erfassen.
+- Wiederholungen und Stichprobengröße explizit nennen.
 
-### 5. Kausal interpretieren
+### 5. Begrenzt interpretieren
 
-- Ergebnis nur auf die isolierte Variable beziehen
-- Interpretation Budget explizit setzen
-- Ungetestete Variablen als offene Fragen benennen
+- Direkt Beobachtetes von Mechanismushypothesen trennen.
+- Interpretation Budget explizit setzen.
+- Ungetestete Variablen und verbleibende Confounder offen halten.
 
 ## Beispiel: Prompt-Length-Control
 
-| Arm | Isolierte Variable | Token-Volumen | Struktur | Ergebnis |
-|-----|-------------------|---------------|----------|----------|
-| Code-First | Baseline | niedrig | nein | 0.8 |
-| Spec-First | Struktur + Volumen | hoch | ja | 1.0 |
-| Ramble-First | Nur Volumen | hoch | nein | 0.8 |
+Im historischen Quell-Setup lagen die beobachteten `test_pass_rate`-Werte für Code-First, Spec-First und Ramble-First bei `0.8`, `1.0` und `0.8`. Ramble-First ging dort nicht mit einer höheren Pass-Rate gegenüber Code-First einher. Die Evidenz enthält jedoch keine quantitative Tokenmessung, keine Wiederholungen pro Arm und keine Messung eines internen Mechanismus.
 
-**Schluss:** Volumen allein erklärt den Effekt nicht → Struktur ist kausal.
+## Nicht-Claims
+
+- Der Einzeldurchlauf belegt keinen kausalen Struktureffekt.
+- Zusätzliche Textmenge ist nicht als generell wirkungslos belegt.
+- Constraint-Formulierung ist nicht als Mechanismus der Differenz belegt.
+- Ergebnisse sind nicht ohne neue, auf die Aufgabenklasse gebundene Vergleiche übertragbar.

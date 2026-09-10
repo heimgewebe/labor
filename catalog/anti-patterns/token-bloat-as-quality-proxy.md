@@ -3,10 +3,11 @@ schema_version: "0.1.0"
 title: "Token-Bloat-as-Quality-Proxy"
 status: adopted
 category: anti-pattern
-summary: "Mehr Output-Tokens erzwingen in der Annahme, das Modell 'denke dann besser' — widerlegt durch kausale Kontrollstudie."
+summary: "Warnheuristik gegen Textmenge als Qualitätsproxy; ein einzelner Text-Parsing-Vergleich beobachtete 0.8/1.0/0.8, ohne einen allgemeinen oder kausalen Effekt zu belegen."
 evidence_source: "experiments/2026-04-14_prompt-length-control/"
 created: "2026-04-20"
-updated: "2026-04-20"
+updated: "2026-09-10"
+triggered_by: "github:heimgewebe/bureau#442; github:heimgewebe/labor#371:review"
 author: "Jules"
 tags:
   - prompting
@@ -24,24 +25,34 @@ relations:
 
 ## Warum ist das ein Anti-Pattern?
 
-Die Annahme: „Wenn ich das Modell dazu bringe, mehr Text auszugeben (z.B. durch Chain-of-Thought-Prompting oder Aufforderung zu ausführlichen Erklärungen), wird der nachfolgende Code besser."
+Als allgemeine Qualitätsregel ist die Annahme unbelegt: „Wenn ich das Modell dazu bringe, mehr Text auszugeben, wird der nachfolgende Code besser."
 
-**Widerlegt durch:** Prompt-Length-Control-Experiment. Ramble-First (hohes Token-Volumen ohne Struktur) erzielte identische Ergebnisse wie Code-First (0.8 vs. 0.8 test_pass_rate). Nur Spec-First (strukturierte Constraint-Formulierung) verbesserte die Leistung auf 1.0.
+Im Prompt-Length-Control-Experiment erzielten Ramble-First und Code-First in einem einzelnen Text-Parsing-Setup jeweils `0.8` `test_pass_rate`; Spec-First erzielte dort `1.0`. Damit ging die angeforderte längere, sachfremde Vorrede in diesem Durchlauf nicht mit einer höheren Pass-Rate gegenüber Code-First einher. Das ist keine allgemeine Widerlegung eines Nutzens zusätzlicher Tokens und isoliert Constraint-Formulierung nicht als Ursache.
 
 ## Evidenz
 
-- **Ramble-First:** test_pass_rate 0.8 — identisch mit Code-First trotz hohem Token-Volumen
-- **Spec-First:** test_pass_rate 1.0 — mit gleichem Token-Volumen wie Ramble-First
-- Der Unterschied: Inhaltliche Strukturierung (Constraint-Formulierung) vs. bloße Textmenge
+- **Code-First:** `test_pass_rate` 0.8
+- **Spec-First:** `test_pass_rate` 1.0
+- **Ramble-First:** `test_pass_rate` 0.8
+- **Evidenzgrenze:** ein Task, ein Setup, eine Iteration; die Evidenz protokolliert keine quantitativen Tokenzahlen und keinen internen Mechanismus
 
 ## Typische Manifestationen
 
-- „Erkläre erst ausführlich, was du tun willst, bevor du codierst" — ohne strukturierte Constraints
-- Lange Chain-of-Thought-Prompts, die das Modell zum Schreiben irrelevanter Erklärungen zwingen
+- „Erkläre erst ausführlich, was du tun willst, bevor du codierst" — ohne Bezug zu prüfbaren Anforderungen
+- Lange Vorreden, die das Modell zum Schreiben irrelevanter Erklärungen zwingen
 - Annahme, dass verboses Reasoning automatisch besseren Code erzeugt
 
 ## Stattdessen
 
-Statt Token-Volumen zu maximieren:
-→ **Constraint-Formulierung erzwingen** (Spec-First, Test-First)
-→ Der kognitive Modus entscheidet, nicht die Textmenge
+Als operative Heuristik:
+
+- Relevante Constraints vor der Implementierung explizit machen.
+- Das Ergebnis gegen diese Constraints prüfen.
+- Den Nutzen für die jeweilige Aufgabenklasse separat evaluieren, statt Textlänge als Qualitätsproxy zu verwenden.
+
+## Nicht-Claims
+
+- Zusätzliche Tokens sind nicht generell wirkungslos.
+- Constraint-Formulierung ist durch diesen Einzeldurchlauf nicht als Ursache der höheren Pass-Rate belegt.
+- Ein kognitiver Moduswechsel wurde nicht gemessen.
+- Eine Übertragung auf andere Aufgaben, Modelle oder Setups ist nicht belegt.
