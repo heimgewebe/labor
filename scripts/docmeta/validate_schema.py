@@ -117,7 +117,7 @@ def check_counterevidence_rule(data: dict, rel: str) -> str | None:
 
 
 def check_adopted_prompt_promotion_fields(
-    md_file: Path, fm: dict, *, repo_root: Path = REPO_ROOT
+    md_file: Path, fm: dict, *, repo_root: Path | None = None
 ) -> list[str]:
     """Require explicit consumer/decision intent for active adopted prompts.
 
@@ -125,8 +125,9 @@ def check_adopted_prompt_promotion_fields(
     experiment status. A prompt may enter that surface only when both its real
     consumer and the decision/use target are explicit in frontmatter.
     """
+    root = repo_root or REPO_ROOT
     try:
-        rel_path = md_file.relative_to(repo_root)
+        rel_path = md_file.relative_to(root)
     except ValueError:
         return []
 
@@ -762,7 +763,10 @@ def validate_docmeta_frontmatter():
     for md_file in sorted(candidates):
         fm = extract_frontmatter(md_file)
         if fm is None:
-            continue  # kein Frontmatter — kein Fehler in dieser Zone
+            promotion_errors = check_adopted_prompt_promotion_fields(md_file, {})
+            if promotion_errors:
+                errors.extend(promotion_errors)
+            continue  # sonst: kein Frontmatter — kein Fehler in dieser Zone
 
         try:
             validator.validate(fm)

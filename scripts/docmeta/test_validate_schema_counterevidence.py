@@ -186,6 +186,25 @@ class AdoptedPromptPromotionFieldTests(unittest.TestCase):
         self.assertTrue(any("consumer" in error for error in errors))
         self.assertTrue(any("decision_target" in error for error in errors))
 
+    def test_missing_frontmatter_fails_closed(self) -> None:
+        errors = self._check({})
+        self.assertEqual(len(errors), 2)
+
+    def test_docmeta_scan_rejects_adopted_prompt_without_frontmatter(self) -> None:
+        self.prompt.parent.mkdir(parents=True)
+        self.prompt.write_text("# No frontmatter\n", encoding="utf-8")
+
+        original_root = vs.REPO_ROOT
+        try:
+            vs.REPO_ROOT = self.repo_root
+            vs.errors.clear()
+            vs.validate_docmeta_frontmatter()
+            self.assertEqual(len(vs.errors), 2)
+            self.assertTrue(all("prompts/adopted/example.md" in error for error in vs.errors))
+        finally:
+            vs.REPO_ROOT = original_root
+            vs.errors.clear()
+
     def test_non_empty_consumer_and_decision_target_pass(self) -> None:
         errors = self._check(
             {
