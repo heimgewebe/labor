@@ -7,6 +7,7 @@ summary: "Workflow-Heuristik für Kontrollarm-Vergleiche; alternative Erklärung
 evidence_source: "experiments/2026-04-14_prompt-length-control/"
 created: "2026-04-20"
 updated: "2026-09-10"
+triggered_by: "github:heimgewebe/bureau#442; github:heimgewebe/labor#371:review"
 author: "heimgewebe"
 tags:
   - workflow

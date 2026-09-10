@@ -12,6 +12,7 @@ evidence_source: "experiments/2026-04-14_prompt-length-control/"
 synergy_description: "Die Kombination soll Spezifikationsarbeit auf prüfbare Constraints statt auf Länge ausrichten. Das ist eine operative Begründung; die Synergie selbst wurde im einzelnen Prompt-Length-Control-Setup nicht verglichen."
 created: "2026-04-20"
 updated: "2026-09-10"
+triggered_by: "github:heimgewebe/bureau#442; github:heimgewebe/labor#371:review"
 author: "heimgewebe"
 tags:
   - combo

@@ -3,7 +3,8 @@ title: "Playbook: Build a Reliable Prompt"
 status: active
 canonicality: operative
 created: "2026-04-20"
-updated: "2026-04-20"
+updated: "2026-09-10"
+triggered_by: "github:heimgewebe/bureau#442; github:heimgewebe/labor#371:review"
 relations:
   - type: references
     target: ../../catalog/techniques/spec-first-prompting.md
@@ -50,19 +51,19 @@ Frage dich:
 - Braucht die Aufgabe **explizite Constraints** (Validierung, Edge Cases)?
   → [Constraint-Before-Code](../../instruction-blocks/constraint-before-code.md)
 - Gibt es eine **alternative Erklärung**, warum dein Ansatz funktioniert?
-  → [Prompt-Length Control](../../catalog/techniques/prompt-length-control.md) (Stichwort: Token-Volumen ≠ Qualität)
+  → [Prompt-Length Control](../../catalog/techniques/prompt-length-control.md) (als Evidenzgrenzen-Check: Textlänge allein nicht als Qualitätsursache behandeln)
 
-**Anti-Pattern vermeiden:** [Token-Bloat-as-Quality-Proxy](../../catalog/anti-patterns/token-bloat-as-quality-proxy.md) — mehr Text ≠ besserer Code.
+**Anti-Pattern prüfen:** [Token-Bloat-as-Quality-Proxy](../../catalog/anti-patterns/token-bloat-as-quality-proxy.md) — Textmenge nicht als allgemeinen Qualitätsproxy behandeln; Nutzen oder Schaden zusätzlicher Tokens muss für die konkrete Aufgabenklasse belegt werden.
 
 ## Schritt 3: Techniques kombinieren (Combo prüfen)
 
-**Ziel:** Synergien zwischen Techniques nutzen.
+**Ziel:** Dokumentierte Kombinationen als Heuristiken prüfen, ohne Synergie zu unterstellen.
 
-Prüfe im [Combos-Katalog](../../catalog/combos/), ob eine bewährte Kombination existiert:
+Prüfe im [Combos-Katalog](../../catalog/combos/), ob eine für deinen Fall passende dokumentierte Kombination existiert:
 - [Spec-First + Constraint-Control](../../catalog/combos/spec-first-constraint-control.md)
 - [Spec-First + Anti-Pattern-Awareness](../../catalog/combos/spec-first-anti-pattern-awareness.md)
 
-**Prinzip:** Eine Combo ist mehr als die Summe ihrer Teile — die Techniques verstärken sich gegenseitig.
+**Prinzip:** Eine Combo bündelt Techniken; ob sie sich verstärken, muss für die konkrete Aufgabenklasse separat belegt werden.
 
 ## Schritt 4: Prompt bauen
 
