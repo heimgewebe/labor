@@ -51,10 +51,6 @@ relations:
   - type: references
     target: ../catalog/combos/spec-first-anti-pattern-awareness.md
   - type: references
-    target: ../catalog/workflows/causal-control-study.md
-  - type: references
-    target: ../catalog/styles/constraint-first.md
-  - type: references
     target: ../instruction-blocks/spec-first.md
   - type: references
     target: ../instruction-blocks/constraint-before-code.md

@@ -94,10 +94,6 @@
 
 - ← `docs/index.md` (references)
 
-## `catalog/styles/constraint-first.md`
-
-- ← `docs/index.md` (references)
-
 ## `catalog/techniques/prompt-length-control.md`
 
 - ← `catalog/anti-patterns/token-bloat-as-quality-proxy.md` (references)
@@ -107,7 +103,6 @@
 
 ## `catalog/techniques/spec-first-prompting.md`
 
-- ← `catalog/styles/constraint-first.md` (references)
 - ← `catalog/techniques/prompt-length-control.md` (references)
 - ← `docs/playbooks/build-reliable-prompt.md` (references)
 - ← `experiments/2026-04-08_spec-first/CONTEXT.md` (informs)
@@ -115,10 +110,6 @@
 - ← `instruction-blocks/edge-case-enumeration.md` (derived_from)
 - ← `instruction-blocks/spec-first.md` (derived_from)
 - ← `instruction-blocks/validate-against-spec.md` (derived_from)
-
-## `catalog/workflows/causal-control-study.md`
-
-- ← `docs/index.md` (references)
 
 ## `contracts/command-semantics.md`
 
@@ -426,9 +417,7 @@
 ## `experiments/2026-04-14_prompt-length-control/results/result.md`
 
 - ← `catalog/anti-patterns/token-bloat-as-quality-proxy.md` (validated_by)
-- ← `catalog/styles/constraint-first.md` (validated_by)
 - ← `catalog/techniques/prompt-length-control.md` (validated_by)
-- ← `catalog/workflows/causal-control-study.md` (validated_by)
 
 ## `experiments/2026-04-15_agent-task-validity/CONTEXT.md`
 

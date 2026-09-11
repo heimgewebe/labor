@@ -704,22 +704,6 @@
         "catalog/**/*.md"
       ],
       "origin": "handcrafted",
-      "path": "catalog/styles/constraint-first.md",
-      "status": "classified"
-    },
-    {
-      "authority": "result_interpretation",
-      "catchall_match": false,
-      "enforcement": [
-        "review_required"
-      ],
-      "kind": "catalog_entry",
-      "layer": "catalog",
-      "lifecycle": "handcrafted",
-      "matched_patterns": [
-        "catalog/**/*.md"
-      ],
-      "origin": "handcrafted",
       "path": "catalog/techniques/prompt-length-control.md",
       "status": "classified"
     },
@@ -751,22 +735,6 @@
       ],
       "origin": "handcrafted",
       "path": "catalog/technologies/.gitkeep",
-      "status": "classified"
-    },
-    {
-      "authority": "result_interpretation",
-      "catchall_match": false,
-      "enforcement": [
-        "review_required"
-      ],
-      "kind": "catalog_entry",
-      "layer": "catalog",
-      "lifecycle": "handcrafted",
-      "matched_patterns": [
-        "catalog/**/*.md"
-      ],
-      "origin": "handcrafted",
-      "path": "catalog/workflows/causal-control-study.md",
       "status": "classified"
     },
     {
@@ -26089,7 +26057,7 @@
       "normative_contract": 15,
       "procedure_contract": 173,
       "raw_capture": 28,
-      "result_interpretation": 57,
+      "result_interpretation": 55,
       "runtime_observation": 90,
       "schema_truth": 49,
       "sovereign_source": 3,
@@ -26106,14 +26074,14 @@
       "no_silent_edit": 3,
       "non_blocking_diagnostic": 6,
       "owner_required": 3,
-      "review_required": 304
+      "review_required": 302
     },
     "by_layer": {
       "<none>": 1,
       "agent": 10,
       "archive": 25,
       "capture": 10,
-      "catalog": 8,
+      "catalog": 6,
       "contract": 61,
       "docs": 50,
       "experiment": 813,
@@ -26125,18 +26093,18 @@
     "by_lifecycle": {
       "<none>": 1,
       "append_only": 599,
-      "handcrafted": 836,
+      "handcrafted": 834,
       "regenerated": 18,
       "revision_with_reason": 84,
       "superseded_not_rewritten": 2
     },
-    "classified": 1539,
+    "classified": 1537,
     "conflict": 0,
     "fallback_classified": 812,
-    "fallback_share": 0.5276153346328785,
+    "fallback_share": 0.5283018867924528,
     "fallback_threshold": 0.5,
     "fallback_threshold_status": "warning",
-    "total": 1540,
+    "total": 1538,
     "unknown": 1
   },
   "transition_risk_hints": [],
