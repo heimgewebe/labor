@@ -51,10 +51,6 @@ relations:
   - type: references
     target: ../catalog/combos/spec-first-anti-pattern-awareness.md
   - type: references
-    target: ../catalog/workflows/causal-control-study.md
-  - type: references
-    target: ../catalog/styles/constraint-first.md
-  - type: references
     target: ../instruction-blocks/spec-first.md
   - type: references
     target: ../instruction-blocks/constraint-before-code.md
@@ -222,8 +218,6 @@ Warum Exporte abgeleitete Artefakte sind: Sie enthalten keinen eigenständigen I
 | [catalog/techniques/](../catalog/techniques/) | Validierte Prompting-Techniken |
 | [catalog/anti-patterns/](../catalog/anti-patterns/) | Dokumentierte Anti-Pattern |
 | [catalog/combos/](../catalog/combos/) | Kuratierte Technique-Kombinationen |
-| [catalog/workflows/](../catalog/workflows/) | Operative Workflows |
-| [catalog/styles/](../catalog/styles/) | Prompting-Stile |
 | `prompts/adopted/` | Promotionziel für consumergebundene Prompt-Templates |
 
 ### Instruction Blocks

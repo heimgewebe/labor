@@ -21,10 +21,8 @@
 | `catalog/anti-patterns/vague-prompt-and-fix.md` | Vague-Prompt-and-Fix | adopted | — |
 | `catalog/combos/spec-first-anti-pattern-awareness.md` | Spec-First + Anti-Pattern-Awareness | adopted | — |
 | `catalog/combos/spec-first-constraint-control.md` | Spec-First + Constraint-Control | adopted | — |
-| `catalog/styles/constraint-first.md` | Constraint-First | adopted | — |
 | `catalog/techniques/prompt-length-control.md` | Prompt-Length Control (Cognitive-Mode-Switching) | adopted | — |
 | `catalog/techniques/spec-first-prompting.md` | Spec-First Prompting | adopted | — |
-| `catalog/workflows/causal-control-study.md` | Kausale Kontrollstudie | adopted | — |
 | `contracts/command-semantics.md` | Command Semantics (v0.1) | active | canonical |
 | `decisions/README.md` | Decisions — Navigation | active | navigation |
 | `decisions/benchmark/README.md` | Decisions/Benchmark (Stub-Namespace) | active | navigation |
