@@ -10,7 +10,7 @@
 | `./` | 📁 Root | 13 | 6 |
 | `.vibe/` | 🏛️ Governance | 13 | 3 |
 | `benchmarks/` | 📚 Bibliothek | 3 | 3 |
-| `catalog/` | 📚 Bibliothek | 11 | 10 |
+| `catalog/` | 📚 Bibliothek | 9 | 8 |
 | `contracts/` | 🏛️ Governance | 3 | 1 |
 | `decisions/` | 🏛️ Governance | 13 | 4 |
 | `docs/` | 📖 Dokumentation | 57 | 47 |
@@ -24,4 +24,4 @@
 | `tests/` | 📁 Root | 382 | 16 |
 | `tools/` | 🔧 Tooling | 12 | 0 |
 
-**Total:** 1530 files in 16 directories
+**Total:** 1528 files in 16 directories
