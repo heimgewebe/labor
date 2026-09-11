@@ -394,7 +394,6 @@
 - ← `docs/playbooks/pr-run-evidence-pack.md` (references)
 - ← `docs/policies/agent-reading-protocol.md` (references)
 - ← `docs/policies/artifact-boundary-policy.md` (references)
-- ← `instruction-blocks/evidence-bound-status.md` (informed_by)
 
 ## `docs/reference/agent-operability-fixture-matrix.md`
 
