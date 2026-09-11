@@ -218,8 +218,6 @@ Warum Exporte abgeleitete Artefakte sind: Sie enthalten keinen eigenständigen I
 | [catalog/techniques/](../catalog/techniques/) | Validierte Prompting-Techniken |
 | [catalog/anti-patterns/](../catalog/anti-patterns/) | Dokumentierte Anti-Pattern |
 | [catalog/combos/](../catalog/combos/) | Kuratierte Technique-Kombinationen |
-| [catalog/workflows/](../catalog/workflows/) | Operative Workflows |
-| [catalog/styles/](../catalog/styles/) | Prompting-Stile |
 | `prompts/adopted/` | Promotionziel für consumergebundene Prompt-Templates |
 
 ### Instruction Blocks
