@@ -11,10 +11,10 @@ Diagnostic, non-blocking. Classifies all tracked repository artifacts according 
 
 ## Summary
 
-- total: 1543
-- classified: 1542
+- total: 1542
+- classified: 1541
   - of which fallback_classified (catch-all rule): 812
-  - fallback_share: 52.7% (812 / 1542)
+  - fallback_share: 52.7% (812 / 1541)
   - fallback_threshold: 50.0% — warning
 
 Fallback classifications come from broad catch-all rules. They are valid diagnostic classifications, but lower confidence than specific path rules.
@@ -34,7 +34,7 @@ Fallback classifications come from broad catch-all rules. They are valid diagnos
 | contract | 61 |
 | docs | 50 |
 | experiment | 813 |
-| export | 16 |
+| export | 15 |
 | generated | 8 |
 | governance | 94 |
 | test | 445 |
@@ -50,7 +50,7 @@ Fallback classifications come from broad catch-all rules. They are valid diagnos
 | historical_record | 525 |
 | implementation_behavior | 25 |
 | navigation_surface | 28 |
-| normative_contract | 16 |
+| normative_contract | 15 |
 | procedure_contract | 173 |
 | raw_capture | 28 |
 | result_interpretation | 59 |
@@ -66,7 +66,7 @@ Fallback classifications come from broad catch-all rules. They are valid diagnos
 | --- | ---: |
 | <none> | 1 |
 | append_only | 599 |
-| handcrafted | 839 |
+| handcrafted | 838 |
 | regenerated | 18 |
 | revision_with_reason | 84 |
 | superseded_not_rewritten | 2 |
@@ -77,7 +77,7 @@ Fallback classifications come from broad catch-all rules. They are valid diagnos
 | --- | ---: |
 | advisory | 1 |
 | best_effort | 1 |
-| ci_blocking | 667 |
+| ci_blocking | 666 |
 | diagnostic | 2 |
 | no_manual_edit | 18 |
 | no_rewrite | 599 |
@@ -990,7 +990,6 @@ _none_
 - `experiments/_template/results/evidence.jsonl`
 - `instruction-blocks/constraint-before-code.md`
 - `instruction-blocks/edge-case-enumeration.md`
-- `instruction-blocks/evidence-bound-status.md`
 - `instruction-blocks/no-vague-prompts.md`
 - `instruction-blocks/spec-first.md`
 - `instruction-blocks/validate-against-spec.md`
