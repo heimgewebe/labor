@@ -35,13 +35,38 @@ class NaturalCaseAdmissionTests(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
         self.root = Path(self.tmp.name)
-        self.experiment = self.root / "experiments/2026-07-13_chronik-history-brief-effect"
+        self.experiment_id = "2026-08-11_natural-case-admission-test"
+        self.experiment = self.root / "experiments" / self.experiment_id
         self.experiment.mkdir(parents=True)
         self.registration = self.experiment / "registration.v2.json"
-        registration = json.loads(ADMISSION.DEFAULT_REGISTRATION.read_text(encoding="utf-8"))
-        registration.pop("assignment", None)
+        registration = json.loads((ROOT / "experiments/_template/registration.v2.json").read_text(encoding="utf-8"))
+        registration["experiment_id"] = self.experiment_id
+        registration["registered_at"] = "2026-08-11T06:40:00Z"
+        registration["natural_case_admission"] = True
+        registration["consumer"]["organ"] = "Grabowski"
+        registration["consumer"]["commitment"]["evidence_ref"] = "receipt:test-consumer-commitment"
+        registration["consumer"]["commitment"]["confirmed_at"] = "2026-08-11T06:40:00Z"
+        registration["decision_target"]["decision_ref"] = "receipt:test-decision-target"
+        registration["intervention"]["name"] = "natural-case-admission-test"
+        registration["measurement"]["primary_metric"] = "review_roundtrips"
+        registration["consumer"]["commitment"]["valid_until"] = "2026-09-01T00:00:00Z"
+        registration["decision_target"]["owner"] = "Grabowski"
+        registration["control_condition"]["id"] = "live_preflight_only"
+        registration["treatment_condition"]["id"] = "live_preflight_plus_history"
+        registration["review_at"] = "2026-08-20T00:00:00Z"
+        registration["expires_at"] = "2026-09-01T00:00:00Z"
+        registration["closure"]["archive_path"] = f"experiments/_archive/{self.experiment_id}"
         self.registration.write_text(json.dumps(registration, indent=2) + "\n", encoding="utf-8")
+        results = self.experiment / "results"
+        results.mkdir()
+        (results / "decision.yml").write_text("verdict: not_executed\n", encoding="utf-8")
+        self.sync_active_registry()
         self.admissions = self.experiment / "artifacts/admissions"
+
+    def sync_active_registry(self) -> None:
+        registration = json.loads(self.registration.read_text(encoding="utf-8"))
+        payload = {"schema_version":"active-experiments.v1","max_active":5,"experiments":[{"experiment_id":registration["experiment_id"],"path":f"experiments/{registration['experiment_id']}","state":"designed","consumer":registration["consumer"]["organ"],"decision_target":registration["decision_target"]["question"],"primary_metric":registration["measurement"]["primary_metric"],"review_at":registration["review_at"],"expires_at":registration["expires_at"],"source_ref":f"experiments/{registration['experiment_id']}/results/decision.yml"}]}
+        (self.root / "experiments/active.v1.json").write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
 
     def request(self, *, case_id: str = "chronik-natural-001", condition: str = "live_preflight_only") -> dict:
         value = json.loads((FIXTURES / "valid-control-request.json").read_text(encoding="utf-8"))
@@ -129,6 +154,7 @@ class NaturalCaseAdmissionTests(unittest.TestCase):
         registration = json.loads(self.registration.read_text(encoding="utf-8"))
         registration["decision_target"]["question"] = "Does a changed question invalidate the frozen admission binding?"
         self.registration.write_text(json.dumps(registration), encoding="utf-8")
+        self.sync_active_registry()
         with self.assertRaisesRegex(ADMISSION.AdmissionError, "immutable conflicting admission"):
             self.admit(request)
         self.assertEqual(self.record_path().read_bytes(), before)
@@ -138,6 +164,7 @@ class NaturalCaseAdmissionTests(unittest.TestCase):
         registration = json.loads(self.registration.read_text(encoding="utf-8"))
         registration["decision_target"]["question"] = "Should the revised decision question proceed?"
         self.registration.write_text(json.dumps(registration, indent=2) + "\n", encoding="utf-8")
+        self.sync_active_registry()
         newer = self.unique_case("new-case", condition="live_preflight_plus_history", evidence_digit="5")
         self.admit(newer)
         current = json.loads(self.registration.read_text())
@@ -178,7 +205,7 @@ class NaturalCaseAdmissionTests(unittest.TestCase):
         self.assertFalse(one["assignment_evidence"]["automatic"])
         self.assertFalse(two["assignment_evidence"]["automatic"])
 
-    def test_writer_supports_current_post_t005_registration_without_runtime_authority(self) -> None:
+    def test_current_v2_without_explicit_natural_case_capability_is_rejected(self) -> None:
         source = ROOT / "experiments/2026-08-24_outcome-bound-natural-pilot-sampling-unit-r3-v3/registration.v2.json"
         registration = json.loads(source.read_text(encoding="utf-8"))
         other = self.root / "experiments" / registration["experiment_id"]
@@ -187,14 +214,29 @@ class NaturalCaseAdmissionTests(unittest.TestCase):
         registration_path.write_text(json.dumps(registration), encoding="utf-8")
         request = self.request(case_id="modern-natural-001", condition=registration["treatment_condition"]["id"])
         request["case_opened_at"] = "2026-08-25T10:00:00Z"
-        request["eligibility_evidence"] = {"ref": "receipt:modern-natural-001", "sha256": "9" * 64, "captured_at": "2026-08-25T10:00:30Z"}
+        request["eligibility_evidence"] = {"ref":"receipt:modern-natural-001","sha256":"9"*64,"captured_at":"2026-08-25T10:00:30Z"}
         request["triggered_by"] = "modern-natural-case-receipt-001"
-        result = ADMISSION.admit(registration_path, self.write_request(request), other / "artifacts/admissions", now=datetime(2026, 8, 25, 10, 1, tzinfo=timezone.utc))
-        record = json.loads((other / "artifacts/admissions/modern-natural-001/admission.json").read_text())
-        self.assertEqual(result["status"], "admitted")
-        self.assertEqual(record["experiment_id"], registration["experiment_id"])
-        self.assertTrue(record["boundary"]["no_runtime_authority"])
-        self.assertEqual(record["registration_sha256"], ADMISSION.sha256_json(registration))
+        with self.assertRaisesRegex(ADMISSION.AdmissionError, "does not explicitly authorize"):
+            ADMISSION.admit(registration_path, self.write_request(request), other / "artifacts/admissions", now=datetime(2026,8,25,10,1,tzinfo=timezone.utc))
+        self.assertFalse((other / "artifacts").exists())
+
+    def test_inactive_registration_is_rejected_before_creation(self) -> None:
+        registry_path = self.root / "experiments/active.v1.json"
+        registry = json.loads(registry_path.read_text(encoding="utf-8"))
+        registry["experiments"] = []
+        registry_path.write_text(json.dumps(registry, indent=2) + "\n", encoding="utf-8")
+        with self.assertRaisesRegex(ADMISSION.AdmissionError, "not uniquely present in the active registry"):
+            self.admit(self.request())
+        self.assertFalse(self.admissions.exists())
+
+    def test_active_registry_registration_drift_is_rejected_before_creation(self) -> None:
+        registry_path = self.root / "experiments/active.v1.json"
+        registry = json.loads(registry_path.read_text(encoding="utf-8"))
+        registry["experiments"][0]["primary_metric"] = "wrong_metric"
+        registry_path.write_text(json.dumps(registry, indent=2) + "\n", encoding="utf-8")
+        with self.assertRaisesRegex(ADMISSION.AdmissionError, "active registry binding conflicts"):
+            self.admit(self.request())
+        self.assertFalse(self.admissions.exists())
 
     def test_target_outside_experiment_admissions_is_refused(self) -> None:
         outside = self.root / "outside-admissions"

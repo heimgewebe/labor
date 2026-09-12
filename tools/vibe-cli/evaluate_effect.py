@@ -199,7 +199,9 @@ def _validate_assigned_observation(
             "registered automatic assignment is historical-only; current evaluation requires "
             "explicit prospective assignment evidence"
         )
-    admission_required = registration_path is not None and not REGISTRATION_GATE.is_pre_t005_experiment(registration["experiment_id"])
+    admission_required = registration_path is not None and not REGISTRATION_GATE.is_pre_t005_registration_artifact(
+        registration_path, registration["experiment_id"]
+    )
     binding = row.get("admission_binding")
     if not isinstance(binding, dict):
         if admission_required:
@@ -518,6 +520,30 @@ def evaluate(
     return result
 
 
+def safe_output_path(registration_path: Path, output_path: Path) -> Path:
+    """Keep file-backed result publication inside the registered experiment results tree."""
+    try:
+        ADMISSION_CONTRACT.reject_symlink_chain(registration_path, "registration path")
+        experiment_root = registration_path.absolute().parent
+        ADMISSION_CONTRACT.reject_symlink_chain(experiment_root, "experiment path")
+        results_root = experiment_root / "results"
+        ADMISSION_CONTRACT.reject_symlink_chain(results_root, "experiment results path")
+        if not results_root.is_dir():
+            raise ValueError("experiment results directory must already exist")
+        target = output_path.absolute()
+        ADMISSION_CONTRACT.reject_symlink_chain(target, "evaluation output path")
+        target.relative_to(results_root)
+    except ADMISSION_CONTRACT.AdmissionError as exc:
+        raise ValueError(f"unsafe evaluation output path: {exc}") from exc
+    except ValueError as exc:
+        if str(exc) == "experiment results directory must already exist":
+            raise
+        raise ValueError("evaluation output must be inside the registered experiment results directory") from exc
+    if target == results_root:
+        raise ValueError("evaluation output must name a file inside the registered experiment results directory")
+    return target
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--registration", required=True, type=Path)
@@ -531,7 +557,7 @@ def main() -> int:
     )
     rendered = json.dumps(result, indent=2, sort_keys=True) + "\n"
     if args.output:
-        args.output.write_text(rendered, encoding="utf-8")
+        safe_output_path(args.registration, args.output).write_text(rendered, encoding="utf-8")
     else:
         print(rendered, end="")
     return 0

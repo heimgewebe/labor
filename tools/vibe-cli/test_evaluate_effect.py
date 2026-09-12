@@ -387,13 +387,33 @@ class AssignedExperimentEvaluatorTests(unittest.TestCase):
         self.addCleanup(self.tmp.cleanup)
         self.root = Path(self.tmp.name)
         experiment_id = "2026-09-12_zero-to-decision-effect"
-        self.exp = self.root / experiment_id
-        self.exp.mkdir()
+        self.exp = self.root / "experiments" / experiment_id
+        self.exp.mkdir(parents=True)
         self.registration_path = self.exp / "registration.v2.json"
         self.registration = EffectEvaluatorTests().registration()
         self.registration["experiment_id"] = experiment_id
+        self.registration["natural_case_admission"] = True
         self.registration["closure"]["archive_path"] = f"experiments/_archive/{experiment_id}"
         self.registration_path.write_text(json.dumps(self.registration, indent=2) + "\n")
+        results = self.exp / "results"
+        results.mkdir()
+        (results / "decision.yml").write_text("verdict: not_executed\n", encoding="utf-8")
+        active = {
+            "schema_version": "active-experiments.v1",
+            "max_active": 5,
+            "experiments": [{
+                "experiment_id": experiment_id,
+                "path": f"experiments/{experiment_id}",
+                "state": "designed",
+                "consumer": self.registration["consumer"]["organ"],
+                "decision_target": self.registration["decision_target"]["question"],
+                "primary_metric": self.registration["measurement"]["primary_metric"],
+                "review_at": self.registration["review_at"],
+                "expires_at": self.registration["expires_at"],
+                "source_ref": f"experiments/{experiment_id}/results/decision.yml",
+            }],
+        }
+        (self.root / "experiments/active.v1.json").write_text(json.dumps(active, indent=2) + "\n", encoding="utf-8")
         request = json.loads((ROOT / "tests/fixtures/natural_case_admission/valid-control-request.json").read_text())
         request["case_id"] = "effect-case-1"
         request["case_opened_at"] = "2026-09-12T16:00:00Z"
@@ -492,6 +512,49 @@ class AssignedExperimentEvaluatorTests(unittest.TestCase):
         observations["metric"] = historical["measurement"]["primary_metric"]
         with self.assertRaisesRegex(ValueError, "historical-only"):
             EFFECT.evaluate(historical, observations, repo_root=ROOT, registration_path=source)
+
+    def test_replayed_pre_t005_id_outside_canonical_archive_requires_binding(self) -> None:
+        experiment_id = "2026-07-12_operator-intervention-effect-evaluator"
+        replay_root = self.root / "replayed" / experiment_id
+        replay_root.mkdir(parents=True)
+        registration_path = replay_root / "registration.v2.json"
+        registration = json.loads(json.dumps(self.registration))
+        registration["experiment_id"] = experiment_id
+        registration["closure"]["archive_path"] = f"experiments/_archive/{experiment_id}"
+        registration_path.write_text(json.dumps(registration, indent=2) + "\n")
+        observations = self.observations()
+        observations["experiment_id"] = experiment_id
+        observations["registration_sha256"] = EFFECT.sha256_json(registration)
+        observations["observations"][0].pop("admission_binding")
+        with self.assertRaisesRegex(ValueError, "requires admission_binding"):
+            EFFECT.evaluate(registration, observations, repo_root=ROOT, registration_path=registration_path)
+
+    def test_output_symlink_is_rejected_without_touching_target(self) -> None:
+        results = self.exp / "results"
+        results.mkdir(exist_ok=True)
+        sentinel = self.root / "sentinel.txt"
+        sentinel.write_text("keep\n")
+        output = results / "result.json"
+        output.symlink_to(sentinel)
+        with self.assertRaisesRegex(ValueError, "unsafe evaluation output path"):
+            EFFECT.safe_output_path(self.registration_path, output)
+        self.assertEqual(sentinel.read_text(), "keep\n")
+
+    def test_results_ancestor_symlink_is_rejected(self) -> None:
+        results = self.exp / "results"
+        (results / "decision.yml").unlink()
+        results.rmdir()
+        external = self.root / "external-results"
+        external.mkdir()
+        results.symlink_to(external, target_is_directory=True)
+        with self.assertRaisesRegex(ValueError, "unsafe evaluation output path"):
+            EFFECT.safe_output_path(self.registration_path, results / "result.json")
+        self.assertEqual(list(external.iterdir()), [])
+
+    def test_output_outside_registered_results_is_rejected(self) -> None:
+        (self.exp / "results").mkdir(exist_ok=True)
+        with self.assertRaisesRegex(ValueError, "inside the registered experiment results"):
+            EFFECT.safe_output_path(self.registration_path, self.root / "outside.json")
 
     def test_assigned_observation_with_tampered_admission_digest_is_rejected(self) -> None:
         observations = self.observations()

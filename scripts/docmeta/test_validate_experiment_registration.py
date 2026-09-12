@@ -36,9 +36,19 @@ SUBSTANTIVE_OBSERVATION_STATES = (
 )
 
 
+def _validate_test_registration(path: Path, *, now: datetime) -> dict:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    return MODULE.validate_registration_payload(
+        payload,
+        path=path,
+        now=now,
+        historical_compatibility=MODULE.is_pre_t005_experiment(path.parent.name),
+    )
+
+
 def _assert_invalid(path: Path, expected: str | None, *, now: datetime) -> None:
     try:
-        MODULE.validate_registration(path, now=now)
+        _validate_test_registration(path, now=now)
     except Exception as exc:
         if expected is not None:
             assert expected in str(exc)
@@ -155,7 +165,7 @@ def _assert_outcome_observation_invalid(payload: dict[str, object]) -> None:
 def test_valid_registration() -> None:
     with tempfile.TemporaryDirectory() as raw:
         path = _valid(Path(raw) / "2026-07-09_repobrief-workbench-usefulness-eval")
-        payload = MODULE.validate_registration(path, now=NOW)
+        payload = _validate_test_registration(path, now=NOW)
         assert payload["boundary"]["no_runtime_authority"] is True
 
 
@@ -186,7 +196,7 @@ def test_repository_historical_experiments_are_grandfathered() -> None:
 def test_v2_registration_binds_comparison_and_threshold() -> None:
     with tempfile.TemporaryDirectory() as raw:
         path = _valid_v2(Path(raw) / "2026-08-08_effect-evaluator")
-        result = MODULE.validate_registration(path, now=T005_NOW)
+        result = _validate_test_registration(path, now=T005_NOW)
         assert result["schema_version"] == "experiment.registration.v2"
         assert result["measurement"]["minimum_material_effect"] == 1
         assert result["closure"]["outcome_by_result"]["expired"] == "archive"
@@ -354,6 +364,23 @@ def test_modern_assignment_cannot_predate_registration() -> None:
         _assert_invalid(path, "assignment registration must not precede registered_at", now=T005_NOW)
 
 
+def test_pre_t005_file_compatibility_is_bound_to_canonical_artifact_path() -> None:
+    experiment_id = "2026-07-12_operator-intervention-effect-evaluator"
+    canonical = ROOT / "experiments/_archive" / experiment_id / "registration.v2.json"
+    assert MODULE.is_pre_t005_registration_artifact(canonical, experiment_id)
+    with tempfile.TemporaryDirectory() as raw:
+        replay = Path(raw) / experiment_id / "registration.v2.json"
+        replay.parent.mkdir()
+        replay.write_bytes(canonical.read_bytes())
+        assert not MODULE.is_pre_t005_registration_artifact(replay, experiment_id)
+        try:
+            MODULE.validate_registration(replay, now=datetime(2026, 8, 1, tzinfo=timezone.utc))
+        except ValueError as exc:
+            assert "registered_at" in str(exc) or "new experiment requires registration.v2.json" in str(exc)
+        else:
+            raise AssertionError("replayed pre-T005 id incorrectly retained file-backed compatibility")
+
+
 def test_new_work_cannot_use_v1_registration_directly() -> None:
     with tempfile.TemporaryDirectory() as raw:
         path = _valid(Path(raw) / "2026-08-08_v1-bypass")
@@ -371,7 +398,7 @@ def test_new_work_cannot_hide_v2_payload_under_v1_filename() -> None:
 def test_v2_registration_remains_valid_after_review_until_expiry() -> None:
     with tempfile.TemporaryDirectory() as raw:
         path = _valid_v2(Path(raw) / "2026-08-08_post-review-validity")
-        MODULE.validate_registration(path, now=datetime(2099, 3, 15, tzinfo=timezone.utc))
+        _validate_test_registration(path, now=datetime(2099, 3, 15, tzinfo=timezone.utc))
 
 
 def test_v2_reviewed_surface_exception_passes() -> None:
@@ -388,7 +415,7 @@ def test_v2_reviewed_surface_exception_passes() -> None:
             "rationale": "The bounded safety gap justifies one net durable surface unit.",
         }
         path.write_text(json.dumps(payload))
-        MODULE.validate_registration(path, now=T005_NOW)
+        _validate_test_registration(path, now=T005_NOW)
 
 
 def test_backdated_new_directory_cannot_bypass_registration() -> None:

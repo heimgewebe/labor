@@ -4,8 +4,7 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
-import subprocess
-import sys
+import multiprocessing
 import tempfile
 import unittest
 from unittest import mock
@@ -23,7 +22,23 @@ ADMISSION = importlib.util.module_from_spec(ADMIT_SPEC)
 ADMIT_SPEC.loader.exec_module(ADMISSION)
 
 
+def _process_capture(registration: Path, observations: Path, row: dict, output: multiprocessing.Queue) -> None:
+    try:
+        output.put(("ok", CAPTURE.capture(registration, observations, row)))
+    except Exception as exc:
+        output.put(("error", f"{type(exc).__name__}: {exc}"))
+
+
 class CaptureEffectObservationTests(unittest.TestCase):
+    def setUp(self) -> None:
+        grandfathered = mock.patch.object(
+            CAPTURE.REGISTRATION_GATE,
+            "is_pre_t005_registration_artifact",
+            return_value=True,
+        )
+        grandfathered.start()
+        self.addCleanup(grandfathered.stop)
+
     def registration(self) -> dict:
         return {
             "schema_version": "experiment.registration.v2",
@@ -302,45 +317,35 @@ class CaptureEffectObservationTests(unittest.TestCase):
                 CAPTURE.capture(registration, observations, row)
             self.assertFalse(observations.exists())
 
-    def test_concurrent_cli_writers_are_all_preserved(self) -> None:
+    def test_concurrent_writers_are_all_preserved(self) -> None:
         with tempfile.TemporaryDirectory() as raw:
             root = Path(raw)
             registration, observations = self.setup_experiment(root)
-            processes = []
+            rows = []
             for index in range(4):
-                evidence = root / f"evidence-{index}.txt"
-                evidence.write_text(f"evidence {index}\n", encoding="utf-8")
-                command = [
-                    sys.executable,
-                    str(SCRIPT),
-                    "--registration", str(registration),
-                    "--observations", str(observations),
-                    "--observation-id", f"obs-{index}",
-                    "--condition", "manual_review",
-                    "--value", str(index),
-                    "--effort-seconds", str(60 + index),
-                    "--scoring-blinded",
-                    "--comparison-key", "pilot-concurrent",
-                    "--pair-id", f"pilot-{index}",
-                    "--evidence-ref", f"receipt:obs-{index}",
-                    "--evidence-file", str(evidence),
-                    "--decision-maker-ref", f"receipt:decider-{index}",
-                    "--observer-ref", f"receipt:observer-{index}",
-                    "--independent",
-                    "--captured-at", "2026-08-01T00:00:00Z",
-                ]
-                processes.append(subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True))
-            failures = []
+                row = self.observation(f"obs-{index}", digest_seed=f"evidence-{index}")
+                row["comparison_key"] = f"pilot-concurrent-{index}"
+                row["pair_id"] = f"pilot-{index}"
+                rows.append(row)
+            context = multiprocessing.get_context("fork")
+            output = context.Queue()
+            processes = [
+                context.Process(target=_process_capture, args=(registration, observations, row, output))
+                for row in rows
+            ]
             for process in processes:
-                stdout, stderr = process.communicate(timeout=20)
-                if process.returncode != 0:
-                    failures.append((process.returncode, stdout, stderr))
-            self.assertEqual(failures, [])
+                process.start()
+            for process in processes:
+                process.join(timeout=20)
+            results = [output.get(timeout=5) for _ in processes]
+            self.assertEqual([process.exitcode for process in processes], [0, 0, 0, 0], results)
+            self.assertEqual([status for status, _payload in results], ["ok", "ok", "ok", "ok"], results)
             document = json.loads(observations.read_text(encoding="utf-8"))
             self.assertEqual(
                 [row["observation_id"] for row in document["observations"]],
                 ["obs-0", "obs-1", "obs-2", "obs-3"],
             )
+
 
 
 class ChronikAdmissionBindingTests(unittest.TestCase):
@@ -364,8 +369,27 @@ class ChronikAdmissionBindingTests(unittest.TestCase):
         registration_path = exp / "registration.v2.json"
         registration = CaptureEffectObservationTests().registration()
         registration["experiment_id"] = experiment_id
+        registration["natural_case_admission"] = True
         registration["closure"]["archive_path"] = f"experiments/_archive/{experiment_id}"
         registration_path.write_text(json.dumps(registration, indent=2) + "\n")
+        decision = exp / "results/decision.yml"
+        decision.write_text("verdict: not_executed\n", encoding="utf-8")
+        active = {
+            "schema_version": "active-experiments.v1",
+            "max_active": 5,
+            "experiments": [{
+                "experiment_id": experiment_id,
+                "path": f"experiments/{experiment_id}",
+                "state": "designed",
+                "consumer": registration["consumer"]["organ"],
+                "decision_target": registration["decision_target"]["question"],
+                "primary_metric": registration["measurement"]["primary_metric"],
+                "review_at": registration["review_at"],
+                "expires_at": registration["expires_at"],
+                "source_ref": f"experiments/{experiment_id}/results/decision.yml",
+            }],
+        }
+        (self.root / "experiments/active.v1.json").write_text(json.dumps(active, indent=2) + "\n", encoding="utf-8")
         request = json.loads((CAPTURE.ROOT / "tests/fixtures/natural_case_admission/valid-control-request.json").read_text())
         request["case_id"] = "explicit-case-1"
         request["case_opened_at"] = "2026-09-12T16:00:00Z"
@@ -444,16 +468,24 @@ class ChronikAdmissionBindingTests(unittest.TestCase):
         with self.assertRaisesRegex(CAPTURE.CaptureError, "registered_at"):
             CAPTURE.capture(self.registration, self.observations, self.row(), admission_path=self.admission)
 
+    def test_replayed_pre_t005_id_outside_canonical_archive_still_requires_admission(self) -> None:
+        experiment_id = "2026-07-12_operator-intervention-effect-evaluator"
+        exp = self.root / "replayed" / "experiments" / experiment_id
+        (exp / "results").mkdir(parents=True)
+        registration = CaptureEffectObservationTests().registration()
+        registration["experiment_id"] = experiment_id
+        registration["closure"]["archive_path"] = f"experiments/_archive/{experiment_id}"
+        registration_path = exp / "registration.v2.json"
+        registration_path.write_text(json.dumps(registration, indent=2) + "\n")
+        with self.assertRaisesRegex(CAPTURE.CaptureError, "requires --admission"):
+            CAPTURE.capture(registration_path, exp / "results/observations.v2.json", self.row())
+
     def test_current_observation_without_admission_is_rejected(self) -> None:
         with self.assertRaisesRegex(CAPTURE.CaptureError, "requires --admission"):
             CAPTURE.capture(self.registration, self.observations, self.row())
 
     def test_historical_automatic_registration_is_rejected_by_current_capture(self) -> None:
-        exp = self.root / "historical" / "experiments/2026-07-13_chronik-history-brief-effect"
-        (exp / "results").mkdir(parents=True)
-        registration = exp / "registration.v2.json"
         source = CAPTURE.ROOT / "experiments/_archive/2026-07-13_chronik-history-brief-effect/registration.v2.json"
-        registration.write_bytes(source.read_bytes())
         original = CAPTURE.REGISTRATION_GATE.validate_registration
         frozen_now = ADMISSION.utc_timestamp("2026-08-11T06:50:00Z", "test-now")
         with mock.patch.object(
@@ -462,7 +494,7 @@ class ChronikAdmissionBindingTests(unittest.TestCase):
             side_effect=lambda path, **kwargs: original(path, now=frozen_now, **kwargs),
         ):
             with self.assertRaisesRegex(CAPTURE.CaptureError, "historical-only"):
-                CAPTURE.capture(registration, exp / "results/observations.v2.json", self.row())
+                CAPTURE.capture(source, self.root / "unused-observations.json", self.row())
 
     def test_symlinked_artifacts_ancestor_is_rejected_by_capture(self) -> None:
         artifacts = self.registration.parent / "artifacts"

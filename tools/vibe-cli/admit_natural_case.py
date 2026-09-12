@@ -27,6 +27,7 @@ from jsonschema import Draft202012Validator, FormatChecker, ValidationError
 
 ROOT = Path(__file__).resolve().parents[2]
 ADMISSION_SCHEMA = ROOT / "schemas/natural-case-admission.v1.schema.json"
+ACTIVE_REGISTRY_SCHEMA = ROOT / "schemas/active-experiments.v1.schema.json"
 REGISTRATION_GATE_PATH = ROOT / "scripts/docmeta/validate_experiment_registration.py"
 # Historical fixture paths retained for regression tests only. The CLI has no
 # experiment default and derives the admissions directory from --registration.
@@ -143,20 +144,52 @@ def validate_registration(
     *,
     now: datetime,
 ) -> None:
+    if registration.get("assignment") is not None:
+        raise AdmissionError("registered automatic assignment is historical-only; current admissions require explicit prospective assignment evidence")
     try:
-        validated = REGISTRATION_GATE.validate_registration(
-            registration_path,
-            now=now,
-            require_current=True,
-        )
+        validated = REGISTRATION_GATE.validate_registration(registration_path, now=now, require_current=True)
     except Exception as exc:
         raise AdmissionError(f"registration contract invalid: {exc}") from exc
     if validated != registration:
         raise AdmissionError("registration payload changed while validating")
     if registration.get("schema_version") != "experiment.registration.v2":
         raise AdmissionError("natural-case admission requires registration.v2")
+    if registration.get("natural_case_admission") is not True:
+        raise AdmissionError("registration does not explicitly authorize natural-case admission")
     if any(registration["boundary"].get(key) is not True for key in ADMISSION_BOUNDARY_KEYS):
         raise AdmissionError("registration authority boundary is not closed")
+
+
+def validate_active_registry_binding(registration_path: Path, registration: dict[str, Any], *, now: datetime) -> None:
+    reject_symlink_chain(registration_path, "registration path")
+    registration_absolute = registration_path.absolute()
+    experiment_root = registration_absolute.parent
+    experiments_root = experiment_root.parent
+    experiment_id = registration["experiment_id"]
+    if registration_absolute.name != "registration.v2.json" or experiments_root.name != "experiments" or experiment_root.name != experiment_id:
+        raise AdmissionError("natural-case admission requires the canonical active experiment registration path")
+    registry_path = experiments_root / "active.v1.json"
+    reject_symlink_chain(registry_path, "active registry path")
+    registry = load_object(registry_path, "active experiment registry")
+    validate(registry, load_schema(ACTIVE_REGISTRY_SCHEMA), "active experiment registry")
+    matches = [item for item in registry["experiments"] if item["experiment_id"] == experiment_id]
+    if len(matches) != 1:
+        raise AdmissionError("experiment is not uniquely present in the active registry")
+    item = matches[0]
+    expected = {"path": f"experiments/{experiment_id}", "consumer": registration["consumer"]["organ"], "decision_target": registration["decision_target"]["question"], "primary_metric": registration["measurement"]["primary_metric"], "review_at": registration["review_at"], "expires_at": registration["expires_at"]}
+    conflicts = [key for key,value in expected.items() if item.get(key) != value]
+    if conflicts:
+        raise AdmissionError("active registry binding conflicts with registration: " + ", ".join(sorted(conflicts)))
+    if utc_timestamp(item["expires_at"], "active registry expires_at") <= now:
+        raise AdmissionError("active registry binding is expired")
+    source_path = (experiments_root.parent / item["source_ref"]).absolute()
+    reject_symlink_chain(source_path, "active registry source_ref")
+    try:
+        source_path.relative_to(experiment_root)
+    except ValueError as exc:
+        raise AdmissionError("active registry source_ref escapes the registered experiment") from exc
+    if not source_path.is_file():
+        raise AdmissionError("active registry source_ref is missing")
 
 
 def request_schema(admission_schema: dict[str, Any]) -> dict[str, Any]:
@@ -353,7 +386,7 @@ def publish_create_only(path: Path, value: dict[str, Any]) -> None:
             _fsync_directory(path.parent)
 
 
-def _reject_symlink_chain(path: Path, label: str) -> None:
+def reject_symlink_chain(path: Path, label: str) -> None:
     absolute = path.absolute()
     current = Path(absolute.anchor)
     for part in absolute.parts[1:]:
@@ -367,18 +400,18 @@ def _reject_symlink_chain(path: Path, label: str) -> None:
 
 
 def safe_admissions_root(registration_path: Path, admissions_dir: Path) -> Path:
-    _reject_symlink_chain(registration_path, "registration path")
+    reject_symlink_chain(registration_path, "registration path")
     experiment_root = registration_path.absolute().parent
-    _reject_symlink_chain(experiment_root, "experiment path")
+    reject_symlink_chain(experiment_root, "experiment path")
     artifacts = experiment_root / "artifacts"
     expected = artifacts / "admissions"
     if admissions_dir.absolute() != expected:
         raise AdmissionError("admissions directory must be the registered experiment artifacts/admissions path")
-    _reject_symlink_chain(artifacts, "experiment artifacts path")
+    reject_symlink_chain(artifacts, "experiment artifacts path")
     artifacts.mkdir(parents=False, exist_ok=True)
-    _reject_symlink_chain(artifacts, "experiment artifacts path")
+    reject_symlink_chain(artifacts, "experiment artifacts path")
     admissions_dir.mkdir(mode=0o700, parents=False, exist_ok=True)
-    _reject_symlink_chain(admissions_dir, "admissions path")
+    reject_symlink_chain(admissions_dir, "admissions path")
     if not admissions_dir.is_dir():
         raise AdmissionError("admissions directory is unsafe")
     return admissions_dir
@@ -412,15 +445,17 @@ def validate_existing_admission(
             "registered automatic assignment is historical-only; current admission consumption "
             "requires explicit prospective assignment evidence"
         )
-    _reject_symlink_chain(registration_path, "registration path")
+    if registration.get("natural_case_admission") is not True:
+        raise AdmissionError("registration does not explicitly authorize natural-case admission")
+    reject_symlink_chain(registration_path, "registration path")
     experiment_root = registration_path.absolute().parent
-    _reject_symlink_chain(experiment_root, "experiment path")
+    reject_symlink_chain(experiment_root, "experiment path")
     root = experiment_root / "artifacts" / "admissions"
-    _reject_symlink_chain(root, "admissions path")
+    reject_symlink_chain(root, "admissions path")
     if not root.is_dir():
         raise AdmissionError("admissions root must be a real directory")
     admission_absolute = admission_path.absolute()
-    _reject_symlink_chain(admission_absolute, "admission path")
+    reject_symlink_chain(admission_absolute, "admission path")
     try:
         relative = admission_absolute.relative_to(root)
     except ValueError as exc:
@@ -428,7 +463,7 @@ def validate_existing_admission(
     if len(relative.parts) != 2 or relative.parts[1] != "admission.json":
         raise AdmissionError("admission path must be artifacts/admissions/<case-id>/admission.json")
     case_dir = root / relative.parts[0]
-    _reject_symlink_chain(case_dir, "admission case path")
+    reject_symlink_chain(case_dir, "admission case path")
     if not case_dir.is_dir():
         raise AdmissionError("admission case directory must be a real directory")
 
@@ -468,10 +503,11 @@ def admit(
     *,
     now: datetime | None = None,
 ) -> dict[str, Any]:
-    _reject_symlink_chain(registration_path, "registration path")
+    reject_symlink_chain(registration_path, "registration path")
     registration = load_object(registration_path, "registration")
     admitted = (now or now_utc()).astimezone(timezone.utc)
     validate_registration(registration, registration_path, now=admitted)
+    validate_active_registry_binding(registration_path, registration, now=admitted)
     admission_schema = load_schema(ADMISSION_SCHEMA)
     request = load_object(request_path, "admission request")
     validate(request, request_schema(admission_schema), "admission request")

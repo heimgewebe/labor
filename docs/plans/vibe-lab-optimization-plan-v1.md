@@ -51,10 +51,10 @@ As of 2026-09-12:
 
 Labor's normal product path is deliberately file-backed and boring:
 
-1. **register** — create one current `registration.v2.json` with a confirmed external consumer, decision question, control/treatment, primary metric, cost metric, stop/review/expiry rules and reviewed closure mapping;
-2. **activate** — add exactly one coherent entry to `experiments/active.v1.json`; the registry stays the bounded active truth;
+1. **register** — create one current `registration.v2.json` with a confirmed external consumer, decision question, control/treatment, primary metric, cost metric, stop/review/expiry rules and reviewed closure mapping; set `natural_case_admission: true` only when this registration explicitly authorizes natural-case intake (the template defaults to `false`);
+2. **activate** — add exactly one coherent entry to `experiments/active.v1.json`; the registry stays the bounded active truth and admission refuses registrations that are absent or inconsistent there;
 3. **admit** — before planning or execution, publish each eligible natural-case record create-only with `tools/vibe-cli/admit_natural_case.py --registration ... --request ...`; the request must carry an externally evidenced explicit condition assignment recorded before planning; the writer derives `<experiment>/artifacts/admissions` by default and has no task or runtime authority; downstream capture/evaluation recompute the target record’s registration, request, assignment and review commitments before trusting it;
-4. **observe** — append evidence-bound measurements through `tools/vibe-cli/capture_effect_observation.py`; current non-grandfathered experiments must bind each observation to its admission record, while the closed pre-T005 compatibility set retains its historical unbound evaluation contract;
+4. **observe** — append evidence-bound measurements through `tools/vibe-cli/capture_effect_observation.py`; current non-grandfathered experiments must bind each observation to its admission record, while only canonical pre-T005 registration artifacts at their repository paths retain the historical file-backed unbound contract; replaying an old experiment id elsewhere grants no compatibility;
 5. **evaluate** — deterministically compute the registered comparison with `tools/vibe-cli/evaluate_effect.py`;
 6. **decide** — a reviewer records the current canonical `results/decision.yml` (or the explicitly bound current `pN/decision.yml` where an existing phased experiment requires it); evaluation never changes policy automatically;
 7. **archive** — after the reviewed decision, remove the experiment from `active.v1.json` and preserve the reviewed evidence/decision under the registered archive path through ordinary reviewed Git history.

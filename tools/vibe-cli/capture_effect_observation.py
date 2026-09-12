@@ -311,7 +311,9 @@ def _bind_admission(admission_path: Path | None, registration_path: Path, regist
             "registered automatic assignment is historical-only; current capture requires "
             "explicit prospective assignment evidence"
         )
-    admission_required = not REGISTRATION_GATE.is_pre_t005_experiment(registration["experiment_id"])
+    admission_required = not REGISTRATION_GATE.is_pre_t005_registration_artifact(
+        registration_path, registration["experiment_id"]
+    )
     if admission_path is None:
         if admission_required:
             raise CaptureError("current experiment observation requires --admission")
