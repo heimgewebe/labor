@@ -60,6 +60,7 @@ class NaturalCaseAdmissionTests(unittest.TestCase):
         results = self.experiment / "results"
         results.mkdir()
         (results / "decision.yml").write_text("verdict: not_executed\n", encoding="utf-8")
+        (self.experiment / "manifest.yml").write_text("experiment:\n  status: designed\n", encoding="utf-8")
         self.sync_active_registry()
         self.admissions = self.experiment / "artifacts/admissions"
 
@@ -234,9 +235,45 @@ class NaturalCaseAdmissionTests(unittest.TestCase):
         registry = json.loads(registry_path.read_text(encoding="utf-8"))
         registry["experiments"][0]["primary_metric"] = "wrong_metric"
         registry_path.write_text(json.dumps(registry, indent=2) + "\n", encoding="utf-8")
-        with self.assertRaisesRegex(ADMISSION.AdmissionError, "active registry binding conflicts"):
+        with self.assertRaisesRegex(ADMISSION.AdmissionError, "active registry contract invalid"):
             self.admit(self.request())
         self.assertFalse(self.admissions.exists())
+
+    def test_active_registry_source_ref_must_be_canonical_decision(self) -> None:
+        registry_path = self.root / "experiments/active.v1.json"
+        registry = json.loads(registry_path.read_text(encoding="utf-8"))
+        registry["experiments"][0]["source_ref"] = f"experiments/{self.experiment_id}/registration.v2.json"
+        registry_path.write_text(json.dumps(registry, indent=2) + "\n", encoding="utf-8")
+        with self.assertRaisesRegex(ADMISSION.AdmissionError, "source_ref must be exactly"):
+            self.admit(self.request())
+        self.assertFalse(self.admissions.exists())
+
+    def test_active_registry_source_ref_traversal_is_rejected(self) -> None:
+        registry_path = self.root / "experiments/active.v1.json"
+        registry = json.loads(registry_path.read_text(encoding="utf-8"))
+        registry["experiments"][0]["source_ref"] = f"experiments/{self.experiment_id}/results/../../outside.yml"
+        registry_path.write_text(json.dumps(registry, indent=2) + "\n", encoding="utf-8")
+        with self.assertRaisesRegex(ADMISSION.AdmissionError, "source_ref must be exactly"):
+            self.admit(self.request())
+        self.assertFalse(self.admissions.exists())
+
+    def test_active_manifest_state_conflict_is_rejected(self) -> None:
+        (self.experiment / "manifest.yml").write_text("experiment:\n  status: testing\n", encoding="utf-8")
+        with self.assertRaisesRegex(ADMISSION.AdmissionError, "conflicts with manifest status"):
+            self.admit(self.request())
+        self.assertFalse(self.admissions.exists())
+
+    def test_malformed_unrelated_sibling_does_not_block_valid_case(self) -> None:
+        self.admit(self.unique_case("valid-one", evidence_digit="4"))
+        malformed = self.admissions / "broken-neighbor"
+        malformed.mkdir()
+        (malformed / "admission.json").write_text("{not-json\n", encoding="utf-8")
+        result = self.admit(
+            self.unique_case("valid-two", condition="live_preflight_plus_history", evidence_digit="5")
+        )
+        self.assertEqual(result["status"], "admitted")
+        self.assertTrue(self.record_path("valid-two").is_file())
+        self.assertEqual((malformed / "admission.json").read_text(), "{not-json\n")
 
     def test_target_outside_experiment_admissions_is_refused(self) -> None:
         outside = self.root / "outside-admissions"

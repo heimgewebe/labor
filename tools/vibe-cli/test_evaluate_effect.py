@@ -398,6 +398,7 @@ class AssignedExperimentEvaluatorTests(unittest.TestCase):
         results = self.exp / "results"
         results.mkdir()
         (results / "decision.yml").write_text("verdict: not_executed\n", encoding="utf-8")
+        (self.exp / "manifest.yml").write_text("experiment:\n  status: designed\n", encoding="utf-8")
         active = {
             "schema_version": "active-experiments.v1",
             "max_active": 5,
@@ -526,6 +527,13 @@ class AssignedExperimentEvaluatorTests(unittest.TestCase):
         observations["experiment_id"] = experiment_id
         observations["registration_sha256"] = EFFECT.sha256_json(registration)
         observations["observations"][0].pop("admission_binding")
+        self.assertFalse(
+            EFFECT._historical_compatibility(
+                registration,
+                registration_path=registration_path,
+                repo_root=ROOT,
+            )
+        )
         with self.assertRaisesRegex(ValueError, "requires admission_binding"):
             EFFECT.evaluate(registration, observations, repo_root=ROOT, registration_path=registration_path)
 
@@ -555,6 +563,19 @@ class AssignedExperimentEvaluatorTests(unittest.TestCase):
         (self.exp / "results").mkdir(exist_ok=True)
         with self.assertRaisesRegex(ValueError, "inside the registered experiment results"):
             EFFECT.safe_output_path(self.registration_path, self.root / "outside.json")
+
+    def test_output_traversal_is_rejected_without_touching_sentinel(self) -> None:
+        sentinel = self.exp.parent / "outside.json"
+        sentinel.write_text("keep\n", encoding="utf-8")
+        output = self.exp / "results" / ".." / ".." / "outside.json"
+        with self.assertRaisesRegex(ValueError, "inside the registered experiment results"):
+            EFFECT.write_evaluation_output(self.registration_path, output, "overwrite\n")
+        self.assertEqual(sentinel.read_text(encoding="utf-8"), "keep\n")
+
+    def test_safe_output_writer_publishes_regular_file(self) -> None:
+        output = self.exp / "results" / "result.json"
+        EFFECT.write_evaluation_output(self.registration_path, output, "{}\n")
+        self.assertEqual(output.read_text(encoding="utf-8"), "{}\n")
 
     def test_assigned_observation_with_tampered_admission_digest_is_rejected(self) -> None:
         observations = self.observations()

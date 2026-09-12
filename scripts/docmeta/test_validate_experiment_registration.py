@@ -341,7 +341,7 @@ def test_assignment_prior_digest_must_match_registration_without_assignment() ->
         _assert_invalid(path, "prior_registration_sha256", now=datetime(2026, 8, 11, 7, 0, tzinfo=timezone.utc))
 
 
-def test_modern_assignment_cannot_predate_registration() -> None:
+def test_modern_assignment_is_historical_only() -> None:
     with tempfile.TemporaryDirectory() as raw:
         path = _valid_v2(Path(raw) / "2026-08-08_assignment-chronology")
         payload = json.loads(path.read_text())
@@ -350,7 +350,7 @@ def test_modern_assignment_cannot_predate_registration() -> None:
         ).encode("utf-8")
         payload["assignment"] = {
             "schema_version": "stratified_permuted_blocks.v1",
-            "registered_at": "2026-08-07T23:59:59Z",
+            "registered_at": "2026-08-08T00:01:00Z",
             "prior_registration_sha256": hashlib.sha256(prior_raw).hexdigest(),
             "seed_sha256": "a" * 64,
             "block_size": 2,
@@ -361,20 +361,39 @@ def test_modern_assignment_cannot_predate_registration() -> None:
             "historical_admissions_policy": "never_reassign_or_backfill",
         }
         path.write_text(json.dumps(payload), encoding="utf-8")
-        _assert_invalid(path, "assignment registration must not precede registered_at", now=T005_NOW)
+        _assert_invalid(path, "registered automatic assignment is historical-only", now=T005_NOW)
 
 
 def test_pre_t005_file_compatibility_is_bound_to_canonical_artifact_path() -> None:
     experiment_id = "2026-07-12_operator-intervention-effect-evaluator"
     canonical = ROOT / "experiments/_archive" / experiment_id / "registration.v2.json"
+    expected = frozenset({
+        Path("experiments/_archive/2026-07-12_operator-intervention-effect-evaluator/registration.v2.json"),
+        Path("experiments/_archive/2026-07-13_chronik-history-brief-effect/registration.v2.json"),
+        Path("experiments/_archive/2026-07-23_operator-routing-ml-readiness-shadow/registration.v2.json"),
+    })
+    assert MODULE.PRE_T005_REGISTRATION_ARTIFACTS == expected
     assert MODULE.is_pre_t005_registration_artifact(canonical, experiment_id)
+    assert not MODULE.is_pre_t005_registration_artifact(
+        ROOT / "experiments" / experiment_id / "registration.v2.json",
+        experiment_id,
+    )
     with tempfile.TemporaryDirectory() as raw:
-        replay = Path(raw) / experiment_id / "registration.v2.json"
-        replay.parent.mkdir()
+        replay_root = Path(raw)
+        replay = replay_root / "experiments/_archive" / experiment_id / "registration.v2.json"
+        replay.parent.mkdir(parents=True)
         replay.write_bytes(canonical.read_bytes())
-        assert not MODULE.is_pre_t005_registration_artifact(replay, experiment_id)
+        assert not MODULE.is_pre_t005_registration_artifact(
+            replay,
+            experiment_id,
+            repository_root=replay_root,
+        )
         try:
-            MODULE.validate_registration(replay, now=datetime(2026, 8, 1, tzinfo=timezone.utc))
+            MODULE.validate_registration(
+                replay,
+                now=datetime(2026, 8, 1, tzinfo=timezone.utc),
+                repository_root=replay_root,
+            )
         except ValueError as exc:
             assert "registered_at" in str(exc) or "new experiment requires registration.v2.json" in str(exc)
         else:

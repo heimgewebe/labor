@@ -173,6 +173,56 @@ def _validate_decision_binding(
             )
 
 
+def validate_active_experiment_item(
+    *,
+    item: dict[str, Any],
+    repo_root: Path,
+    clock: datetime,
+) -> bool:
+    """Validate one schema-valid active entry with the same semantics as the full registry."""
+    experiment_id = item["experiment_id"]
+    path_value = item["path"]
+    repository_root = repo_root.resolve()
+    experiment_dir = (repo_root / path_value).resolve()
+    try:
+        experiment_dir.relative_to(repository_root)
+    except ValueError as exc:
+        raise ValueError(f"{experiment_id}: path escapes repository") from exc
+    if experiment_dir.name != experiment_id:
+        raise ValueError(f"{experiment_id}: path basename must match experiment_id")
+    if not experiment_dir.is_dir():
+        raise ValueError(f"{experiment_id}: experiment directory is missing")
+
+    review_at = _utc(item["review_at"], f"{experiment_id}.review_at")
+    expires_at = _utc(item["expires_at"], f"{experiment_id}.expires_at")
+    if review_at > expires_at:
+        raise ValueError(f"{experiment_id}: review_at must not be after expires_at")
+    if expires_at <= clock:
+        raise ValueError(f"{experiment_id}: active experiment is expired")
+
+    manifest_path = experiment_dir / "manifest.yml"
+    if not manifest_path.is_file():
+        raise ValueError(f"{experiment_id}: manifest.yml is missing")
+    manifest = _load_yaml_object(manifest_path, f"{experiment_id}.manifest")
+    status = manifest.get("experiment", {}).get("status")
+    allowed = {"designed"} if item["state"] == "designed" else {"testing"}
+    if status not in allowed:
+        raise ValueError(
+            f"{experiment_id}: active state {item['state']} conflicts with manifest status {status}"
+        )
+
+    _validate_decision_binding(
+        item=item,
+        repo_root=repo_root,
+        experiment_dir=experiment_dir,
+    )
+    return _validate_registration_binding(
+        item=item,
+        experiment_dir=experiment_dir,
+        clock=clock,
+    )
+
+
 def validate_active_experiments(
     registry_path: Path = REGISTRY,
     *,
@@ -199,43 +249,10 @@ def validate_active_experiments(
         ids.add(experiment_id)
         paths.add(path_value)
 
-        experiment_dir = (repo_root / path_value).resolve()
-        try:
-            experiment_dir.relative_to(repo_root.resolve())
-        except ValueError as exc:
-            raise ValueError(f"{experiment_id}: path escapes repository") from exc
-        if experiment_dir.name != experiment_id:
-            raise ValueError(f"{experiment_id}: path basename must match experiment_id")
-        if not experiment_dir.is_dir():
-            raise ValueError(f"{experiment_id}: experiment directory is missing")
-
-        review_at = _utc(item["review_at"], f"{experiment_id}.review_at")
-        expires_at = _utc(item["expires_at"], f"{experiment_id}.expires_at")
-        if review_at > expires_at:
-            raise ValueError(f"{experiment_id}: review_at must not be after expires_at")
-        if expires_at <= clock:
-            raise ValueError(f"{experiment_id}: active experiment is expired")
-
-        manifest_path = experiment_dir / "manifest.yml"
-        if not manifest_path.is_file():
-            raise ValueError(f"{experiment_id}: manifest.yml is missing")
-        manifest = _load_yaml_object(manifest_path, f"{experiment_id}.manifest")
-        status = manifest.get("experiment", {}).get("status")
-        allowed = {"designed"} if item["state"] == "designed" else {"testing"}
-        if status not in allowed:
-            raise ValueError(
-                f"{experiment_id}: active state {item['state']} conflicts with manifest status {status}"
-            )
-
-        _validate_decision_binding(
-            item=item,
-            repo_root=repo_root,
-            experiment_dir=experiment_dir,
-        )
         registration_bound += int(
-            _validate_registration_binding(
+            validate_active_experiment_item(
                 item=item,
-                experiment_dir=experiment_dir,
+                repo_root=repo_root,
                 clock=clock,
             )
         )

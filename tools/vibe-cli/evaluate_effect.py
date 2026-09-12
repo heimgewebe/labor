@@ -7,6 +7,8 @@ import hashlib
 import importlib.util
 import json
 import math
+import os
+import stat
 import statistics
 from collections import Counter
 from datetime import datetime, timezone
@@ -192,16 +194,14 @@ def _validate_assigned_observation(
     registration: dict[str, Any],
     *,
     registration_path: Path | None,
-    repo_root: Path,
+    historical_compatibility: bool,
 ) -> None:
     if registration.get("assignment") is not None:
         raise ValueError(
             "registered automatic assignment is historical-only; current evaluation requires "
             "explicit prospective assignment evidence"
         )
-    admission_required = registration_path is not None and not REGISTRATION_GATE.is_pre_t005_registration_artifact(
-        registration_path, registration["experiment_id"]
-    )
+    admission_required = registration_path is not None and not historical_compatibility
     binding = row.get("admission_binding")
     if not isinstance(binding, dict):
         if admission_required:
@@ -233,6 +233,21 @@ def _validate_assigned_observation(
         raise ValueError("admission comparison_key mismatch")
 
 
+def _historical_compatibility(
+    registration: dict[str, Any],
+    *,
+    registration_path: Path | None,
+    repo_root: Path,
+) -> bool:
+    if registration_path is None:
+        return REGISTRATION_GATE.is_pre_t005_experiment(registration["experiment_id"])
+    return REGISTRATION_GATE.is_pre_t005_registration_artifact(
+        registration_path,
+        registration["experiment_id"],
+        repository_root=repo_root,
+    )
+
+
 def evaluate(
     registration: dict[str, Any],
     observations: dict[str, Any],
@@ -246,7 +261,12 @@ def evaluate(
         registration_path=registration_path,
     )
     validate_schema(observations, repo_root / "schemas/effect-evaluation.observations.v2.schema.json")
-    t005_contract = not REGISTRATION_GATE.is_pre_t005_experiment(registration["experiment_id"])
+    historical_compatibility = _historical_compatibility(
+        registration,
+        registration_path=registration_path,
+        repo_root=repo_root,
+    )
+    t005_contract = not historical_compatibility
     registered_at = None
     if t005_contract:
         registered_at = datetime.fromisoformat(registration["registered_at"].replace("Z", "+00:00")).astimezone(timezone.utc)
@@ -270,7 +290,10 @@ def evaluate(
     reasons: list[str] = []
     for row in rows:
         _validate_assigned_observation(
-            row, registration, registration_path=registration_path, repo_root=repo_root
+            row,
+            registration,
+            registration_path=registration_path,
+            historical_compatibility=historical_compatibility,
         )
         if row["observation_id"] in ids:
             raise ValueError("duplicate observation_id")
@@ -520,28 +543,73 @@ def evaluate(
     return result
 
 
-def safe_output_path(registration_path: Path, output_path: Path) -> Path:
-    """Keep file-backed result publication inside the registered experiment results tree."""
+def _resolved_results_root(registration_path: Path) -> Path:
     try:
         ADMISSION_CONTRACT.reject_symlink_chain(registration_path, "registration path")
-        experiment_root = registration_path.absolute().parent
+        experiment_root = registration_path.resolve(strict=True).parent
         ADMISSION_CONTRACT.reject_symlink_chain(experiment_root, "experiment path")
-        results_root = experiment_root / "results"
-        ADMISSION_CONTRACT.reject_symlink_chain(results_root, "experiment results path")
-        if not results_root.is_dir():
-            raise ValueError("experiment results directory must already exist")
-        target = output_path.absolute()
-        ADMISSION_CONTRACT.reject_symlink_chain(target, "evaluation output path")
-        target.relative_to(results_root)
+        results_path = experiment_root / "results"
+        ADMISSION_CONTRACT.reject_symlink_chain(results_path, "experiment results path")
+        results_root = results_path.resolve(strict=True)
     except ADMISSION_CONTRACT.AdmissionError as exc:
         raise ValueError(f"unsafe evaluation output path: {exc}") from exc
-    except ValueError as exc:
-        if str(exc) == "experiment results directory must already exist":
-            raise
+    except (FileNotFoundError, OSError) as exc:
+        raise ValueError("experiment results directory must already exist") from exc
+    if not results_root.is_dir():
+        raise ValueError("experiment results directory must already exist")
+    return results_root
+
+
+def safe_output_path(registration_path: Path, output_path: Path) -> Path:
+    """Normalize file-backed result publication inside the registered results tree."""
+    results_root = _resolved_results_root(registration_path)
+    raw_target = output_path.absolute()
+    try:
+        ADMISSION_CONTRACT.reject_symlink_chain(raw_target, "evaluation output path")
+        target = raw_target.resolve(strict=False)
+        relative = target.relative_to(results_root)
+    except ADMISSION_CONTRACT.AdmissionError as exc:
+        raise ValueError(f"unsafe evaluation output path: {exc}") from exc
+    except (ValueError, OSError) as exc:
         raise ValueError("evaluation output must be inside the registered experiment results directory") from exc
-    if target == results_root:
+    if not relative.parts:
         raise ValueError("evaluation output must name a file inside the registered experiment results directory")
     return target
+
+
+def write_evaluation_output(registration_path: Path, output_path: Path, rendered: str) -> None:
+    """Publish one result without following a raced symlink or traversal component."""
+    target = safe_output_path(registration_path, output_path)
+    results_root = _resolved_results_root(registration_path)
+    relative = target.relative_to(results_root)
+    if not relative.parts or any(part in {"", ".", ".."} for part in relative.parts):
+        raise ValueError("evaluation output path contains an unsafe component")
+    directory_flags = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0) | getattr(os, "O_CLOEXEC", 0) | getattr(os, "O_NOFOLLOW", 0)
+    file_flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC | getattr(os, "O_CLOEXEC", 0) | getattr(os, "O_NOFOLLOW", 0)
+    directory_fd = os.open(results_root, directory_flags)
+    try:
+        for component in relative.parts[:-1]:
+            next_fd = os.open(component, directory_flags, dir_fd=directory_fd)
+            os.close(directory_fd)
+            directory_fd = next_fd
+        descriptor = os.open(relative.parts[-1], file_flags, 0o644, dir_fd=directory_fd)
+        try:
+            info = os.fstat(descriptor)
+            if not stat.S_ISREG(info.st_mode):
+                raise ValueError("evaluation output must be a regular file")
+            payload = rendered.encode("utf-8")
+            view = memoryview(payload)
+            while view:
+                written = os.write(descriptor, view)
+                if written <= 0:
+                    raise OSError("short evaluation output write")
+                view = view[written:]
+            os.fsync(descriptor)
+        finally:
+            os.close(descriptor)
+        os.fsync(directory_fd)
+    finally:
+        os.close(directory_fd)
 
 
 def main() -> int:
@@ -557,7 +625,7 @@ def main() -> int:
     )
     rendered = json.dumps(result, indent=2, sort_keys=True) + "\n"
     if args.output:
-        safe_output_path(args.registration, args.output).write_text(rendered, encoding="utf-8")
+        write_evaluation_output(args.registration, args.output, rendered)
     else:
         print(rendered, end="")
     return 0

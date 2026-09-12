@@ -29,6 +29,7 @@ ROOT = Path(__file__).resolve().parents[2]
 ADMISSION_SCHEMA = ROOT / "schemas/natural-case-admission.v1.schema.json"
 ACTIVE_REGISTRY_SCHEMA = ROOT / "schemas/active-experiments.v1.schema.json"
 REGISTRATION_GATE_PATH = ROOT / "scripts/docmeta/validate_experiment_registration.py"
+ACTIVE_REGISTRY_GATE_PATH = ROOT / "scripts/docmeta/validate_active_experiments.py"
 # Historical fixture paths retained for regression tests only. The CLI has no
 # experiment default and derives the admissions directory from --registration.
 DEFAULT_EXPERIMENT = ROOT / "experiments/_archive/2026-07-13_chronik-history-brief-effect"
@@ -66,6 +67,28 @@ def _load_registration_gate() -> Any:
 
 
 REGISTRATION_GATE = _load_registration_gate()
+
+
+def _load_active_registry_gate() -> Any:
+    module_dir = str(ACTIVE_REGISTRY_GATE_PATH.parent)
+    inserted = module_dir not in sys.path
+    if inserted:
+        sys.path.insert(0, module_dir)
+    try:
+        spec = importlib.util.spec_from_file_location(
+            "labor_active_registry_gate_admission", ACTIVE_REGISTRY_GATE_PATH
+        )
+        if spec is None or spec.loader is None:
+            raise RuntimeError(f"cannot load active registry gate from {ACTIVE_REGISTRY_GATE_PATH}")
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+    finally:
+        if inserted:
+            sys.path.remove(module_dir)
+
+
+ACTIVE_REGISTRY_GATE = _load_active_registry_gate()
 
 
 def canonical_json_bytes(value: Any) -> bytes:
@@ -175,21 +198,16 @@ def validate_active_registry_binding(registration_path: Path, registration: dict
     matches = [item for item in registry["experiments"] if item["experiment_id"] == experiment_id]
     if len(matches) != 1:
         raise AdmissionError("experiment is not uniquely present in the active registry")
-    item = matches[0]
-    expected = {"path": f"experiments/{experiment_id}", "consumer": registration["consumer"]["organ"], "decision_target": registration["decision_target"]["question"], "primary_metric": registration["measurement"]["primary_metric"], "review_at": registration["review_at"], "expires_at": registration["expires_at"]}
-    conflicts = [key for key,value in expected.items() if item.get(key) != value]
-    if conflicts:
-        raise AdmissionError("active registry binding conflicts with registration: " + ", ".join(sorted(conflicts)))
-    if utc_timestamp(item["expires_at"], "active registry expires_at") <= now:
-        raise AdmissionError("active registry binding is expired")
-    source_path = (experiments_root.parent / item["source_ref"]).absolute()
-    reject_symlink_chain(source_path, "active registry source_ref")
     try:
-        source_path.relative_to(experiment_root)
-    except ValueError as exc:
-        raise AdmissionError("active registry source_ref escapes the registered experiment") from exc
-    if not source_path.is_file():
-        raise AdmissionError("active registry source_ref is missing")
+        registration_bound = ACTIVE_REGISTRY_GATE.validate_active_experiment_item(
+            item=matches[0],
+            repo_root=experiments_root.parent,
+            clock=now,
+        )
+    except Exception as exc:
+        raise AdmissionError(f"active registry contract invalid: {exc}") from exc
+    if not registration_bound:
+        raise AdmissionError("natural-case admission requires an active registration-bound experiment")
 
 
 def request_schema(admission_schema: dict[str, Any]) -> dict[str, Any]:
@@ -417,19 +435,34 @@ def safe_admissions_root(registration_path: Path, admissions_dir: Path) -> Path:
     return admissions_dir
 
 
-def existing_records(root: Path, schema: dict[str, Any]) -> list[tuple[Path, dict[str, Any]]]:
+def existing_records(
+    root: Path,
+    schema: dict[str, Any],
+    *,
+    current_case_id: str,
+) -> list[tuple[Path, dict[str, Any]]]:
+    """Return only authoritative receipts; unrelated malformed entries cannot deny service."""
     records: list[tuple[Path, dict[str, Any]]] = []
     for case_dir in sorted(root.iterdir()):
-        if case_dir.is_symlink() or not case_dir.is_dir():
-            raise AdmissionError("unexpected non-directory entry in admissions root")
-        entries = list(case_dir.iterdir())
-        if len(entries) != 1 or entries[0].name != "admission.json":
-            raise AdmissionError("admission case directory must contain only admission.json")
-        path = entries[0]
-        value = load_object(path, "existing admission")
-        validate(value, schema, "existing admission")
-        if value["frozen_request"]["case_id"] != case_dir.name:
-            raise AdmissionError("existing admission case_id does not match its directory")
+        try:
+            if case_dir.is_symlink() or not case_dir.is_dir():
+                raise AdmissionError("unexpected non-directory entry in admissions root")
+            entries = list(case_dir.iterdir())
+            if len(entries) != 1 or entries[0].name != "admission.json":
+                raise AdmissionError("admission case directory must contain only admission.json")
+            path = entries[0]
+            value = load_object(path, "existing admission")
+            validate(value, schema, "existing admission")
+            if value["frozen_request"]["case_id"] != case_dir.name:
+                raise AdmissionError("existing admission case_id does not match its directory")
+        except (AdmissionError, OSError, KeyError, TypeError) as exc:
+            if case_dir.name == current_case_id:
+                raise AdmissionError(
+                    "current case already has a malformed or conflicting admission entry"
+                ) from exc
+            # Invalid unrelated state is not authoritative evidence for global
+            # deduplication. Valid immutable receipts remain fully deduplicating.
+            continue
         records.append((path, value))
     return records
 
@@ -519,8 +552,8 @@ def admit(
     lock_fd = _lock_fd(root)
     try:
         fcntl.flock(lock_fd, fcntl.LOCK_EX)
-        records = existing_records(root, admission_schema)
         case_id = request["case_id"]
+        records = existing_records(root, admission_schema, current_case_id=case_id)
         for path, existing in records:
             if existing["frozen_request"]["case_id"] != case_id:
                 continue
