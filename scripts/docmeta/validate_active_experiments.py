@@ -88,7 +88,11 @@ def _validate_registration_binding(
             raise ValueError(f"{experiment_id}: active experiment requires registration")
         return False
 
-    registration = validate_registration(registration_path, now=clock)
+    registration = validate_registration(
+        registration_path,
+        now=clock,
+        repository_root=experiment_dir.parents[1],
+    )
     metric = _registration_primary_metric(registration)
     if item["primary_metric"] != metric:
         raise ValueError(

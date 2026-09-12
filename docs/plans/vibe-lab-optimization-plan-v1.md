@@ -3,8 +3,8 @@ title: "Labor Optimization Plan v1"
 status: active
 canonicality: operative
 created: "2026-07-12"
-updated: "2026-09-09"
-triggered_by: "github:heimgewebe/bureau#442; conversation:user-request-2026-09-09-continue-labor-survivor-audit"
+updated: "2026-09-12"
+triggered_by: "github:heimgewebe/bureau#2289; conversation:user-request-2026-09-12-labor-zero-to-decision"
 origin_triggered_by: "user-request-2026-07-12"
 ---
 
@@ -14,15 +14,24 @@ origin_triggered_by: "user-request-2026-07-12"
 
 Labor is a small experiment and decision-support surface. It may register a prospective comparison, validate evidence identity, capture bounded observations, evaluate a bounded effect and close with a reviewed decision. It must not become a scheduler, dashboard, runtime service, routing authority, second Bureau or second Grabowski governor.
 
-The primary optimization objective is now **surface reduction**, not new capability growth.
+The primary optimization objective is now **decision yield per handling and durable surface cost**, not surface reduction by itself. Surface reduction remains a constraint and a simplification tool, not the mission.
+
+Working heuristic, using existing evidence rather than a new metrics platform:
+
+- `decision_yield` = relevant reviewed decisions / started experiments;
+- `handling_cost` = human plus machine effort from registration to reviewed decision;
+- `surface_cost` = durable special contracts, validators, artifacts and maintenance obligations left behind;
+- Labor value is improved when decision yield rises without handling or surface cost growing faster.
+
+These terms are decision aids, not a new scoring authority. If they would require a service, database or standing metrics subsystem, stop rather than build one.
 
 ## Verified current state
 
-As of 2026-09-09:
+As of 2026-09-12:
 
 - `experiments/active.v1.json` is empty after the only active Outcome-Bound activation pilot reached its 2026-09-07 review boundary without an executable pre-existing slot-capture provider; the experiment remains `not_executed` and closes this revision with `defer`;
 - earlier Chronik, operator-routing, RepoBrief, PR-context, rLens agent-context, Model-Lab and Operator-Lab work remains historical evidence and is not active merely because validators or files still exist;
-- the generic observation capture and deterministic evaluator remain unpromoted review tooling;
+- natural-case admission, generic observation capture and deterministic evaluation are review tooling only; admission now accepts current valid `registration.v2.json` contracts with explicit prospective condition evidence instead of being hard-bound to the archived Chronik experiment; historical automatic-assignment registrations remain archive facts and are not generalized into a new allocation state system;
 - custom agent profiles and instruction-bearing Cursor/Copilot projections are retired, while generated compatibility markers and their blocking parity contracts remain active;
 - the validator inventory contains 89 classified validation targets: 45 core, 6 active-group and 38 legacy, plus two supplemental checks; the archived routing-readiness test frontdoor, the two Phase-1c archive frontdoors and the four dedicated frontdoors of the never-executed PR-context and rLens agent-context designs are no longer blocking, while the six active-group targets retain current registry/registration or frozen Operator-Lab consumers;
 - the active prompt-length-control library claim has been narrowed to the observed single-task evidence; its proposed cognitive mechanism and cross-task transfer remain unproven;
@@ -38,6 +47,20 @@ As of 2026-09-09:
 6. **Archive the blocked evaluator pilot.** No synthetic or retrospective pilots were manufactured after the registered intervention proved causally non-executable.
 7. **Bind active lifecycle truth.** Active entries now point only to the canonical decision file. Registered entries must exactly match registration consumer, decision question, primary metric, review date and expiry; pre-registration experiments remain explicit grandfathered cases.
 
+## Canonical zero-to-decision path
+
+Labor's normal product path is deliberately file-backed and boring:
+
+1. **register** — create one current `registration.v2.json` with a confirmed external consumer, decision question, control/treatment, primary metric, cost metric, stop/review/expiry rules and reviewed closure mapping; set `natural_case_admission: true` only when this registration explicitly authorizes natural-case intake (the template defaults to `false`);
+2. **activate** — add exactly one coherent entry to `experiments/active.v1.json`; the registry stays the bounded active truth and admission refuses registrations that are absent or inconsistent there;
+3. **admit** — before planning or execution, publish each eligible natural-case record create-only with `tools/vibe-cli/admit_natural_case.py --registration ... --request ...`; the request must carry an externally evidenced explicit condition assignment recorded before planning; the writer derives `<experiment>/artifacts/admissions` by default and has no task or runtime authority; downstream capture/evaluation recompute the target record’s registration, request, assignment and review commitments before trusting it;
+4. **observe** — append evidence-bound measurements through `tools/vibe-cli/capture_effect_observation.py`; current non-grandfathered experiments must bind each observation to its admission record, while only canonical pre-T005 registration artifacts at their repository paths retain the historical file-backed unbound contract; replaying an old experiment id elsewhere grants no compatibility;
+5. **evaluate** — deterministically compute the registered comparison with `tools/vibe-cli/evaluate_effect.py`;
+6. **decide** — a reviewer records the current canonical `results/decision.yml` (or the explicitly bound current `pN/decision.yml` where an existing phased experiment requires it); evaluation never changes policy automatically;
+7. **archive** — after the reviewed decision, remove the experiment from `active.v1.json` and preserve the reviewed evidence/decision under the registered archive path through ordinary reviewed Git history.
+
+The intended minimum durable experiment surface is one registration, one active-registry binding while running, one evidence stream and one canonical decision. Admission receipts are case evidence, not a second state system. Automatic cohort assignment is deliberately outside the current path: proving its sequence under deletion or registration revision would require durable allocation authority beyond these files. No wrapper, allocation ledger, database or workflow engine is justified until a real external decision proves that the added permanent surface would pay for itself.
+
 ## Current decision gate
 
 No new Labor service, agent profile, instruction-bearing projection target, specialist validator or effect-analysis feature should be added merely because the active registry is now empty. The next experiment must first name a current external consumer, a concrete decision, an already-executable observation path, a cost budget and a stop rule.
@@ -46,7 +69,9 @@ The Outcome-Bound activation revision reached its review boundary on 2026-09-07 
 
 The former RepoBrief Workbench, Chronik and routing-readiness experiments remain historical. RepoGround is the current cited repository-context organ and requires its own prospective utility decision if Labor evidence is ever needed.
 
-## Survivor program
+## Survivor / retirement disposition
+
+The broad survivor phase is largely complete. Remaining retirement work is subordinate to current decision utility and proceeds only when consumer, coverage and archive evidence prove a net simplification.
 
 ### Keep
 
@@ -78,9 +103,11 @@ The 38 remaining legacy targets remain blocking only until their protected famil
 
 Each reduction slice must identify the protected failure class, prove archive or equivalent generic coverage, remove more permanent surface than it adds, and keep current active evidence integrity intact.
 
-## Quantitative target
+## Operating target
 
-The legacy review date of 2026-09-01 has passed. Of the earlier 48-target baseline, 38 blocking legacy targets remain after the Operator-Lab and PR-context archive reductions. Every further target must receive one of three dispositions: `retain_with_consumer`, `covered_by_core` or `retire`; the directional reduction target never authorizes deletion without proof.
+The legacy review date of 2026-09-01 has passed. Of the earlier 48-target baseline, 38 blocking legacy targets remain after the Operator-Lab and PR-context archive reductions. Every further target must still receive one of three dispositions: `retain_with_consumer`, `covered_by_core` or `retire`; no numeric reduction target authorizes deletion without proof.
+
+For new work, the stronger success signal is a reviewed external decision reached with low handling cost and little new durable surface. A run that produces no admissible decision is a valid terminal result when the admission rule was prospective and the reason is recorded rather than repaired after the fact.
 
 ## Library consumer audit
 

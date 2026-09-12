@@ -20,8 +20,8 @@ from jsonschema import Draft202012Validator, FormatChecker
 
 ROOT = Path(__file__).resolve().parents[2]
 OBSERVATIONS_SCHEMA = ROOT / "schemas/effect-evaluation.observations.v2.schema.json"
-ADMISSION_SCHEMA = ROOT / "schemas/natural-case-admission.v1.schema.json"
 REGISTRATION_GATE_PATH = ROOT / "scripts/docmeta/validate_experiment_registration.py"
+ADMISSION_CONTRACT_PATH = ROOT / "tools/vibe-cli/admit_natural_case.py"
 
 
 def _load_registration_gate() -> Any:
@@ -34,6 +34,18 @@ def _load_registration_gate() -> Any:
 
 
 REGISTRATION_GATE = _load_registration_gate()
+
+
+def _load_admission_contract() -> Any:
+    spec = importlib.util.spec_from_file_location("labor_admission_contract_capture", ADMISSION_CONTRACT_PATH)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"cannot load admission contract from {ADMISSION_CONTRACT_PATH}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+ADMISSION_CONTRACT = _load_admission_contract()
 
 
 class CaptureError(RuntimeError):
@@ -59,11 +71,6 @@ def canonical_bytes(value: Any) -> bytes:
 
 def sha256_json(value: Any) -> str:
     return hashlib.sha256(canonical_bytes(value)).hexdigest()
-
-
-def admission_registration_sha256(value: Any) -> str:
-    raw = (json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False) + "\n").encode("utf-8")
-    return hashlib.sha256(raw).hexdigest()
 
 
 def sha256_file(path: Path) -> str:
@@ -299,31 +306,26 @@ def validate_binding(document: dict[str, Any], registration: dict[str, Any]) -> 
 
 
 def _bind_admission(admission_path: Path | None, registration_path: Path, registration: dict[str, Any], observation: dict[str, Any]) -> None:
-    if registration.get("assignment") is None:
-        if admission_path is not None:
-            raise CaptureError("admission binding is only valid for a registration with prospective assignment")
-        return
+    if registration.get("assignment") is not None:
+        raise CaptureError(
+            "registered automatic assignment is historical-only; current capture requires "
+            "explicit prospective assignment evidence"
+        )
+    admission_required = not REGISTRATION_GATE.is_pre_t005_registration_artifact(
+        registration_path, registration["experiment_id"]
+    )
     if admission_path is None:
-        raise CaptureError("prospectively assigned experiment requires --admission")
-    if admission_path.is_symlink() or not admission_path.is_file():
-        raise CaptureError("admission must be a regular non-symlink file")
-    experiment_root = registration_path.resolve().parent
-    admissions_root = (experiment_root / "artifacts" / "admissions").resolve()
-    resolved = admission_path.resolve()
+        if admission_required:
+            raise CaptureError("current experiment observation requires --admission")
+        return
     try:
-        relative = resolved.relative_to(admissions_root)
-    except ValueError as exc:
-        raise CaptureError("admission must be inside the registered experiment admissions directory") from exc
-    if len(relative.parts) != 2 or relative.parts[1] != "admission.json":
-        raise CaptureError("admission path must be artifacts/admissions/<case-id>/admission.json")
-    admission = load_object(admission_path)
-    validate_schema(admission, ADMISSION_SCHEMA)
-    if admission["experiment_id"] != registration["experiment_id"]:
-        raise CaptureError("admission experiment_id mismatch")
-    if admission["registration_sha256"] != admission_registration_sha256(registration):
-        raise CaptureError("admission registration digest mismatch")
-    if admission["frozen_request"]["case_id"] != relative.parts[0]:
-        raise CaptureError("admission case id does not match its directory")
+        admission = ADMISSION_CONTRACT.validate_existing_admission(
+            registration_path, admission_path, registration
+        )
+    except Exception as exc:
+        raise CaptureError(f"admission contract invalid: {exc}") from exc
+    admissions_root = (registration_path.resolve().parent / "artifacts" / "admissions").resolve()
+    relative = admission_path.resolve().relative_to(admissions_root)
     if observation["condition"] != admission["assignment_evidence"]["condition"]:
         raise CaptureError("observation condition does not match prospective admission")
     if observation["comparison_key"] != admission["frozen_request"]["comparability"]["comparison_key"]:
@@ -332,9 +334,9 @@ def _bind_admission(admission_path: Path | None, registration_path: Path, regist
     if observation["observation_id"] != blinded_case_id:
         raise CaptureError("observation_id must equal the admission blinded_case_id")
     if observation["scoring_blinded"] is not True:
-        raise CaptureError("prospective Chronik observation requires blinded scoring")
+        raise CaptureError("admission-bound observation requires blinded scoring")
     if observation["independent"] is not True:
-        raise CaptureError("prospective Chronik observation requires independent scoring")
+        raise CaptureError("admission-bound observation requires independent scoring")
     observation["admission_binding"] = {
         "case_id": relative.parts[0],
         "admission_id": admission["admission_id"],

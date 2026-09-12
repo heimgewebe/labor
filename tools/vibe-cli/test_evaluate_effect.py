@@ -386,33 +386,61 @@ class AssignedExperimentEvaluatorTests(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
         self.root = Path(self.tmp.name)
-        source = ROOT / "experiments/_archive/2026-07-13_chronik-history-brief-effect"
-        self.exp = self.root / "2026-07-13_chronik-history-brief-effect"
-        self.exp.mkdir()
+        experiment_id = "2026-09-12_zero-to-decision-effect"
+        self.exp = self.root / "experiments" / experiment_id
+        self.exp.mkdir(parents=True)
         self.registration_path = self.exp / "registration.v2.json"
-        self.registration_path.write_bytes((source / "registration.v2.json").read_bytes())
-        self.registration = json.loads(self.registration_path.read_text())
+        self.registration = EffectEvaluatorTests().registration()
+        self.registration["experiment_id"] = experiment_id
+        self.registration["natural_case_admission"] = True
+        self.registration["closure"]["archive_path"] = f"experiments/_archive/{experiment_id}"
+        self.registration_path.write_text(json.dumps(self.registration, indent=2) + "\n")
+        results = self.exp / "results"
+        results.mkdir()
+        (results / "decision.yml").write_text("verdict: not_executed\n", encoding="utf-8")
+        active = {
+            "schema_version": "active-experiments.v1",
+            "max_active": 5,
+            "experiments": [{
+                "experiment_id": experiment_id,
+                "path": f"experiments/{experiment_id}",
+                "state": "designed",
+                "consumer": self.registration["consumer"]["organ"],
+                "decision_target": self.registration["decision_target"]["question"],
+                "primary_metric": self.registration["measurement"]["primary_metric"],
+                "review_at": self.registration["review_at"],
+                "expires_at": self.registration["expires_at"],
+                "source_ref": f"experiments/{experiment_id}/results/decision.yml",
+            }],
+        }
+        (self.root / "experiments/active.v1.json").write_text(json.dumps(active, indent=2) + "\n", encoding="utf-8")
         request = json.loads((ROOT / "tests/fixtures/natural_case_admission/valid-control-request.json").read_text())
         request["case_id"] = "effect-case-1"
+        request["case_opened_at"] = "2026-09-12T16:00:00Z"
+        request["eligibility_evidence"]["captured_at"] = "2026-09-12T16:00:01Z"
+        request["assignment"] = {
+            "condition": self.registration["control_condition"]["id"],
+            "assigned_by": "operator:prospective",
+            "evidence_ref": "receipt:effect-assignment-1",
+            "evidence_sha256": "c" * 64,
+            "recorded_before_planning": True,
+        }
         request_path = self.root / "request.json"
         request_path.write_text(json.dumps(request, indent=2) + "\n")
         admitted = ADMISSION.admit(
             self.registration_path,
             request_path,
             self.exp / "artifacts/admissions",
-            now=ADMISSION.utc_timestamp("2026-08-11T06:49:00Z", "test-now"),
+            now=ADMISSION.utc_timestamp("2026-09-12T16:00:02Z", "test-now"),
         )
         self.admission_path = Path(admitted["path"])
         self.admission = json.loads(self.admission_path.read_text())
 
     def observations(self) -> dict:
-        scorecard = self.registration["measurement"]["scorecard"]["components"]
-        components = {component["id"]: 1 for component in scorecard}
-        value = sum(float(component["weight"]) for component in scorecard)
         row = {
             "observation_id": self.admission["review_preparation"]["blinded_case_id"],
             "condition": self.admission["assignment_evidence"]["condition"],
-            "value": value,
+            "value": 2.0,
             "effort_seconds": 30.0,
             "scoring_blinded": True,
             "comparison_key": self.admission["frozen_request"]["comparability"]["comparison_key"],
@@ -421,8 +449,7 @@ class AssignedExperimentEvaluatorTests(unittest.TestCase):
             "decision_maker_ref": "receipt:decision-effect-case-1",
             "observer_ref": "receipt:review-effect-case-1",
             "independent": True,
-            "captured_at": "2026-08-11T06:50:00Z",
-            "score_components": components,
+            "captured_at": "2026-09-12T16:05:00Z",
             "admission_binding": {
                 "case_id": "effect-case-1",
                 "admission_id": self.admission["admission_id"],
@@ -452,6 +479,82 @@ class AssignedExperimentEvaluatorTests(unittest.TestCase):
         observations["observations"][0].pop("admission_binding")
         with self.assertRaisesRegex(ValueError, "requires admission_binding"):
             EFFECT.evaluate(self.registration, observations, repo_root=ROOT, registration_path=self.registration_path)
+
+    def test_semantically_forged_admission_is_rejected_even_with_updated_file_digest(self) -> None:
+        record = json.loads(self.admission_path.read_text())
+        record["request_sha256"] = "0" * 64
+        self.admission_path.chmod(0o644)
+        self.admission_path.write_text(json.dumps(record, indent=2) + "\n")
+        observations = self.observations()
+        with self.assertRaisesRegex(ValueError, "request digest mismatch"):
+            EFFECT.evaluate(
+                self.registration, observations, repo_root=ROOT,
+                registration_path=self.registration_path,
+            )
+
+    def test_symlinked_artifacts_ancestor_is_rejected_by_evaluation(self) -> None:
+        artifacts = self.exp / "artifacts"
+        external = self.root / "external-artifacts"
+        artifacts.rename(external)
+        artifacts.symlink_to(external, target_is_directory=True)
+        with self.assertRaisesRegex(ValueError, "traverse symlinks"):
+            EFFECT.evaluate(
+                self.registration, self.observations(), repo_root=ROOT,
+                registration_path=self.registration_path,
+            )
+
+    def test_historical_automatic_registration_is_not_current_evaluation_mode(self) -> None:
+        source = ROOT / "experiments/_archive/2026-07-13_chronik-history-brief-effect/registration.v2.json"
+        historical = json.loads(source.read_text())
+        observations = self.observations()
+        observations["experiment_id"] = historical["experiment_id"]
+        observations["registration_sha256"] = EFFECT.sha256_json(historical)
+        observations["metric"] = historical["measurement"]["primary_metric"]
+        with self.assertRaisesRegex(ValueError, "historical-only"):
+            EFFECT.evaluate(historical, observations, repo_root=ROOT, registration_path=source)
+
+    def test_replayed_pre_t005_id_outside_canonical_archive_requires_binding(self) -> None:
+        experiment_id = "2026-07-12_operator-intervention-effect-evaluator"
+        replay_root = self.root / "replayed" / experiment_id
+        replay_root.mkdir(parents=True)
+        registration_path = replay_root / "registration.v2.json"
+        registration = json.loads(json.dumps(self.registration))
+        registration["experiment_id"] = experiment_id
+        registration["closure"]["archive_path"] = f"experiments/_archive/{experiment_id}"
+        registration_path.write_text(json.dumps(registration, indent=2) + "\n")
+        observations = self.observations()
+        observations["experiment_id"] = experiment_id
+        observations["registration_sha256"] = EFFECT.sha256_json(registration)
+        observations["observations"][0].pop("admission_binding")
+        with self.assertRaisesRegex(ValueError, "requires admission_binding"):
+            EFFECT.evaluate(registration, observations, repo_root=ROOT, registration_path=registration_path)
+
+    def test_output_symlink_is_rejected_without_touching_target(self) -> None:
+        results = self.exp / "results"
+        results.mkdir(exist_ok=True)
+        sentinel = self.root / "sentinel.txt"
+        sentinel.write_text("keep\n")
+        output = results / "result.json"
+        output.symlink_to(sentinel)
+        with self.assertRaisesRegex(ValueError, "unsafe evaluation output path"):
+            EFFECT.safe_output_path(self.registration_path, output)
+        self.assertEqual(sentinel.read_text(), "keep\n")
+
+    def test_results_ancestor_symlink_is_rejected(self) -> None:
+        results = self.exp / "results"
+        (results / "decision.yml").unlink()
+        results.rmdir()
+        external = self.root / "external-results"
+        external.mkdir()
+        results.symlink_to(external, target_is_directory=True)
+        with self.assertRaisesRegex(ValueError, "unsafe evaluation output path"):
+            EFFECT.safe_output_path(self.registration_path, results / "result.json")
+        self.assertEqual(list(external.iterdir()), [])
+
+    def test_output_outside_registered_results_is_rejected(self) -> None:
+        (self.exp / "results").mkdir(exist_ok=True)
+        with self.assertRaisesRegex(ValueError, "inside the registered experiment results"):
+            EFFECT.safe_output_path(self.registration_path, self.root / "outside.json")
 
     def test_assigned_observation_with_tampered_admission_digest_is_rejected(self) -> None:
         observations = self.observations()

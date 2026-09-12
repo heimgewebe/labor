@@ -86,6 +86,32 @@ def is_pre_t005_experiment(experiment_id: str) -> bool:
     return experiment_id in PRE_T005_EXPERIMENTS
 
 
+def is_pre_t005_registration_artifact(
+    path: Path,
+    experiment_id: str,
+    *,
+    repository_root: Path = ROOT,
+) -> bool:
+    """Grant file-backed legacy compatibility only to canonical repository artifacts."""
+    if not is_pre_t005_experiment(experiment_id):
+        return False
+    try:
+        absolute = path.absolute()
+        root_absolute = repository_root.absolute()
+        if path.resolve(strict=True) != absolute or repository_root.resolve(strict=True) != root_absolute:
+            return False
+        relative = absolute.relative_to(root_absolute)
+    except (FileNotFoundError, ValueError, OSError):
+        return False
+    allowed = {
+        Path("experiments") / experiment_id / "registration.v1.json",
+        Path("experiments") / experiment_id / "registration.v2.json",
+        Path("experiments") / "_archive" / experiment_id / "registration.v1.json",
+        Path("experiments") / "_archive" / experiment_id / "registration.v2.json",
+    }
+    return relative in allowed
+
+
 def _load(path: Path) -> dict[str, Any]:
     value = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(value, dict):
@@ -242,6 +268,7 @@ def validate_registration_payload(
     path: Path,
     now: datetime | None = None,
     require_current: bool = True,
+    historical_compatibility: bool | None = None,
 ) -> dict[str, Any]:
     version = payload.get("schema_version")
     schema_path = SCHEMAS.get(str(version))
@@ -252,9 +279,14 @@ def validate_registration_payload(
         raise ValueError(f"{path}: unresolved template placeholder")
 
     experiment_dir = path.parent.name
+    grandfathered = (
+        is_pre_t005_experiment(experiment_dir)
+        if historical_compatibility is None
+        else historical_compatibility
+    )
     if payload["experiment_id"] != experiment_dir:
         raise ValueError(f"{path}: experiment_id must match directory name")
-    if not is_pre_t005_experiment(experiment_dir) and (
+    if not grandfathered and (
         version != "experiment.registration.v2" or path.name != "registration.v2.json"
     ):
         raise ValueError(f"{path.parent}: new experiment requires registration.v2.json")
@@ -290,13 +322,17 @@ def validate_registration_payload(
             if assignment["prior_registration_sha256"] != hashlib.sha256(prior_raw).hexdigest():
                 raise ValueError(f"{path}: assignment prior_registration_sha256 does not match the pre-assignment registration")
             assigned_at = _utc(assignment["registered_at"], f"{path}.assignment.registered_at")
-            if not is_pre_t005_experiment(experiment_dir) and assigned_at > clock:
-                raise ValueError(f"{path}: assignment registration cannot be in the future")
+            if not grandfathered:
+                experiment_registered_at = _utc(payload["registered_at"], f"{path}.registered_at")
+                if assigned_at < experiment_registered_at:
+                    raise ValueError(f"{path}: assignment registration must not precede registered_at")
+                if assigned_at > clock:
+                    raise ValueError(f"{path}: assignment registration cannot be in the future")
             if assigned_at >= review or assigned_at >= expires:
                 raise ValueError(f"{path}: assignment registration must precede review and expiry")
             if assignment["strata"] != ["task_class", "risk_band", "repository_familiarity_band"]:
                 raise ValueError(f"{path}: assignment strata are not the frozen registered order")
-        if not is_pre_t005_experiment(experiment_dir):
+        if not grandfathered:
             _validate_t005_contract(
                 payload,
                 path=path,
@@ -313,12 +349,18 @@ def validate_registration(
     *,
     now: datetime | None = None,
     require_current: bool = True,
+    repository_root: Path = ROOT,
 ) -> dict[str, Any]:
+    payload = _load(path)
+    experiment_id = str(payload.get("experiment_id", ""))
     return validate_registration_payload(
-        _load(path),
+        payload,
         path=path,
         now=now,
         require_current=require_current,
+        historical_compatibility=is_pre_t005_registration_artifact(
+            path, experiment_id, repository_root=repository_root
+        ),
     )
 
 

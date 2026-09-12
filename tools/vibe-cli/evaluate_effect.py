@@ -17,7 +17,7 @@ from jsonschema import Draft202012Validator, FormatChecker
 
 ROOT = Path(__file__).resolve().parents[2]
 REGISTRATION_GATE_PATH = ROOT / "scripts/docmeta/validate_experiment_registration.py"
-ADMISSION_SCHEMA_PATH = ROOT / "schemas/natural-case-admission.v1.schema.json"
+ADMISSION_CONTRACT_PATH = ROOT / "tools/vibe-cli/admit_natural_case.py"
 
 
 def _load_registration_gate() -> Any:
@@ -30,6 +30,18 @@ def _load_registration_gate() -> Any:
 
 
 REGISTRATION_GATE = _load_registration_gate()
+
+
+def _load_admission_contract() -> Any:
+    spec = importlib.util.spec_from_file_location("labor_admission_contract_evaluate", ADMISSION_CONTRACT_PATH)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"cannot load admission contract from {ADMISSION_CONTRACT_PATH}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+ADMISSION_CONTRACT = _load_admission_contract()
 
 
 def canonical_bytes(value: Any) -> bytes:
@@ -182,24 +194,33 @@ def _validate_assigned_observation(
     registration_path: Path | None,
     repo_root: Path,
 ) -> None:
-    if registration.get("assignment") is None:
-        return
-    if registration_path is None:
-        raise ValueError("assigned experiment evaluation requires registration_path")
+    if registration.get("assignment") is not None:
+        raise ValueError(
+            "registered automatic assignment is historical-only; current evaluation requires "
+            "explicit prospective assignment evidence"
+        )
+    admission_required = registration_path is not None and not REGISTRATION_GATE.is_pre_t005_registration_artifact(
+        registration_path, registration["experiment_id"]
+    )
     binding = row.get("admission_binding")
     if not isinstance(binding, dict):
-        raise ValueError("assigned experiment observation requires admission_binding")
+        if admission_required:
+            raise ValueError("current experiment observation requires admission_binding")
+        return
+    if registration_path is None:
+        raise ValueError("admission-bound experiment evaluation requires registration_path")
     if binding["blinded_case_id"] != row["observation_id"]:
         raise ValueError("admission blinded_case_id does not match observation_id")
     experiment_root = registration_path.resolve().parent
     admission_path = experiment_root / "artifacts" / "admissions" / binding["case_id"] / "admission.json"
     if _sha256_file(admission_path) != binding["admission_sha256"]:
         raise ValueError("admission file digest mismatch")
-    admission = load_object(admission_path)
-    validate_schema(admission, repo_root / "schemas/natural-case-admission.v1.schema.json")
-    prior_digest = hashlib.sha256((json.dumps(registration, sort_keys=True, separators=(",", ":"), allow_nan=False) + "\n").encode("utf-8")).hexdigest()
-    if admission["registration_sha256"] != prior_digest:
-        raise ValueError("admission registration digest mismatch")
+    try:
+        admission = ADMISSION_CONTRACT.validate_existing_admission(
+            registration_path, admission_path, registration
+        )
+    except Exception as exc:
+        raise ValueError(f"admission contract invalid: {exc}") from exc
     if admission["admission_id"] != binding["admission_id"]:
         raise ValueError("admission id mismatch")
     if admission["frozen_request"]["case_id"] != binding["case_id"]:
@@ -210,6 +231,7 @@ def _validate_assigned_observation(
         raise ValueError("admission condition mismatch")
     if admission["frozen_request"]["comparability"]["comparison_key"] != row["comparison_key"]:
         raise ValueError("admission comparison_key mismatch")
+
 
 def evaluate(
     registration: dict[str, Any],
@@ -498,6 +520,30 @@ def evaluate(
     return result
 
 
+def safe_output_path(registration_path: Path, output_path: Path) -> Path:
+    """Keep file-backed result publication inside the registered experiment results tree."""
+    try:
+        ADMISSION_CONTRACT.reject_symlink_chain(registration_path, "registration path")
+        experiment_root = registration_path.absolute().parent
+        ADMISSION_CONTRACT.reject_symlink_chain(experiment_root, "experiment path")
+        results_root = experiment_root / "results"
+        ADMISSION_CONTRACT.reject_symlink_chain(results_root, "experiment results path")
+        if not results_root.is_dir():
+            raise ValueError("experiment results directory must already exist")
+        target = output_path.absolute()
+        ADMISSION_CONTRACT.reject_symlink_chain(target, "evaluation output path")
+        target.relative_to(results_root)
+    except ADMISSION_CONTRACT.AdmissionError as exc:
+        raise ValueError(f"unsafe evaluation output path: {exc}") from exc
+    except ValueError as exc:
+        if str(exc) == "experiment results directory must already exist":
+            raise
+        raise ValueError("evaluation output must be inside the registered experiment results directory") from exc
+    if target == results_root:
+        raise ValueError("evaluation output must name a file inside the registered experiment results directory")
+    return target
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--registration", required=True, type=Path)
@@ -511,7 +557,7 @@ def main() -> int:
     )
     rendered = json.dumps(result, indent=2, sort_keys=True) + "\n"
     if args.output:
-        args.output.write_text(rendered, encoding="utf-8")
+        safe_output_path(args.registration, args.output).write_text(rendered, encoding="utf-8")
     else:
         print(rendered, end="")
     return 0

@@ -33,6 +33,9 @@
       "type": "string",
       "format": "date-time"
     },
+    "natural_case_admission": {
+      "type": "boolean"
+    },
     "consumer": {
       "type": "object",
       "additionalProperties": false,

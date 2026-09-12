@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Seal one registration-bound natural case before planning.
+"""Publish one registration-bound natural case before planning.
 
-Legacy registrations admit caller-supplied conditions. When registration.v2
-contains the frozen stratified assignment contract, this writer allocates the
-condition under the same create-only cohort lock before planning.
+The current zero-to-decision path accepts only explicit prospective condition
+assignments backed by external evidence. Historical automatic-assignment
+registrations remain valid archive facts but are not an active admission mode.
 """
 
 from __future__ import annotations
@@ -12,6 +12,7 @@ import argparse
 from datetime import datetime, timezone
 import fcntl
 import hashlib
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -25,13 +26,22 @@ from jsonschema import Draft202012Validator, FormatChecker, ValidationError
 
 
 ROOT = Path(__file__).resolve().parents[2]
-REGISTRATION_SCHEMA = ROOT / "schemas/experiment.registration.v2.schema.json"
 ADMISSION_SCHEMA = ROOT / "schemas/natural-case-admission.v1.schema.json"
+ACTIVE_REGISTRY_SCHEMA = ROOT / "schemas/active-experiments.v1.schema.json"
+REGISTRATION_GATE_PATH = ROOT / "scripts/docmeta/validate_experiment_registration.py"
+# Historical fixture paths retained for regression tests only. The CLI has no
+# experiment default and derives the admissions directory from --registration.
 DEFAULT_EXPERIMENT = ROOT / "experiments/_archive/2026-07-13_chronik-history-brief-effect"
 DEFAULT_REGISTRATION = DEFAULT_EXPERIMENT / "registration.v2.json"
 DEFAULT_ADMISSIONS = DEFAULT_EXPERIMENT / "artifacts/admissions"
-SUPPORTED_EXPERIMENT_ID = DEFAULT_EXPERIMENT.name
 CASE_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$")
+ADMISSION_BOUNDARY_KEYS = (
+    "experiment_only",
+    "no_auto_policy",
+    "no_auto_routing",
+    "no_queue_authority",
+    "no_runtime_authority",
+)
 MANUAL_NON_CLAIMS = [
     "automatic_assignment",
     "assignment_fairness",
@@ -41,18 +51,21 @@ MANUAL_NON_CLAIMS = [
     "condition_effect",
     "routing_queue_or_runtime_authority",
 ]
-AUTO_NON_CLAIMS = [
-    "external_eligibility_truth",
-    "case_execution",
-    "independent_review_completion",
-    "condition_effect",
-    "randomization_or_causal_identification",
-    "routing_queue_or_runtime_authority",
-]
-
 
 class AdmissionError(RuntimeError):
     pass
+
+
+def _load_registration_gate() -> Any:
+    spec = importlib.util.spec_from_file_location("labor_registration_gate_admission", REGISTRATION_GATE_PATH)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"cannot load registration gate from {REGISTRATION_GATE_PATH}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+REGISTRATION_GATE = _load_registration_gate()
 
 
 def canonical_json_bytes(value: Any) -> bytes:
@@ -125,28 +138,58 @@ def experiment_start(experiment_id: str) -> datetime:
         raise AdmissionError("experiment_id has no valid date prefix") from exc
 
 
-def validate_registration(registration: dict[str, Any], registration_path: Path) -> None:
-    validate(registration, load_schema(REGISTRATION_SCHEMA), "registration")
+def validate_registration(
+    registration: dict[str, Any],
+    registration_path: Path,
+    *,
+    now: datetime,
+) -> None:
+    if registration.get("assignment") is not None:
+        raise AdmissionError("registered automatic assignment is historical-only; current admissions require explicit prospective assignment evidence")
+    try:
+        validated = REGISTRATION_GATE.validate_registration(registration_path, now=now, require_current=True)
+    except Exception as exc:
+        raise AdmissionError(f"registration contract invalid: {exc}") from exc
+    if validated != registration:
+        raise AdmissionError("registration payload changed while validating")
     if registration.get("schema_version") != "experiment.registration.v2":
         raise AdmissionError("natural-case admission requires registration.v2")
-    if registration.get("experiment_id") != registration_path.parent.name:
-        raise AdmissionError("registration experiment_id must match its directory")
-    if registration["experiment_id"] != SUPPORTED_EXPERIMENT_ID:
-        raise AdmissionError("this admission writer is limited to the registered Chronik experiment")
-    if registration["boundary"] != {
-        "experiment_only": True,
-        "no_auto_policy": True,
-        "no_auto_routing": True,
-        "no_queue_authority": True,
-        "no_runtime_authority": True,
-    }:
+    if registration.get("natural_case_admission") is not True:
+        raise AdmissionError("registration does not explicitly authorize natural-case admission")
+    if any(registration["boundary"].get(key) is not True for key in ADMISSION_BOUNDARY_KEYS):
         raise AdmissionError("registration authority boundary is not closed")
-    assignment = registration.get("assignment")
-    if assignment is not None:
-        prior_registration = dict(registration)
-        prior_registration.pop("assignment", None)
-        if assignment["prior_registration_sha256"] != sha256_json(prior_registration):
-            raise AdmissionError("assignment prior registration digest is invalid")
+
+
+def validate_active_registry_binding(registration_path: Path, registration: dict[str, Any], *, now: datetime) -> None:
+    reject_symlink_chain(registration_path, "registration path")
+    registration_absolute = registration_path.absolute()
+    experiment_root = registration_absolute.parent
+    experiments_root = experiment_root.parent
+    experiment_id = registration["experiment_id"]
+    if registration_absolute.name != "registration.v2.json" or experiments_root.name != "experiments" or experiment_root.name != experiment_id:
+        raise AdmissionError("natural-case admission requires the canonical active experiment registration path")
+    registry_path = experiments_root / "active.v1.json"
+    reject_symlink_chain(registry_path, "active registry path")
+    registry = load_object(registry_path, "active experiment registry")
+    validate(registry, load_schema(ACTIVE_REGISTRY_SCHEMA), "active experiment registry")
+    matches = [item for item in registry["experiments"] if item["experiment_id"] == experiment_id]
+    if len(matches) != 1:
+        raise AdmissionError("experiment is not uniquely present in the active registry")
+    item = matches[0]
+    expected = {"path": f"experiments/{experiment_id}", "consumer": registration["consumer"]["organ"], "decision_target": registration["decision_target"]["question"], "primary_metric": registration["measurement"]["primary_metric"], "review_at": registration["review_at"], "expires_at": registration["expires_at"]}
+    conflicts = [key for key,value in expected.items() if item.get(key) != value]
+    if conflicts:
+        raise AdmissionError("active registry binding conflicts with registration: " + ", ".join(sorted(conflicts)))
+    if utc_timestamp(item["expires_at"], "active registry expires_at") <= now:
+        raise AdmissionError("active registry binding is expired")
+    source_path = (experiments_root.parent / item["source_ref"]).absolute()
+    reject_symlink_chain(source_path, "active registry source_ref")
+    try:
+        source_path.relative_to(experiment_root)
+    except ValueError as exc:
+        raise AdmissionError("active registry source_ref escapes the registered experiment") from exc
+    if not source_path.is_file():
+        raise AdmissionError("active registry source_ref is missing")
 
 
 def request_schema(admission_schema: dict[str, Any]) -> dict[str, Any]:
@@ -199,97 +242,18 @@ def validate_request_semantics(
     if evidence_captured < opened or evidence_captured > admitted:
         raise AdmissionError("eligibility evidence must be captured between case opening and admission")
 
-    assignment_contract = registration.get("assignment")
+    if registration.get("assignment") is not None:
+        raise AdmissionError(
+            "registered automatic assignment is historical-only; current admissions require "
+            "explicit prospective assignment evidence"
+        )
     assignment = request["assignment"]
-    if assignment_contract is None:
-        conditions = {
-            registration["control_condition"]["id"],
-            registration["treatment_condition"]["id"],
-        }
-        if assignment.get("condition") not in conditions:
-            raise AdmissionError("assignment condition is not registered")
-    else:
-        if assignment != {"mode": "registered_automatic", "recorded_before_planning": True}:
-            raise AdmissionError("registered automatic assignment is required by the current registration")
-        assignment_registered = utc_timestamp(assignment_contract["registered_at"], "assignment.registered_at")
-        if admitted < assignment_registered:
-            raise AdmissionError("admission predates the prospective assignment revision")
-        if opened < assignment_registered:
-            raise AdmissionError("case predates the prospective assignment revision")
-
-
-def _assignment_stratum(request: dict[str, Any]) -> dict[str, str]:
-    comparability = request["comparability"]
-    return {
-        "task_class": comparability["task_class"],
-        "risk_band": comparability["risk_band"],
-        "repository_familiarity_band": comparability["repository_familiarity_band"],
+    conditions = {
+        registration["control_condition"]["id"],
+        registration["treatment_condition"]["id"],
     }
-
-
-def _automatic_assignment_for_index(registration: dict[str, Any], stratum: dict[str, str], sequence_index: int) -> dict[str, Any]:
-    contract = registration["assignment"]
-    block_index = sequence_index // 2
-    block_position = sequence_index % 2
-    block_order_sha = sha256_json({
-        "schema_version": contract["schema_version"],
-        "seed_sha256": contract["seed_sha256"],
-        "stratum": stratum,
-        "block_index": block_index,
-    })
-    arms = [registration["control_condition"]["id"], registration["treatment_condition"]["id"]]
-    if int(block_order_sha[-1], 16) % 2:
-        arms.reverse()
-    return {
-        "condition": arms[block_position],
-        "mode": "stratified_permuted_blocks.v1",
-        "automatic": True,
-        "fairness_claim": "registration_bound_stratum_balance_only",
-        "registration_rule_status": "frozen_prospective_assignment",
-        "sequence_index": sequence_index,
-        "block_index": block_index,
-        "block_position": block_position,
-        "stratum": stratum,
-        "stratum_sha256": sha256_json(stratum),
-        "seed_sha256": contract["seed_sha256"],
-        "block_order_sha256": block_order_sha,
-        "balance_invariant": "arm_count_difference_at_most_one_per_partial_or_complete_two_case_block",
-    }
-
-
-def _automatic_assignment(request: dict[str, Any], registration: dict[str, Any], records: list[tuple[Path, dict[str, Any]]]) -> dict[str, Any]:
-    contract = registration["assignment"]
-    if contract["schema_version"] != "stratified_permuted_blocks.v1" or contract["block_size"] != 2:
-        raise AdmissionError("assignment registration contract is unsupported")
-    stratum = _assignment_stratum(request)
-    stratum_sha = sha256_json(stratum)
-    registration_sha = sha256_json(registration)
-    matching = []
-    for _path, existing in records:
-        evidence = existing["assignment_evidence"]
-        if evidence.get("automatic") is not True:
-            continue
-        if existing["registration_sha256"] != registration_sha:
-            continue
-        expected_existing_stratum = _assignment_stratum(existing["frozen_request"])
-        expected_existing_stratum_sha = sha256_json(expected_existing_stratum)
-        if (
-            evidence.get("stratum") != expected_existing_stratum
-            or evidence.get("stratum_sha256") != expected_existing_stratum_sha
-        ):
-            raise AdmissionError("existing automatic admission stratum binding drifted")
-        if evidence.get("seed_sha256") != contract["seed_sha256"]:
-            raise AdmissionError("existing automatic admission seed binding drifted")
-        if expected_existing_stratum_sha == stratum_sha:
-            matching.append(evidence)
-    matching.sort(key=lambda item: item["sequence_index"])
-    for expected_index, evidence in enumerate(matching):
-        if evidence["sequence_index"] != expected_index:
-            raise AdmissionError("automatic admission sequence is not contiguous")
-        expected = _automatic_assignment_for_index(registration, stratum, expected_index)
-        if any(evidence.get(key) != expected.get(key) for key in expected):
-            raise AdmissionError("existing automatic admission does not match the frozen assignment contract")
-    return _automatic_assignment_for_index(registration, stratum, len(matching))
+    if assignment.get("condition") not in conditions:
+        raise AdmissionError("assignment condition is not registered")
 
 
 def build_record(request: dict[str, Any], registration: dict[str, Any], admitted: datetime, assignment_evidence: dict[str, Any]) -> dict[str, Any]:
@@ -338,14 +302,14 @@ def build_record(request: dict[str, Any], registration: dict[str, Any], admitted
             "minimum_treatment": registration["comparison"]["minimum_treatment"],
             "review_at": registration["review_at"],
         },
-        "boundary": dict(registration["boundary"]),
+        "boundary": {key: registration["boundary"][key] for key in ADMISSION_BOUNDARY_KEYS},
         "traceability": {
             "triggered_by": request["triggered_by"],
-            "policy": ("registration.v2.json assignment + method.md" if assignment_evidence.get("automatic") is True else "registration.v2.json + method.md"),
+            "policy": "registration.v2.json + method.md",
             "action": "prospective_natural_case_admission",
-            "outcome": ("registered_automatic_assignment_sealed" if assignment_evidence.get("automatic") is True else "explicit_condition_assignment_sealed"),
+            "outcome": "explicit_condition_assignment_sealed",
         },
-        "non_claims": list(AUTO_NON_CLAIMS if assignment_evidence.get("automatic") is True else MANUAL_NON_CLAIMS),
+        "non_claims": list(MANUAL_NON_CLAIMS),
     }
 
 
@@ -422,21 +386,33 @@ def publish_create_only(path: Path, value: dict[str, Any]) -> None:
             _fsync_directory(path.parent)
 
 
+def reject_symlink_chain(path: Path, label: str) -> None:
+    absolute = path.absolute()
+    current = Path(absolute.anchor)
+    for part in absolute.parts[1:]:
+        current /= part
+        try:
+            info = current.lstat()
+        except FileNotFoundError:
+            break
+        if stat.S_ISLNK(info.st_mode):
+            raise AdmissionError(f"{label} must not traverse symlinks")
+
+
 def safe_admissions_root(registration_path: Path, admissions_dir: Path) -> Path:
-    if registration_path.is_symlink():
-        raise AdmissionError("registration path must not be a symlink")
-    experiment_root = registration_path.resolve().parent
+    reject_symlink_chain(registration_path, "registration path")
+    experiment_root = registration_path.absolute().parent
+    reject_symlink_chain(experiment_root, "experiment path")
     artifacts = experiment_root / "artifacts"
-    if artifacts.is_symlink():
-        raise AdmissionError("experiment artifacts directory must not be a symlink")
     expected = artifacts / "admissions"
-    if admissions_dir.is_symlink():
-        raise AdmissionError("admissions directory must not be a symlink")
-    if admissions_dir.resolve(strict=False) != expected.resolve(strict=False):
+    if admissions_dir.absolute() != expected:
         raise AdmissionError("admissions directory must be the registered experiment artifacts/admissions path")
+    reject_symlink_chain(artifacts, "experiment artifacts path")
     artifacts.mkdir(parents=False, exist_ok=True)
+    reject_symlink_chain(artifacts, "experiment artifacts path")
     admissions_dir.mkdir(mode=0o700, parents=False, exist_ok=True)
-    if admissions_dir.is_symlink() or not admissions_dir.is_dir():
+    reject_symlink_chain(admissions_dir, "admissions path")
+    if not admissions_dir.is_dir():
         raise AdmissionError("admissions directory is unsafe")
     return admissions_dir
 
@@ -458,6 +434,68 @@ def existing_records(root: Path, schema: dict[str, Any]) -> list[tuple[Path, dic
     return records
 
 
+def validate_existing_admission(
+    registration_path: Path,
+    admission_path: Path,
+    registration: dict[str, Any],
+) -> dict[str, Any]:
+    """Recompute one explicit admission's semantic commitments from file truth."""
+    if registration.get("assignment") is not None:
+        raise AdmissionError(
+            "registered automatic assignment is historical-only; current admission consumption "
+            "requires explicit prospective assignment evidence"
+        )
+    if registration.get("natural_case_admission") is not True:
+        raise AdmissionError("registration does not explicitly authorize natural-case admission")
+    reject_symlink_chain(registration_path, "registration path")
+    experiment_root = registration_path.absolute().parent
+    reject_symlink_chain(experiment_root, "experiment path")
+    root = experiment_root / "artifacts" / "admissions"
+    reject_symlink_chain(root, "admissions path")
+    if not root.is_dir():
+        raise AdmissionError("admissions root must be a real directory")
+    admission_absolute = admission_path.absolute()
+    reject_symlink_chain(admission_absolute, "admission path")
+    try:
+        relative = admission_absolute.relative_to(root)
+    except ValueError as exc:
+        raise AdmissionError("admission must be inside the registered experiment admissions directory") from exc
+    if len(relative.parts) != 2 or relative.parts[1] != "admission.json":
+        raise AdmissionError("admission path must be artifacts/admissions/<case-id>/admission.json")
+    case_dir = root / relative.parts[0]
+    reject_symlink_chain(case_dir, "admission case path")
+    if not case_dir.is_dir():
+        raise AdmissionError("admission case directory must be a real directory")
+
+    schema = load_schema(ADMISSION_SCHEMA)
+    record = load_object(admission_absolute, "existing admission")
+    validate(record, schema, "existing admission")
+    if record["frozen_request"]["case_id"] != relative.parts[0]:
+        raise AdmissionError("existing admission case_id does not match its directory")
+    if record["experiment_id"] != registration["experiment_id"]:
+        raise AdmissionError("existing admission experiment_id mismatch")
+    if record["registration_sha256"] != sha256_json(registration):
+        raise AdmissionError("existing admission registration digest mismatch")
+    admitted = utc_timestamp(record["admitted_at"], "admitted_at")
+    request = record["frozen_request"]
+    validate_request_semantics(request, registration, admitted)
+    if record["request_sha256"] != sha256_json(request):
+        raise AdmissionError("existing admission request digest mismatch")
+    if record["comparability_sha256"] != sha256_json(request["comparability"]):
+        raise AdmissionError("existing admission comparability digest mismatch")
+    expected_assignment = {
+        "condition": request["assignment"]["condition"],
+        "mode": "explicit_preplanning_assignment",
+        "automatic": False,
+        "fairness_claim": "not_established_by_registration_v2",
+        "registration_rule_status": "automatic_assignment_not_frozen",
+    }
+    rebuilt = build_record(request, registration, admitted, expected_assignment)
+    if record != rebuilt:
+        raise AdmissionError("existing admission semantic commitments do not match file truth")
+    return record
+
+
 def admit(
     registration_path: Path,
     request_path: Path,
@@ -465,12 +503,14 @@ def admit(
     *,
     now: datetime | None = None,
 ) -> dict[str, Any]:
+    reject_symlink_chain(registration_path, "registration path")
     registration = load_object(registration_path, "registration")
-    validate_registration(registration, registration_path)
+    admitted = (now or now_utc()).astimezone(timezone.utc)
+    validate_registration(registration, registration_path, now=admitted)
+    validate_active_registry_binding(registration_path, registration, now=admitted)
     admission_schema = load_schema(ADMISSION_SCHEMA)
     request = load_object(request_path, "admission request")
     validate(request, request_schema(admission_schema), "admission request")
-    admitted = (now or now_utc()).astimezone(timezone.utc)
     validate_request_semantics(request, registration, admitted)
     registration_digest = sha256_json(registration)
     request_digest = sha256_json(request)
@@ -506,16 +546,13 @@ def admit(
             if "evidence_ref" in assignment and "evidence_ref" in existing_assignment and (assignment["evidence_ref"] == existing_assignment["evidence_ref"] or assignment["evidence_sha256"] == existing_assignment["evidence_sha256"]):
                 raise AdmissionError("assignment evidence is already bound to another case")
 
-        if registration.get("assignment") is None:
-            assignment_evidence = {
-                "condition": assignment["condition"],
-                "mode": "explicit_preplanning_assignment",
-                "automatic": False,
-                "fairness_claim": "not_established_by_registration_v2",
-                "registration_rule_status": "automatic_assignment_not_frozen",
-            }
-        else:
-            assignment_evidence = _automatic_assignment(request, registration, records)
+        assignment_evidence = {
+            "condition": assignment["condition"],
+            "mode": "explicit_preplanning_assignment",
+            "automatic": False,
+            "fairness_claim": "not_established_by_registration_v2",
+            "registration_rule_status": "automatic_assignment_not_frozen",
+        }
         record = build_record(request, registration, admitted, assignment_evidence)
         validate(record, admission_schema, "admission record")
 
@@ -551,12 +588,17 @@ def admit(
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--registration", type=Path, default=DEFAULT_REGISTRATION)
+    parser.add_argument("--registration", type=Path, required=True)
     parser.add_argument("--request", type=Path, required=True)
-    parser.add_argument("--admissions-dir", type=Path, default=DEFAULT_ADMISSIONS)
+    parser.add_argument(
+        "--admissions-dir",
+        type=Path,
+        help="defaults to <registration experiment>/artifacts/admissions",
+    )
     args = parser.parse_args(argv)
+    admissions_dir = args.admissions_dir or args.registration.parent / "artifacts/admissions"
     try:
-        result = admit(args.registration, args.request, args.admissions_dir)
+        result = admit(args.registration, args.request, admissions_dir)
         print(json.dumps(result, indent=2, sort_keys=True))
         return 0
     except (AdmissionError, OSError, ValueError, KeyError) as exc:
