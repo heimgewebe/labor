@@ -453,6 +453,76 @@ class AssignedExperimentEvaluatorTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "requires admission_binding"):
             EFFECT.evaluate(self.registration, observations, repo_root=ROOT, registration_path=self.registration_path)
 
+    def test_semantically_forged_admission_is_rejected_even_with_updated_file_digest(self) -> None:
+        record = json.loads(self.admission_path.read_text())
+        record["request_sha256"] = "0" * 64
+        self.admission_path.chmod(0o644)
+        self.admission_path.write_text(json.dumps(record, indent=2) + "\n")
+        observations = self.observations()
+        with self.assertRaisesRegex(ValueError, "request digest mismatch"):
+            EFFECT.evaluate(
+                self.registration, observations, repo_root=ROOT,
+                registration_path=self.registration_path,
+            )
+
+    def test_explicit_admission_binding_is_evaluated_without_automatic_assignment(self) -> None:
+        explicit_root = self.root / "explicit" / "2026-07-13_chronik-history-brief-effect"
+        explicit_root.mkdir(parents=True)
+        registration_path = explicit_root / "registration.v2.json"
+        registration = json.loads(self.registration_path.read_text())
+        registration.pop("assignment", None)
+        registration_path.write_text(json.dumps(registration, indent=2) + "\n")
+        request = json.loads((ROOT / "tests/fixtures/natural_case_admission/valid-control-request.json").read_text())
+        request["case_id"] = "effect-explicit-1"
+        request["assignment"] = {
+            "condition": registration["control_condition"]["id"],
+            "assigned_by": "operator:prospective",
+            "evidence_ref": "receipt:effect-explicit-assignment-1",
+            "evidence_sha256": "c" * 64,
+            "recorded_before_planning": True,
+        }
+        request_path = self.root / "effect-explicit-request.json"
+        request_path.write_text(json.dumps(request, indent=2) + "\n")
+        admitted = ADMISSION.admit(
+            registration_path, request_path, explicit_root / "artifacts/admissions",
+            now=ADMISSION.utc_timestamp("2026-08-11T06:49:00Z", "test-now"),
+        )
+        admission_path = Path(admitted["path"])
+        admission = json.loads(admission_path.read_text())
+        scorecard = registration["measurement"]["scorecard"]["components"]
+        row = {
+            "observation_id": admission["review_preparation"]["blinded_case_id"],
+            "condition": admission["assignment_evidence"]["condition"],
+            "value": sum(float(component["weight"]) for component in scorecard),
+            "effort_seconds": 30.0,
+            "scoring_blinded": True,
+            "comparison_key": admission["frozen_request"]["comparability"]["comparison_key"],
+            "evidence_ref": "receipt:effect-explicit-1",
+            "evidence_sha256": "d" * 64,
+            "decision_maker_ref": "receipt:decision-effect-explicit-1",
+            "observer_ref": "receipt:review-effect-explicit-1",
+            "independent": True,
+            "captured_at": "2026-08-11T06:50:00Z",
+            "score_components": {component["id"]: 1 for component in scorecard},
+            "admission_binding": {
+                "case_id": "effect-explicit-1",
+                "admission_id": admission["admission_id"],
+                "admission_sha256": hashlib.sha256(admission_path.read_bytes()).hexdigest(),
+                "blinded_case_id": admission["review_preparation"]["blinded_case_id"],
+            },
+        }
+        observations = {
+            "schema_version": "effect-evaluation.observations.v2",
+            "experiment_id": registration["experiment_id"],
+            "registration_sha256": EFFECT.sha256_json(registration),
+            "metric": registration["measurement"]["primary_metric"],
+            "observations": [row],
+        }
+        result = EFFECT.evaluate(
+            registration, observations, repo_root=ROOT, registration_path=registration_path
+        )
+        self.assertEqual(result["verdict"], "insufficient_evidence")
+
     def test_assigned_observation_with_tampered_admission_digest_is_rejected(self) -> None:
         observations = self.observations()
         observations["observations"][0]["admission_binding"]["admission_sha256"] = "0" * 64

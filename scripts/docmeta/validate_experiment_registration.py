@@ -290,8 +290,12 @@ def validate_registration_payload(
             if assignment["prior_registration_sha256"] != hashlib.sha256(prior_raw).hexdigest():
                 raise ValueError(f"{path}: assignment prior_registration_sha256 does not match the pre-assignment registration")
             assigned_at = _utc(assignment["registered_at"], f"{path}.assignment.registered_at")
-            if not is_pre_t005_experiment(experiment_dir) and assigned_at > clock:
-                raise ValueError(f"{path}: assignment registration cannot be in the future")
+            if not is_pre_t005_experiment(experiment_dir):
+                experiment_registered_at = _utc(payload["registered_at"], f"{path}.registered_at")
+                if assigned_at < experiment_registered_at:
+                    raise ValueError(f"{path}: assignment registration must not precede registered_at")
+                if assigned_at > clock:
+                    raise ValueError(f"{path}: assignment registration cannot be in the future")
             if assigned_at >= review or assigned_at >= expires:
                 raise ValueError(f"{path}: assignment registration must precede review and expiry")
             if assignment["strata"] != ["task_class", "risk_band", "repository_familiarity_band"]:

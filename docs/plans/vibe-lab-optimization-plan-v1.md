@@ -53,7 +53,7 @@ Labor's normal product path is deliberately file-backed and boring:
 
 1. **register** — create one current `registration.v2.json` with a confirmed external consumer, decision question, control/treatment, primary metric, cost metric, stop/review/expiry rules and reviewed closure mapping;
 2. **activate** — add exactly one coherent entry to `experiments/active.v1.json`; the registry stays the bounded active truth;
-3. **admit** — before planning or execution, seal each eligible natural case with `tools/vibe-cli/admit_natural_case.py --registration ... --request ...`; the writer derives `<experiment>/artifacts/admissions` by default and has no task or runtime authority;
+3. **admit** — before planning or execution, publish each eligible natural-case record create-only with `tools/vibe-cli/admit_natural_case.py --registration ... --request ...`; the writer derives `<experiment>/artifacts/admissions` by default and has no task or runtime authority; downstream capture/evaluation recompute the record’s registration, request, assignment and review commitments before trusting it;
 4. **observe** — append evidence-bound measurements through `tools/vibe-cli/capture_effect_observation.py`;
 5. **evaluate** — deterministically compute the registered comparison with `tools/vibe-cli/evaluate_effect.py`;
 6. **decide** — a reviewer records the current canonical `results/decision.yml` (or the explicitly bound current `pN/decision.yml` where an existing phased experiment requires it); evaluation never changes policy automatically;

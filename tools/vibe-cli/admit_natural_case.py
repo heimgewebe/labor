@@ -477,6 +477,89 @@ def existing_records(root: Path, schema: dict[str, Any]) -> list[tuple[Path, dic
     return records
 
 
+def validate_existing_admission(
+    registration_path: Path,
+    admission_path: Path,
+    registration: dict[str, Any],
+) -> dict[str, Any]:
+    """Recompute one admission's semantic commitments from file truth.
+
+    Automatic assignment is cohort-relative, so every sibling admission under
+    the same registration is validated before the requested record is trusted.
+    This function is read-only; it grants no admission or runtime authority.
+    """
+    schema = load_schema(ADMISSION_SCHEMA)
+    experiment_root = registration_path.resolve().parent
+    root = experiment_root / "artifacts" / "admissions"
+    if root.is_symlink() or not root.is_dir():
+        raise AdmissionError("admissions root must be a real directory")
+    resolved = admission_path.resolve()
+    try:
+        relative = resolved.relative_to(root.resolve())
+    except ValueError as exc:
+        raise AdmissionError("admission must be inside the registered experiment admissions directory") from exc
+    if len(relative.parts) != 2 or relative.parts[1] != "admission.json":
+        raise AdmissionError("admission path must be artifacts/admissions/<case-id>/admission.json")
+
+    records = existing_records(root, schema)
+    registration_digest = sha256_json(registration)
+    expected_by_path: dict[Path, dict[str, Any]] = {}
+    automatic_groups: dict[str, list[tuple[Path, dict[str, Any], dict[str, str]]]] = {}
+
+    for path, record in records:
+        if record["experiment_id"] != registration["experiment_id"]:
+            raise AdmissionError("existing admission experiment_id mismatch")
+        if record["registration_sha256"] != registration_digest:
+            raise AdmissionError("existing admission registration digest mismatch")
+        admitted = utc_timestamp(record["admitted_at"], "admitted_at")
+        request = record["frozen_request"]
+        validate_request_semantics(request, registration, admitted)
+        if record["request_sha256"] != sha256_json(request):
+            raise AdmissionError("existing admission request digest mismatch")
+        if record["comparability_sha256"] != sha256_json(request["comparability"]):
+            raise AdmissionError("existing admission comparability digest mismatch")
+
+        if registration.get("assignment") is None:
+            expected_by_path[path.resolve()] = {
+                "condition": request["assignment"]["condition"],
+                "mode": "explicit_preplanning_assignment",
+                "automatic": False,
+                "fairness_claim": "not_established_by_registration_v2",
+                "registration_rule_status": "automatic_assignment_not_frozen",
+            }
+        else:
+            evidence = record["assignment_evidence"]
+            if evidence.get("automatic") is not True:
+                raise AdmissionError("automatic registration requires automatic admission evidence")
+            stratum = _assignment_stratum(request)
+            automatic_groups.setdefault(sha256_json(stratum), []).append((path, record, stratum))
+
+    for group in automatic_groups.values():
+        group.sort(key=lambda item: item[1]["assignment_evidence"]["sequence_index"])
+        for expected_index, (path, record, stratum) in enumerate(group):
+            evidence = record["assignment_evidence"]
+            if evidence["sequence_index"] != expected_index:
+                raise AdmissionError("automatic admission sequence is not contiguous")
+            expected = _automatic_assignment_for_index(registration, stratum, expected_index)
+            if evidence != expected:
+                raise AdmissionError("automatic admission does not match the frozen assignment contract")
+            expected_by_path[path.resolve()] = expected
+
+    target: dict[str, Any] | None = None
+    for path, record in records:
+        expected_assignment = expected_by_path[path.resolve()]
+        admitted = utc_timestamp(record["admitted_at"], "admitted_at")
+        rebuilt = build_record(record["frozen_request"], registration, admitted, expected_assignment)
+        if record != rebuilt:
+            raise AdmissionError("existing admission semantic commitments do not match file truth")
+        if path.resolve() == resolved:
+            target = record
+
+    if target is None:
+        raise AdmissionError("admission is not present in the registered admissions root")
+    return target
+
+
 def admit(
     registration_path: Path,
     request_path: Path,

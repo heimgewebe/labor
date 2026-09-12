@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import importlib.util
 import json
 import tempfile
@@ -328,6 +329,29 @@ def test_assignment_prior_digest_must_match_registration_without_assignment() ->
         path = directory / "registration.v2.json"
         path.write_text(json.dumps(payload))
         _assert_invalid(path, "prior_registration_sha256", now=datetime(2026, 8, 11, 7, 0, tzinfo=timezone.utc))
+
+
+def test_modern_assignment_cannot_predate_registration() -> None:
+    with tempfile.TemporaryDirectory() as raw:
+        path = _valid_v2(Path(raw) / "2026-08-08_assignment-chronology")
+        payload = json.loads(path.read_text())
+        prior_raw = (
+            json.dumps(payload, sort_keys=True, separators=(",", ":"), allow_nan=False) + "\n"
+        ).encode("utf-8")
+        payload["assignment"] = {
+            "schema_version": "stratified_permuted_blocks.v1",
+            "registered_at": "2026-08-07T23:59:59Z",
+            "prior_registration_sha256": hashlib.sha256(prior_raw).hexdigest(),
+            "seed_sha256": "a" * 64,
+            "block_size": 2,
+            "strata": ["task_class", "risk_band", "repository_familiarity_band"],
+            "sequence_scope": "per_stratum_create_only",
+            "arm_order_derivation": "sha256_seeded_block_parity",
+            "balance_max_difference": 1,
+            "historical_admissions_policy": "never_reassign_or_backfill",
+        }
+        path.write_text(json.dumps(payload), encoding="utf-8")
+        _assert_invalid(path, "assignment registration must not precede registered_at", now=T005_NOW)
 
 
 def test_new_work_cannot_use_v1_registration_directly() -> None:

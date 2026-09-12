@@ -17,7 +17,7 @@ from jsonschema import Draft202012Validator, FormatChecker
 
 ROOT = Path(__file__).resolve().parents[2]
 REGISTRATION_GATE_PATH = ROOT / "scripts/docmeta/validate_experiment_registration.py"
-ADMISSION_SCHEMA_PATH = ROOT / "schemas/natural-case-admission.v1.schema.json"
+ADMISSION_CONTRACT_PATH = ROOT / "tools/vibe-cli/admit_natural_case.py"
 
 
 def _load_registration_gate() -> Any:
@@ -30,6 +30,18 @@ def _load_registration_gate() -> Any:
 
 
 REGISTRATION_GATE = _load_registration_gate()
+
+
+def _load_admission_contract() -> Any:
+    spec = importlib.util.spec_from_file_location("labor_admission_contract_evaluate", ADMISSION_CONTRACT_PATH)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"cannot load admission contract from {ADMISSION_CONTRACT_PATH}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+ADMISSION_CONTRACT = _load_admission_contract()
 
 
 def canonical_bytes(value: Any) -> bytes:
@@ -182,24 +194,25 @@ def _validate_assigned_observation(
     registration_path: Path | None,
     repo_root: Path,
 ) -> None:
-    if registration.get("assignment") is None:
-        return
-    if registration_path is None:
-        raise ValueError("assigned experiment evaluation requires registration_path")
     binding = row.get("admission_binding")
     if not isinstance(binding, dict):
-        raise ValueError("assigned experiment observation requires admission_binding")
+        if registration.get("assignment") is not None:
+            raise ValueError("assigned experiment observation requires admission_binding")
+        return
+    if registration_path is None:
+        raise ValueError("admission-bound experiment evaluation requires registration_path")
     if binding["blinded_case_id"] != row["observation_id"]:
         raise ValueError("admission blinded_case_id does not match observation_id")
     experiment_root = registration_path.resolve().parent
     admission_path = experiment_root / "artifacts" / "admissions" / binding["case_id"] / "admission.json"
     if _sha256_file(admission_path) != binding["admission_sha256"]:
         raise ValueError("admission file digest mismatch")
-    admission = load_object(admission_path)
-    validate_schema(admission, repo_root / "schemas/natural-case-admission.v1.schema.json")
-    prior_digest = hashlib.sha256((json.dumps(registration, sort_keys=True, separators=(",", ":"), allow_nan=False) + "\n").encode("utf-8")).hexdigest()
-    if admission["registration_sha256"] != prior_digest:
-        raise ValueError("admission registration digest mismatch")
+    try:
+        admission = ADMISSION_CONTRACT.validate_existing_admission(
+            registration_path, admission_path, registration
+        )
+    except Exception as exc:
+        raise ValueError(f"admission contract invalid: {exc}") from exc
     if admission["admission_id"] != binding["admission_id"]:
         raise ValueError("admission id mismatch")
     if admission["frozen_request"]["case_id"] != binding["case_id"]:
@@ -210,6 +223,7 @@ def _validate_assigned_observation(
         raise ValueError("admission condition mismatch")
     if admission["frozen_request"]["comparability"]["comparison_key"] != row["comparison_key"]:
         raise ValueError("admission comparison_key mismatch")
+
 
 def evaluate(
     registration: dict[str, Any],

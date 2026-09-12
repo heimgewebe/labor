@@ -418,6 +418,78 @@ class ChronikAdmissionBindingTests(unittest.TestCase):
             "score_components": components,
         }
 
+    def explicit_case(self) -> tuple[Path, Path, Path, dict]:
+        source = CAPTURE.ROOT / "experiments/_archive/2026-07-13_chronik-history-brief-effect"
+        exp = self.root / "explicit" / "experiments/2026-07-13_chronik-history-brief-effect"
+        (exp / "results").mkdir(parents=True)
+        registration_path = exp / "registration.v2.json"
+        registration = json.loads((source / "registration.v2.json").read_text())
+        registration.pop("assignment", None)
+        registration_path.write_text(json.dumps(registration, indent=2) + "\n")
+        request = json.loads((CAPTURE.ROOT / "tests/fixtures/natural_case_admission/valid-control-request.json").read_text())
+        request["case_id"] = "explicit-case-1"
+        request["assignment"] = {
+            "condition": registration["control_condition"]["id"],
+            "assigned_by": "operator:prospective",
+            "evidence_ref": "receipt:explicit-assignment-case-1",
+            "evidence_sha256": "d" * 64,
+            "recorded_before_planning": True,
+        }
+        request_path = self.root / "explicit-request.json"
+        request_path.write_text(json.dumps(request, indent=2) + "\n")
+        admitted = ADMISSION.admit(
+            registration_path, request_path, exp / "artifacts/admissions",
+            now=ADMISSION.utc_timestamp("2026-08-11T06:49:00Z", "test-now"),
+        )
+        admission_path = Path(admitted["path"])
+        record = json.loads(admission_path.read_text())
+        scorecard = registration["measurement"]["scorecard"]["components"]
+        row = {
+            "observation_id": record["review_preparation"]["blinded_case_id"],
+            "condition": record["assignment_evidence"]["condition"],
+            "value": float(sum(float(item["weight"]) for item in scorecard)),
+            "effort_seconds": 30.0,
+            "scoring_blinded": True,
+            "comparison_key": record["frozen_request"]["comparability"]["comparison_key"],
+            "evidence_ref": "receipt:explicit-case-1-outcome",
+            "evidence_sha256": "e" * 64,
+            "decision_maker_ref": "receipt:decision-explicit-case-1",
+            "observer_ref": "receipt:reviewer-explicit-case-1",
+            "independent": True,
+            "captured_at": "2026-08-11T06:50:00Z",
+            "score_components": {item["id"]: 1 for item in scorecard},
+        }
+        return registration_path, admission_path, exp / "results/observations.v2.json", row
+
+    def test_explicit_admission_can_be_bound_for_registration_without_automatic_assignment(self) -> None:
+        registration_path, admission_path, observations, row = self.explicit_case()
+        CAPTURE.capture(registration_path, observations, row, admission_path=admission_path)
+        stored = json.loads(observations.read_text())["observations"][0]
+        self.assertEqual(stored["admission_binding"]["case_id"], "explicit-case-1")
+
+    def test_forged_automatic_condition_is_rejected_even_when_observation_matches_forgery(self) -> None:
+        record = json.loads(self.admission.read_text())
+        forged = (
+            "live_preflight_plus_history"
+            if record["assignment_evidence"]["condition"] == "live_preflight_only"
+            else "live_preflight_only"
+        )
+        record["assignment_evidence"]["condition"] = forged
+        self.admission.chmod(0o644)
+        self.admission.write_text(json.dumps(record, indent=2) + "\n")
+        row = self.row()
+        row["condition"] = forged
+        with self.assertRaisesRegex(CAPTURE.CaptureError, "frozen assignment contract"):
+            CAPTURE.capture(self.registration, self.observations, row, admission_path=self.admission)
+
+    def test_semantically_forged_admission_is_rejected(self) -> None:
+        record = json.loads(self.admission.read_text())
+        record["request_sha256"] = "0" * 64
+        self.admission.chmod(0o644)
+        self.admission.write_text(json.dumps(record, indent=2) + "\n")
+        with self.assertRaisesRegex(CAPTURE.CaptureError, "request digest mismatch"):
+            CAPTURE.capture(self.registration, self.observations, self.row(), admission_path=self.admission)
+
     def test_valid_observation_is_bound_to_admission(self) -> None:
         CAPTURE.capture(self.registration, self.observations, self.row(), admission_path=self.admission)
         stored = json.loads(self.observations.read_text())["observations"][0]
