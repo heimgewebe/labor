@@ -239,22 +239,45 @@ class NaturalCaseAdmissionTests(unittest.TestCase):
         self.assertEqual({record["assignment_evidence"]["block_position"] for record in records}, {0, 1})
         self.assertEqual(len({record["assignment_evidence"]["condition"] for record in records}), 2)
 
-    def test_writer_is_not_a_generic_runtime_admission_service(self) -> None:
-        other = self.root / "experiments/2026-07-13_other-experiment"
+    def test_writer_supports_current_post_t005_registration_without_runtime_authority(self) -> None:
+        source = ROOT / "experiments/2026-08-24_outcome-bound-natural-pilot-sampling-unit-r3-v3/registration.v2.json"
+        registration = json.loads(source.read_text(encoding="utf-8"))
+        other = self.root / "experiments" / registration["experiment_id"]
         other.mkdir()
-        registration = json.loads(self.registration.read_text(encoding="utf-8"))
-        registration["experiment_id"] = other.name
-        registration["closure"]["archive_path"] = f"experiments/_archive/{other.name}"
         registration_path = other / "registration.v2.json"
         registration_path.write_text(json.dumps(registration), encoding="utf-8")
-        with self.assertRaisesRegex(ADMISSION.AdmissionError, "limited to the registered Chronik"):
-            ADMISSION.admit(
-                registration_path,
-                self.write_request(self.request()),
-                other / "artifacts/admissions",
-                now=FIXED_NOW,
-            )
-        self.assertFalse((other / "artifacts").exists())
+        request = self.request(case_id="modern-natural-001")
+        request["case_opened_at"] = "2026-08-25T10:00:00Z"
+        request["eligibility_evidence"] = {
+            "ref": "receipt:modern-natural-001",
+            "sha256": "9" * 64,
+            "captured_at": "2026-08-25T10:00:30Z",
+        }
+        request["assignment"] = {
+            "condition": registration["treatment_condition"]["id"],
+            "assigned_by": "operator:prospective",
+            "evidence_ref": "receipt:modern-assignment-001",
+            "evidence_sha256": "8" * 64,
+            "recorded_before_planning": True,
+        }
+        request["triggered_by"] = "modern-natural-case-receipt-001"
+
+        result = ADMISSION.admit(
+            registration_path,
+            self.write_request(request),
+            other / "artifacts/admissions",
+            now=datetime(2026, 8, 25, 10, 1, tzinfo=timezone.utc),
+        )
+
+        record = json.loads((other / "artifacts/admissions/modern-natural-001/admission.json").read_text())
+        self.assertEqual(result["status"], "admitted")
+        self.assertEqual(record["experiment_id"], registration["experiment_id"])
+        self.assertTrue(record["boundary"]["experiment_only"])
+        self.assertTrue(record["boundary"]["no_runtime_authority"])
+        self.assertNotIn("no_merge_authority", record["boundary"])
+        self.assertEqual(record["registration_sha256"], ADMISSION.sha256_json(registration))
+        self.assertTrue(registration["boundary"]["no_merge_authority"])
+        self.assertIn("routing_queue_or_runtime_authority", record["non_claims"])
 
     def test_target_outside_experiment_admissions_is_refused(self) -> None:
         outside = self.root / "outside-admissions"

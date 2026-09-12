@@ -21,15 +21,35 @@ echo "# Meine Beobachtung\n\nEin begrenzter Kontext scheint bei dieser Aufgabenk
 
 Kein Schema, kein Frontmatter, keine CI-Prüfung. Eine rohe Idee ist noch keine Wirkungsaussage und keine Aufgabe.
 
-### 🧪 Strukturiertes Experiment starten
+### 🧪 Zero-to-Decision
 
-Nur wenn eine reale Entscheidung und ein Verbraucher benannt sind:
+Nur wenn eine reale Entscheidung und ein bestätigter externer Verbraucher benannt sind. Der kanonische Pfad verwendet bestehende Dateien als Wahrheit und erzeugt keine zweite Runtime:
 
-1. Erstelle ein Issue mit dem Formular **🧪 Experiment Proposal**.
-2. Kopiere `experiments/_template/` in einen neuen Ordner.
-3. Fülle `manifest.yml`, `method.md`, `CONTEXT.md` und `registration.v2.json` aus.
-4. Friere bestätigten externen Consumer, Decision-Referenz, Kontrolle, Behandlung, numerische Ergebnisgrenzen, Surface-Budget, Registrierungszeitpunkt, Reviewdatum, Ablauf und reviewed Outcome-Zuordnung vor der Beobachtung ein.
-5. Sammle Evidenz in `evidence.jsonl` oder über die evidenzgebundene Beobachtungsaufnahme.
+1. **register** — kopiere `experiments/_template/` in einen neuen Ordner und fülle `registration.v2.json` vor der ersten Beobachtung aus. Consumer, Decision-Referenz, Kontrolle, Behandlung, primäre Messgröße, Aufwandseinheit, Ergebnisgrenzen, Surface-Budget, Reviewdatum, Ablauf und Closure-Zuordnung werden prospektiv eingefroren.
+2. **activate** — trage das Experiment kohärent in `experiments/active.v1.json` ein und prüfe `python3 scripts/docmeta/validate_active_experiments.py`.
+3. **admit** — versiegle jeden natürlichen Fall vor Planung/Ausführung create-only:
+
+   ```bash
+   python3 tools/vibe-cli/admit_natural_case.py \
+     --registration experiments/<experiment>/registration.v2.json \
+     --request <request.json>
+   ```
+
+   Ohne `--admissions-dir` schreibt der vorhandene Writer ausschließlich nach `experiments/<experiment>/artifacts/admissions/`.
+4. **observe** — binde die vorab definierte Messung mit `tools/vibe-cli/capture_effect_observation.py` an konkrete Evidenz. Die CLI verlangt unter anderem Registration, Observations-Datei, Condition, Aufwand, Evidence-Ref/-Digest, Observer und Decision-Maker; `--help` zeigt den vollständigen Vertrag.
+5. **evaluate** — erzeuge die deterministische Auswertung, ohne Policy zu ändern:
+
+   ```bash
+   python3 tools/vibe-cli/evaluate_effect.py \
+     --registration experiments/<experiment>/registration.v2.json \
+     --observations experiments/<experiment>/results/observations.v2.json \
+     --output experiments/<experiment>/results/effect-evaluation.v1.json
+   ```
+
+6. **decide** — Review schreibt die aktuelle kanonische `results/decision.yml` beziehungsweise bei bereits phasengebundenen Altbeständen die explizit gebundene `pN/decision.yml`.
+7. **archive** — nach reviewed Decision den Active-Eintrag entfernen und Evidenz/Decision unter dem registrierten Archive-Pfad durch normalen PR/Review bewahren.
+
+Minimal dauerhaft: eine Registrierung, während der Laufzeit ein Active-Binding, ein Evidence-Stream und eine Decision. Admission-Receipts sind Evidenz, keine zusätzliche State-Schicht. Es gibt bewusst noch keinen `labor start/close`-Orchestrator; ein realer Lauf muss zuerst zeigen, dass dessen dauerhafte Oberfläche weniger kostet als die verbleibende manuelle Zeremonie.
 
 ### 📚 Ergebnis übernehmen
 
@@ -50,7 +70,7 @@ python3 scripts/docmeta/validate_active_experiments.py
 
 Der Validator bindet jeden aktiven Eintrag entweder an das historische bzw. experimentweite `results/decision.yml` oder, wenn die aktive Phase eine aktuelle Entscheidung benötigt, an ein genau einstufiges numerisches `pN/decision.yml`. Beide Pfade sind kanonische Decision Records und verwenden dasselbe Decision-Schema, dieselbe Taxonomie und dieselbe CI-Validierung. Solange ein Experiment aktiv ist, ist sein `source_ref` in `experiments/active.v1.json` die einzige aktuelle Decision-Bindung; nach Verlassen des Registers gilt das numerisch höchste kanonische `pN/decision.yml`, mit Rückfall auf `results/decision.yml` nur ohne vorhandene `pN`-Decision. Historische frühere Entscheidungen werden nicht umgeschrieben. Bei registrierten Experimenten müssen Verbraucher, Entscheidungsfrage, primäre Messgröße, Reviewdatum und Ablaufdatum exakt mit der Registrierung übereinstimmen. Neue Ordner benötigen unabhängig von ihrem Datumspräfix den aktuellen v2-Vertrag; nur die beim T005-Preimage bereits vorhandenen Experiment-IDs bleiben als geschlossener Altbestand kompatibel.
 
-Neue Experimente verwenden `registration.v2.json`. Für den aktiven Chronik-Vergleich enthält diese Registrierung seit der prospektiven Revision vom 11. August 2026 zusätzlich einen begrenzten `stratified_permuted_blocks.v1`-Assignment-Vertrag. `tools/vibe-cli/admit_natural_case.py` friert natürliche Fälle vor der Planung create-only ein und weist innerhalb der registrierten Vergleichsstrata deterministisch balanciert Control oder Treatment zu; es besitzt weiterhin keine Task-, Routing-, Queue- oder Runtime-Autorität. `tools/vibe-cli/capture_effect_observation.py` bindet Chronik-Beobachtungen anschließend an genau diesen Admission-Beleg und prüft vor der atomaren Erfassung den vollständigen semantischen Registrierungsvertrag. `tools/vibe-cli/evaluate_effect.py` prüft denselben Vertrag und verbindet Vergleichsevidenz mit den eingefrorenen Ergebnisgrenzen sowie der registrierten reviewed Closure-Zuordnung. Diese Werkzeuge sind Review-Werkzeuge und besitzen keine automatische Policy-, Routing-, Queue-, Merge-, Closure- oder Runtime-Autorität.
+Neue Experimente verwenden `registration.v2.json`. `tools/vibe-cli/admit_natural_case.py` akzeptiert jeden aktuell gültigen v2-Vertrag, prüft ihn über denselben semantischen Registration-Gate wie Capture/Evaluation und friert natürliche Fälle vor Planung oder Ausführung create-only ein. Enthält die Registrierung den begrenzten `stratified_permuted_blocks.v1`-Assignment-Vertrag, wird die Condition innerhalb der registrierten Vergleichsstrata deterministisch balanciert; andernfalls bleibt eine ausdrücklich vorab belegte Condition nötig. `tools/vibe-cli/capture_effect_observation.py` bindet Beobachtungen an Evidenz und gegebenenfalls den Admission-Beleg. `tools/vibe-cli/evaluate_effect.py` verbindet die Vergleichsevidenz deterministisch mit den eingefrorenen Ergebnisgrenzen und der registrierten reviewed Closure-Zuordnung. Diese Werkzeuge sind Review-Werkzeuge und besitzen keine automatische Task-, Policy-, Routing-, Queue-, Merge-, Closure- oder Runtime-Autorität.
 
 ### Lokal validieren
 

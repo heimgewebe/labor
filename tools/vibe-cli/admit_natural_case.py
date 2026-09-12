@@ -12,6 +12,7 @@ import argparse
 from datetime import datetime, timezone
 import fcntl
 import hashlib
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -25,13 +26,21 @@ from jsonschema import Draft202012Validator, FormatChecker, ValidationError
 
 
 ROOT = Path(__file__).resolve().parents[2]
-REGISTRATION_SCHEMA = ROOT / "schemas/experiment.registration.v2.schema.json"
 ADMISSION_SCHEMA = ROOT / "schemas/natural-case-admission.v1.schema.json"
+REGISTRATION_GATE_PATH = ROOT / "scripts/docmeta/validate_experiment_registration.py"
+# Historical fixture paths retained for regression tests only. The CLI has no
+# experiment default and derives the admissions directory from --registration.
 DEFAULT_EXPERIMENT = ROOT / "experiments/_archive/2026-07-13_chronik-history-brief-effect"
 DEFAULT_REGISTRATION = DEFAULT_EXPERIMENT / "registration.v2.json"
 DEFAULT_ADMISSIONS = DEFAULT_EXPERIMENT / "artifacts/admissions"
-SUPPORTED_EXPERIMENT_ID = DEFAULT_EXPERIMENT.name
 CASE_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$")
+ADMISSION_BOUNDARY_KEYS = (
+    "experiment_only",
+    "no_auto_policy",
+    "no_auto_routing",
+    "no_queue_authority",
+    "no_runtime_authority",
+)
 MANUAL_NON_CLAIMS = [
     "automatic_assignment",
     "assignment_fairness",
@@ -53,6 +62,18 @@ AUTO_NON_CLAIMS = [
 
 class AdmissionError(RuntimeError):
     pass
+
+
+def _load_registration_gate() -> Any:
+    spec = importlib.util.spec_from_file_location("labor_registration_gate_admission", REGISTRATION_GATE_PATH)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"cannot load registration gate from {REGISTRATION_GATE_PATH}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+REGISTRATION_GATE = _load_registration_gate()
 
 
 def canonical_json_bytes(value: Any) -> bytes:
@@ -125,28 +146,26 @@ def experiment_start(experiment_id: str) -> datetime:
         raise AdmissionError("experiment_id has no valid date prefix") from exc
 
 
-def validate_registration(registration: dict[str, Any], registration_path: Path) -> None:
-    validate(registration, load_schema(REGISTRATION_SCHEMA), "registration")
+def validate_registration(
+    registration: dict[str, Any],
+    registration_path: Path,
+    *,
+    now: datetime,
+) -> None:
+    try:
+        validated = REGISTRATION_GATE.validate_registration(
+            registration_path,
+            now=now,
+            require_current=True,
+        )
+    except Exception as exc:
+        raise AdmissionError(f"registration contract invalid: {exc}") from exc
+    if validated != registration:
+        raise AdmissionError("registration payload changed while validating")
     if registration.get("schema_version") != "experiment.registration.v2":
         raise AdmissionError("natural-case admission requires registration.v2")
-    if registration.get("experiment_id") != registration_path.parent.name:
-        raise AdmissionError("registration experiment_id must match its directory")
-    if registration["experiment_id"] != SUPPORTED_EXPERIMENT_ID:
-        raise AdmissionError("this admission writer is limited to the registered Chronik experiment")
-    if registration["boundary"] != {
-        "experiment_only": True,
-        "no_auto_policy": True,
-        "no_auto_routing": True,
-        "no_queue_authority": True,
-        "no_runtime_authority": True,
-    }:
+    if any(registration["boundary"].get(key) is not True for key in ADMISSION_BOUNDARY_KEYS):
         raise AdmissionError("registration authority boundary is not closed")
-    assignment = registration.get("assignment")
-    if assignment is not None:
-        prior_registration = dict(registration)
-        prior_registration.pop("assignment", None)
-        if assignment["prior_registration_sha256"] != sha256_json(prior_registration):
-            raise AdmissionError("assignment prior registration digest is invalid")
 
 
 def request_schema(admission_schema: dict[str, Any]) -> dict[str, Any]:
@@ -338,7 +357,7 @@ def build_record(request: dict[str, Any], registration: dict[str, Any], admitted
             "minimum_treatment": registration["comparison"]["minimum_treatment"],
             "review_at": registration["review_at"],
         },
-        "boundary": dict(registration["boundary"]),
+        "boundary": {key: registration["boundary"][key] for key in ADMISSION_BOUNDARY_KEYS},
         "traceability": {
             "triggered_by": request["triggered_by"],
             "policy": ("registration.v2.json assignment + method.md" if assignment_evidence.get("automatic") is True else "registration.v2.json + method.md"),
@@ -466,11 +485,11 @@ def admit(
     now: datetime | None = None,
 ) -> dict[str, Any]:
     registration = load_object(registration_path, "registration")
-    validate_registration(registration, registration_path)
+    admitted = (now or now_utc()).astimezone(timezone.utc)
+    validate_registration(registration, registration_path, now=admitted)
     admission_schema = load_schema(ADMISSION_SCHEMA)
     request = load_object(request_path, "admission request")
     validate(request, request_schema(admission_schema), "admission request")
-    admitted = (now or now_utc()).astimezone(timezone.utc)
     validate_request_semantics(request, registration, admitted)
     registration_digest = sha256_json(registration)
     request_digest = sha256_json(request)
@@ -551,12 +570,17 @@ def admit(
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--registration", type=Path, default=DEFAULT_REGISTRATION)
+    parser.add_argument("--registration", type=Path, required=True)
     parser.add_argument("--request", type=Path, required=True)
-    parser.add_argument("--admissions-dir", type=Path, default=DEFAULT_ADMISSIONS)
+    parser.add_argument(
+        "--admissions-dir",
+        type=Path,
+        help="defaults to <registration experiment>/artifacts/admissions",
+    )
     args = parser.parse_args(argv)
+    admissions_dir = args.admissions_dir or args.registration.parent / "artifacts/admissions"
     try:
-        result = admit(args.registration, args.request, args.admissions_dir)
+        result = admit(args.registration, args.request, admissions_dir)
         print(json.dumps(result, indent=2, sort_keys=True))
         return 0
     except (AdmissionError, OSError, ValueError, KeyError) as exc:
