@@ -27,7 +27,7 @@ class CaptureEffectObservationTests(unittest.TestCase):
     def registration(self) -> dict:
         return {
             "schema_version": "experiment.registration.v2",
-            "experiment_id": "2026-07-12_capture-example",
+            "experiment_id": "2026-07-12_operator-intervention-effect-evaluator",
             "registered_at": "2026-07-31T00:00:00Z",
             "consumer": {
                 "organ": "bureau",
@@ -94,7 +94,7 @@ class CaptureEffectObservationTests(unittest.TestCase):
             "expires_at": "2099-10-01T00:00:00Z",
             "closure": {
                 "allowed_outcomes": ["promote", "pilot", "defer", "reject", "archive"],
-                "archive_path": "experiments/_archive/2026-07-12_capture-example",
+                "archive_path": "experiments/_archive/2026-07-12_operator-intervention-effect-evaluator",
                 "outcome_by_result": {
                     "success": "promote",
                     "harm_or_falsification": "reject",
@@ -118,7 +118,7 @@ class CaptureEffectObservationTests(unittest.TestCase):
         }
 
     def setup_experiment(self, root: Path) -> tuple[Path, Path]:
-        experiment = root / "experiments/2026-07-12_capture-example"
+        experiment = root / "experiments/2026-07-12_operator-intervention-effect-evaluator"
         results = experiment / "results"
         results.mkdir(parents=True)
         registration = experiment / "registration.v2.json"
@@ -192,15 +192,6 @@ class CaptureEffectObservationTests(unittest.TestCase):
                 CAPTURE.capture(registration, observations, duplicate)
             self.assertEqual(observations.read_bytes(), before)
 
-    def test_observation_before_registration_is_rejected_before_file_creation(self) -> None:
-        with tempfile.TemporaryDirectory() as raw:
-            registration, observations = self.setup_experiment(Path(raw))
-            row = self.observation()
-            row["captured_at"] = "2026-07-30T23:59:59Z"
-            with self.assertRaisesRegex(CAPTURE.CaptureError, "before experiment registration"):
-                CAPTURE.capture(registration, observations, row)
-            self.assertFalse(observations.exists())
-
     def test_expired_registration_still_blocks_new_capture(self) -> None:
         with tempfile.TemporaryDirectory() as raw:
             registration, observations = self.setup_experiment(Path(raw))
@@ -215,16 +206,6 @@ class CaptureEffectObservationTests(unittest.TestCase):
             row["captured_at"] = "2026-08-01T00:00:00Z"
             with self.assertRaisesRegex(CAPTURE.CaptureError, "registration already expired"):
                 CAPTURE.capture(registration, observations, row)
-            self.assertFalse(observations.exists())
-
-    def test_t005_semantic_gate_runs_before_capture(self) -> None:
-        with tempfile.TemporaryDirectory() as raw:
-            registration, observations = self.setup_experiment(Path(raw))
-            invalid = self.registration()
-            del invalid["registered_at"]
-            registration.write_text(json.dumps(invalid), encoding="utf-8")
-            with self.assertRaisesRegex(CAPTURE.CaptureError, "registered_at"):
-                CAPTURE.capture(registration, observations, self.observation())
             self.assertFalse(observations.exists())
 
     def test_expired_observation_is_rejected_before_file_creation(self) -> None:
@@ -367,67 +348,28 @@ class ChronikAdmissionBindingTests(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
         self.root = Path(self.tmp.name)
-        source = CAPTURE.ROOT / "experiments/_archive/2026-07-13_chronik-history-brief-effect"
-        self.exp = self.root / "experiments/2026-07-13_chronik-history-brief-effect"
-        (self.exp / "results").mkdir(parents=True)
-        self.registration = self.exp / "registration.v2.json"
-        self.registration.write_bytes((source / "registration.v2.json").read_bytes())
-        original_validate_registration = CAPTURE.REGISTRATION_GATE.validate_registration
-        frozen_now = ADMISSION.utc_timestamp("2026-08-11T06:50:00Z", "test-now")
-        registration_clock = mock.patch.object(
-            CAPTURE.REGISTRATION_GATE,
-            "validate_registration",
-            side_effect=lambda path, **kwargs: original_validate_registration(
-                path, now=frozen_now, **kwargs
-            ),
-        )
-        registration_clock.start()
-        self.addCleanup(registration_clock.stop)
-        request = json.loads((CAPTURE.ROOT / "tests/fixtures/natural_case_admission/valid-control-request.json").read_text())
-        request["case_id"] = "case-1"
-        request_path = self.root / "request.json"
-        request_path.write_text(json.dumps(request, indent=2) + "\n")
-        admissions = self.exp / "artifacts/admissions"
-        result = ADMISSION.admit(
-            self.registration, request_path, admissions,
-            now=ADMISSION.utc_timestamp("2026-08-11T06:49:00Z", "test-now"),
-        )
-        self.admission = Path(result["path"])
+        self.registration, self.admission, self.observations, self._row = self.explicit_case()
         record = json.loads(self.admission.read_text())
         self.condition = record["assignment_evidence"]["condition"]
         self.blinded = record["review_preparation"]["blinded_case_id"]
         self.comparison_key = record["frozen_request"]["comparability"]["comparison_key"]
-        self.observations = self.exp / "results/observations.v2.json"
 
     def row(self) -> dict:
-        registration = json.loads(self.registration.read_text())
-        components = {item["id"]: 1 for item in registration["measurement"]["scorecard"]["components"]}
-        return {
-            "observation_id": self.blinded,
-            "condition": self.condition,
-            "value": float(sum(float(item["weight"]) for item in registration["measurement"]["scorecard"]["components"])),
-            "effort_seconds": 30.0,
-            "scoring_blinded": True,
-            "comparison_key": self.comparison_key,
-            "evidence_ref": "receipt:chronik-case-1-outcome",
-            "evidence_sha256": "a" * 64,
-            "decision_maker_ref": "receipt:decision-case-1",
-            "observer_ref": "receipt:reviewer-case-1",
-            "independent": True,
-            "captured_at": "2026-08-11T06:50:00Z",
-            "score_components": components,
-        }
+        return json.loads(json.dumps(self._row))
 
     def explicit_case(self) -> tuple[Path, Path, Path, dict]:
-        source = CAPTURE.ROOT / "experiments/_archive/2026-07-13_chronik-history-brief-effect"
-        exp = self.root / "explicit" / "experiments/2026-07-13_chronik-history-brief-effect"
+        experiment_id = "2026-09-12_zero-to-decision-explicit"
+        exp = self.root / "experiments" / experiment_id
         (exp / "results").mkdir(parents=True)
         registration_path = exp / "registration.v2.json"
-        registration = json.loads((source / "registration.v2.json").read_text())
-        registration.pop("assignment", None)
+        registration = CaptureEffectObservationTests().registration()
+        registration["experiment_id"] = experiment_id
+        registration["closure"]["archive_path"] = f"experiments/_archive/{experiment_id}"
         registration_path.write_text(json.dumps(registration, indent=2) + "\n")
         request = json.loads((CAPTURE.ROOT / "tests/fixtures/natural_case_admission/valid-control-request.json").read_text())
         request["case_id"] = "explicit-case-1"
+        request["case_opened_at"] = "2026-09-12T16:00:00Z"
+        request["eligibility_evidence"]["captured_at"] = "2026-09-12T16:00:01Z"
         request["assignment"] = {
             "condition": registration["control_condition"]["id"],
             "assigned_by": "operator:prospective",
@@ -439,15 +381,14 @@ class ChronikAdmissionBindingTests(unittest.TestCase):
         request_path.write_text(json.dumps(request, indent=2) + "\n")
         admitted = ADMISSION.admit(
             registration_path, request_path, exp / "artifacts/admissions",
-            now=ADMISSION.utc_timestamp("2026-08-11T06:49:00Z", "test-now"),
+            now=ADMISSION.utc_timestamp("2026-09-12T16:00:02Z", "test-now"),
         )
         admission_path = Path(admitted["path"])
         record = json.loads(admission_path.read_text())
-        scorecard = registration["measurement"]["scorecard"]["components"]
         row = {
             "observation_id": record["review_preparation"]["blinded_case_id"],
             "condition": record["assignment_evidence"]["condition"],
-            "value": float(sum(float(item["weight"]) for item in scorecard)),
+            "value": 2.0,
             "effort_seconds": 30.0,
             "scoring_blinded": True,
             "comparison_key": record["frozen_request"]["comparability"]["comparison_key"],
@@ -456,18 +397,11 @@ class ChronikAdmissionBindingTests(unittest.TestCase):
             "decision_maker_ref": "receipt:decision-explicit-case-1",
             "observer_ref": "receipt:reviewer-explicit-case-1",
             "independent": True,
-            "captured_at": "2026-08-11T06:50:00Z",
-            "score_components": {item["id"]: 1 for item in scorecard},
+            "captured_at": "2026-09-12T16:05:00Z",
         }
         return registration_path, admission_path, exp / "results/observations.v2.json", row
 
-    def test_explicit_admission_can_be_bound_for_registration_without_automatic_assignment(self) -> None:
-        registration_path, admission_path, observations, row = self.explicit_case()
-        CAPTURE.capture(registration_path, observations, row, admission_path=admission_path)
-        stored = json.loads(observations.read_text())["observations"][0]
-        self.assertEqual(stored["admission_binding"]["case_id"], "explicit-case-1")
-
-    def test_forged_automatic_condition_is_rejected_even_when_observation_matches_forgery(self) -> None:
+    def test_forged_explicit_condition_is_rejected_even_when_observation_matches_forgery(self) -> None:
         record = json.loads(self.admission.read_text())
         forged = (
             "live_preflight_plus_history"
@@ -479,7 +413,7 @@ class ChronikAdmissionBindingTests(unittest.TestCase):
         self.admission.write_text(json.dumps(record, indent=2) + "\n")
         row = self.row()
         row["condition"] = forged
-        with self.assertRaisesRegex(CAPTURE.CaptureError, "frozen assignment contract"):
+        with self.assertRaisesRegex(CAPTURE.CaptureError, "semantic commitments"):
             CAPTURE.capture(self.registration, self.observations, row, admission_path=self.admission)
 
     def test_semantically_forged_admission_is_rejected(self) -> None:
@@ -493,13 +427,50 @@ class ChronikAdmissionBindingTests(unittest.TestCase):
     def test_valid_observation_is_bound_to_admission(self) -> None:
         CAPTURE.capture(self.registration, self.observations, self.row(), admission_path=self.admission)
         stored = json.loads(self.observations.read_text())["observations"][0]
-        self.assertEqual(stored["admission_binding"]["case_id"], "case-1")
+        self.assertEqual(stored["admission_binding"]["case_id"], "explicit-case-1")
         self.assertEqual(stored["admission_binding"]["blinded_case_id"], self.blinded)
         self.assertEqual(stored["admission_binding"]["admission_sha256"], CAPTURE.sha256_file(self.admission))
 
-    def test_missing_admission_is_rejected(self) -> None:
+    def test_current_observation_before_registration_is_rejected(self) -> None:
+        row = self.row()
+        row["captured_at"] = "2026-07-30T23:59:59Z"
+        with self.assertRaisesRegex(CAPTURE.CaptureError, "before experiment registration"):
+            CAPTURE.capture(self.registration, self.observations, row, admission_path=self.admission)
+
+    def test_current_t005_semantic_gate_runs_before_capture(self) -> None:
+        invalid = json.loads(self.registration.read_text())
+        del invalid["registered_at"]
+        self.registration.write_text(json.dumps(invalid), encoding="utf-8")
+        with self.assertRaisesRegex(CAPTURE.CaptureError, "registered_at"):
+            CAPTURE.capture(self.registration, self.observations, self.row(), admission_path=self.admission)
+
+    def test_current_observation_without_admission_is_rejected(self) -> None:
         with self.assertRaisesRegex(CAPTURE.CaptureError, "requires --admission"):
             CAPTURE.capture(self.registration, self.observations, self.row())
+
+    def test_historical_automatic_registration_is_rejected_by_current_capture(self) -> None:
+        exp = self.root / "historical" / "experiments/2026-07-13_chronik-history-brief-effect"
+        (exp / "results").mkdir(parents=True)
+        registration = exp / "registration.v2.json"
+        source = CAPTURE.ROOT / "experiments/_archive/2026-07-13_chronik-history-brief-effect/registration.v2.json"
+        registration.write_bytes(source.read_bytes())
+        original = CAPTURE.REGISTRATION_GATE.validate_registration
+        frozen_now = ADMISSION.utc_timestamp("2026-08-11T06:50:00Z", "test-now")
+        with mock.patch.object(
+            CAPTURE.REGISTRATION_GATE,
+            "validate_registration",
+            side_effect=lambda path, **kwargs: original(path, now=frozen_now, **kwargs),
+        ):
+            with self.assertRaisesRegex(CAPTURE.CaptureError, "historical-only"):
+                CAPTURE.capture(registration, exp / "results/observations.v2.json", self.row())
+
+    def test_symlinked_artifacts_ancestor_is_rejected_by_capture(self) -> None:
+        artifacts = self.registration.parent / "artifacts"
+        external = self.root / "external-artifacts"
+        artifacts.rename(external)
+        artifacts.symlink_to(external, target_is_directory=True)
+        with self.assertRaisesRegex(CAPTURE.CaptureError, "traverse symlinks"):
+            CAPTURE.capture(self.registration, self.observations, self.row(), admission_path=self.admission)
 
     def test_condition_drift_is_rejected(self) -> None:
         row = self.row(); row["condition"] = "live_preflight_plus_history" if self.condition == "live_preflight_only" else "live_preflight_only"

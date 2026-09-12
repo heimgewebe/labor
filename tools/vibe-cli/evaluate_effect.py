@@ -194,10 +194,16 @@ def _validate_assigned_observation(
     registration_path: Path | None,
     repo_root: Path,
 ) -> None:
+    if registration.get("assignment") is not None:
+        raise ValueError(
+            "registered automatic assignment is historical-only; current evaluation requires "
+            "explicit prospective assignment evidence"
+        )
+    admission_required = registration_path is not None and not REGISTRATION_GATE.is_pre_t005_experiment(registration["experiment_id"])
     binding = row.get("admission_binding")
     if not isinstance(binding, dict):
-        if registration.get("assignment") is not None:
-            raise ValueError("assigned experiment observation requires admission_binding")
+        if admission_required:
+            raise ValueError("current experiment observation requires admission_binding")
         return
     if registration_path is None:
         raise ValueError("admission-bound experiment evaluation requires registration_path")

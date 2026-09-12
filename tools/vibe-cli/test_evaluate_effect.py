@@ -386,33 +386,41 @@ class AssignedExperimentEvaluatorTests(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
         self.root = Path(self.tmp.name)
-        source = ROOT / "experiments/_archive/2026-07-13_chronik-history-brief-effect"
-        self.exp = self.root / "2026-07-13_chronik-history-brief-effect"
+        experiment_id = "2026-09-12_zero-to-decision-effect"
+        self.exp = self.root / experiment_id
         self.exp.mkdir()
         self.registration_path = self.exp / "registration.v2.json"
-        self.registration_path.write_bytes((source / "registration.v2.json").read_bytes())
-        self.registration = json.loads(self.registration_path.read_text())
+        self.registration = EffectEvaluatorTests().registration()
+        self.registration["experiment_id"] = experiment_id
+        self.registration["closure"]["archive_path"] = f"experiments/_archive/{experiment_id}"
+        self.registration_path.write_text(json.dumps(self.registration, indent=2) + "\n")
         request = json.loads((ROOT / "tests/fixtures/natural_case_admission/valid-control-request.json").read_text())
         request["case_id"] = "effect-case-1"
+        request["case_opened_at"] = "2026-09-12T16:00:00Z"
+        request["eligibility_evidence"]["captured_at"] = "2026-09-12T16:00:01Z"
+        request["assignment"] = {
+            "condition": self.registration["control_condition"]["id"],
+            "assigned_by": "operator:prospective",
+            "evidence_ref": "receipt:effect-assignment-1",
+            "evidence_sha256": "c" * 64,
+            "recorded_before_planning": True,
+        }
         request_path = self.root / "request.json"
         request_path.write_text(json.dumps(request, indent=2) + "\n")
         admitted = ADMISSION.admit(
             self.registration_path,
             request_path,
             self.exp / "artifacts/admissions",
-            now=ADMISSION.utc_timestamp("2026-08-11T06:49:00Z", "test-now"),
+            now=ADMISSION.utc_timestamp("2026-09-12T16:00:02Z", "test-now"),
         )
         self.admission_path = Path(admitted["path"])
         self.admission = json.loads(self.admission_path.read_text())
 
     def observations(self) -> dict:
-        scorecard = self.registration["measurement"]["scorecard"]["components"]
-        components = {component["id"]: 1 for component in scorecard}
-        value = sum(float(component["weight"]) for component in scorecard)
         row = {
             "observation_id": self.admission["review_preparation"]["blinded_case_id"],
             "condition": self.admission["assignment_evidence"]["condition"],
-            "value": value,
+            "value": 2.0,
             "effort_seconds": 30.0,
             "scoring_blinded": True,
             "comparison_key": self.admission["frozen_request"]["comparability"]["comparison_key"],
@@ -421,8 +429,7 @@ class AssignedExperimentEvaluatorTests(unittest.TestCase):
             "decision_maker_ref": "receipt:decision-effect-case-1",
             "observer_ref": "receipt:review-effect-case-1",
             "independent": True,
-            "captured_at": "2026-08-11T06:50:00Z",
-            "score_components": components,
+            "captured_at": "2026-09-12T16:05:00Z",
             "admission_binding": {
                 "case_id": "effect-case-1",
                 "admission_id": self.admission["admission_id"],
@@ -465,63 +472,26 @@ class AssignedExperimentEvaluatorTests(unittest.TestCase):
                 registration_path=self.registration_path,
             )
 
-    def test_explicit_admission_binding_is_evaluated_without_automatic_assignment(self) -> None:
-        explicit_root = self.root / "explicit" / "2026-07-13_chronik-history-brief-effect"
-        explicit_root.mkdir(parents=True)
-        registration_path = explicit_root / "registration.v2.json"
-        registration = json.loads(self.registration_path.read_text())
-        registration.pop("assignment", None)
-        registration_path.write_text(json.dumps(registration, indent=2) + "\n")
-        request = json.loads((ROOT / "tests/fixtures/natural_case_admission/valid-control-request.json").read_text())
-        request["case_id"] = "effect-explicit-1"
-        request["assignment"] = {
-            "condition": registration["control_condition"]["id"],
-            "assigned_by": "operator:prospective",
-            "evidence_ref": "receipt:effect-explicit-assignment-1",
-            "evidence_sha256": "c" * 64,
-            "recorded_before_planning": True,
-        }
-        request_path = self.root / "effect-explicit-request.json"
-        request_path.write_text(json.dumps(request, indent=2) + "\n")
-        admitted = ADMISSION.admit(
-            registration_path, request_path, explicit_root / "artifacts/admissions",
-            now=ADMISSION.utc_timestamp("2026-08-11T06:49:00Z", "test-now"),
-        )
-        admission_path = Path(admitted["path"])
-        admission = json.loads(admission_path.read_text())
-        scorecard = registration["measurement"]["scorecard"]["components"]
-        row = {
-            "observation_id": admission["review_preparation"]["blinded_case_id"],
-            "condition": admission["assignment_evidence"]["condition"],
-            "value": sum(float(component["weight"]) for component in scorecard),
-            "effort_seconds": 30.0,
-            "scoring_blinded": True,
-            "comparison_key": admission["frozen_request"]["comparability"]["comparison_key"],
-            "evidence_ref": "receipt:effect-explicit-1",
-            "evidence_sha256": "d" * 64,
-            "decision_maker_ref": "receipt:decision-effect-explicit-1",
-            "observer_ref": "receipt:review-effect-explicit-1",
-            "independent": True,
-            "captured_at": "2026-08-11T06:50:00Z",
-            "score_components": {component["id"]: 1 for component in scorecard},
-            "admission_binding": {
-                "case_id": "effect-explicit-1",
-                "admission_id": admission["admission_id"],
-                "admission_sha256": hashlib.sha256(admission_path.read_bytes()).hexdigest(),
-                "blinded_case_id": admission["review_preparation"]["blinded_case_id"],
-            },
-        }
-        observations = {
-            "schema_version": "effect-evaluation.observations.v2",
-            "experiment_id": registration["experiment_id"],
-            "registration_sha256": EFFECT.sha256_json(registration),
-            "metric": registration["measurement"]["primary_metric"],
-            "observations": [row],
-        }
-        result = EFFECT.evaluate(
-            registration, observations, repo_root=ROOT, registration_path=registration_path
-        )
-        self.assertEqual(result["verdict"], "insufficient_evidence")
+    def test_symlinked_artifacts_ancestor_is_rejected_by_evaluation(self) -> None:
+        artifacts = self.exp / "artifacts"
+        external = self.root / "external-artifacts"
+        artifacts.rename(external)
+        artifacts.symlink_to(external, target_is_directory=True)
+        with self.assertRaisesRegex(ValueError, "traverse symlinks"):
+            EFFECT.evaluate(
+                self.registration, self.observations(), repo_root=ROOT,
+                registration_path=self.registration_path,
+            )
+
+    def test_historical_automatic_registration_is_not_current_evaluation_mode(self) -> None:
+        source = ROOT / "experiments/_archive/2026-07-13_chronik-history-brief-effect/registration.v2.json"
+        historical = json.loads(source.read_text())
+        observations = self.observations()
+        observations["experiment_id"] = historical["experiment_id"]
+        observations["registration_sha256"] = EFFECT.sha256_json(historical)
+        observations["metric"] = historical["measurement"]["primary_metric"]
+        with self.assertRaisesRegex(ValueError, "historical-only"):
+            EFFECT.evaluate(historical, observations, repo_root=ROOT, registration_path=source)
 
     def test_assigned_observation_with_tampered_admission_digest_is_rejected(self) -> None:
         observations = self.observations()

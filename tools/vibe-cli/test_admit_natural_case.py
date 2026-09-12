@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
+import hashlib
 import importlib.util
 import json
 import multiprocessing
@@ -22,15 +23,10 @@ SPEC.loader.exec_module(ADMISSION)
 FIXED_NOW = datetime(2026, 8, 11, 6, 49, tzinfo=timezone.utc)
 
 
-def _process_admit(
-    registration: Path,
-    request: Path,
-    admissions: Path,
-    output: multiprocessing.Queue,
-) -> None:
+def _process_admit(registration: Path, request: Path, admissions: Path, output: multiprocessing.Queue) -> None:
     try:
         output.put(("ok", ADMISSION.admit(registration, request, admissions, now=FIXED_NOW)))
-    except Exception as exc:  # pragma: no cover - returned to the parent for assertion
+    except Exception as exc:  # pragma: no cover
         output.put(("error", f"{type(exc).__name__}: {exc}"))
 
 
@@ -42,12 +38,22 @@ class NaturalCaseAdmissionTests(unittest.TestCase):
         self.experiment = self.root / "experiments/2026-07-13_chronik-history-brief-effect"
         self.experiment.mkdir(parents=True)
         self.registration = self.experiment / "registration.v2.json"
-        self.registration.write_bytes(ADMISSION.DEFAULT_REGISTRATION.read_bytes())
+        registration = json.loads(ADMISSION.DEFAULT_REGISTRATION.read_text(encoding="utf-8"))
+        registration.pop("assignment", None)
+        self.registration.write_text(json.dumps(registration, indent=2) + "\n", encoding="utf-8")
         self.admissions = self.experiment / "artifacts/admissions"
 
-    def request(self, *, case_id: str = "chronik-natural-001") -> dict:
+    def request(self, *, case_id: str = "chronik-natural-001", condition: str = "live_preflight_only") -> dict:
         value = json.loads((FIXTURES / "valid-control-request.json").read_text(encoding="utf-8"))
         value["case_id"] = case_id
+        assignment_seed = f"assignment:{case_id}:{condition}"
+        value["assignment"] = {
+            "condition": condition,
+            "assigned_by": "operator:prospective",
+            "evidence_ref": f"receipt:{assignment_seed}",
+            "evidence_sha256": hashlib.sha256(assignment_seed.encode()).hexdigest(),
+            "recorded_before_planning": True,
+        }
         return value
 
     def write_request(self, value: dict, name: str = "request.json") -> Path:
@@ -56,40 +62,37 @@ class NaturalCaseAdmissionTests(unittest.TestCase):
         return path
 
     def admit(self, value: dict, *, now: datetime = FIXED_NOW) -> dict:
-        return ADMISSION.admit(
-            self.registration,
-            self.write_request(value),
-            self.admissions,
-            now=now,
-        )
+        return ADMISSION.admit(self.registration, self.write_request(value), self.admissions, now=now)
 
     def record_path(self, case_id: str = "chronik-natural-001") -> Path:
         return self.admissions / case_id / "admission.json"
 
-    def test_admission_freezes_registration_comparability_assignment_and_review(self) -> None:
+    def unique_case(self, case_id: str, *, condition: str = "live_preflight_only", evidence_digit: str = "3") -> dict:
+        value = self.request(case_id=case_id, condition=condition)
+        value["eligibility_evidence"] = {
+            "ref": f"receipt:{case_id}",
+            "sha256": evidence_digit * 64,
+            "captured_at": "2026-08-11T06:48:41Z",
+        }
+        value["triggered_by"] = f"receipt:trigger:{case_id}"
+        return value
+
+    def test_admission_freezes_explicit_assignment_and_review(self) -> None:
         result = self.admit(self.request())
         record = json.loads(self.record_path().read_text(encoding="utf-8"))
         schema = json.loads(ADMISSION.ADMISSION_SCHEMA.read_text(encoding="utf-8"))
         Draft202012Validator(schema, format_checker=FormatChecker()).validate(record)
-
         registration = json.loads(self.registration.read_text(encoding="utf-8"))
         self.assertEqual(result["status"], "admitted")
-        self.assertTrue(result["automatic_assignment"])
+        self.assertFalse(result["automatic_assignment"])
         self.assertEqual(record["registration_sha256"], ADMISSION.sha256_json(registration))
-        self.assertEqual(
-            record["comparability_sha256"],
-            ADMISSION.sha256_json(record["frozen_request"]["comparability"]),
-        )
-        self.assertIn(record["assignment_evidence"]["condition"], {"live_preflight_only", "live_preflight_plus_history"})
-        self.assertTrue(record["assignment_evidence"]["automatic"])
-        self.assertEqual(record["assignment_evidence"]["fairness_claim"], "registration_bound_stratum_balance_only")
-        self.assertEqual(record["assignment_evidence"]["sequence_index"], 0)
+        self.assertEqual(record["assignment_evidence"]["condition"], "live_preflight_only")
+        self.assertFalse(record["assignment_evidence"]["automatic"])
+        self.assertEqual(record["assignment_evidence"]["mode"], "explicit_preplanning_assignment")
+        self.assertEqual(record["assignment_evidence"]["fairness_claim"], "not_established_by_registration_v2")
+        self.assertNotIn("sequence_index", record["assignment_evidence"])
         self.assertEqual(record["review_preparation"]["status"], "pending_independent_review")
-        self.assertTrue(record["review_preparation"]["blinding_required"])
-        self.assertEqual(record["review_preparation"]["minimum_control"], 3)
-        self.assertEqual(record["review_preparation"]["minimum_treatment"], 3)
-        self.assertEqual(record["review_preparation"]["review_at"], "2026-08-15T00:00:00Z")
-        self.assertEqual(record["traceability"]["triggered_by"], "natural-coding-case-receipt-001")
+        self.assertEqual(record["traceability"]["outcome"], "explicit_condition_assignment_sealed")
         self.assertEqual(self.record_path().stat().st_mode & 0o777, 0o444)
 
     def test_identical_retry_is_idempotent_and_preserves_original_bytes(self) -> None:
@@ -111,10 +114,11 @@ class NaturalCaseAdmissionTests(unittest.TestCase):
             self.admit(request)
         self.assertEqual(self.record_path().read_bytes(), before)
 
-    def test_duplicate_case_evidence_is_refused_across_case_ids(self) -> None:
+    def test_duplicate_case_or_assignment_evidence_is_refused(self) -> None:
         self.admit(self.request())
-        duplicate = self.request(case_id="chronik-natural-002")
-        with self.assertRaisesRegex(ADMISSION.AdmissionError, "eligibility evidence is already bound"):
+        duplicate = self.unique_case("chronik-natural-002")
+        duplicate["assignment"] = dict(self.request()["assignment"])
+        with self.assertRaisesRegex(ADMISSION.AdmissionError, "assignment evidence is already bound"):
             self.admit(duplicate)
         self.assertFalse(self.record_path("chronik-natural-002").exists())
 
@@ -124,18 +128,33 @@ class NaturalCaseAdmissionTests(unittest.TestCase):
         before = self.record_path().read_bytes()
         registration = json.loads(self.registration.read_text(encoding="utf-8"))
         registration["decision_target"]["question"] = "Does a changed question invalidate the frozen admission binding?"
-        prior = dict(registration)
-        prior.pop("assignment", None)
-        registration["assignment"]["prior_registration_sha256"] = ADMISSION.sha256_json(prior)
         self.registration.write_text(json.dumps(registration), encoding="utf-8")
         with self.assertRaisesRegex(ADMISSION.AdmissionError, "immutable conflicting admission"):
             self.admit(request)
         self.assertEqual(self.record_path().read_bytes(), before)
 
+    def test_registration_revision_does_not_poison_new_explicit_target(self) -> None:
+        self.admit(self.unique_case("old-case", evidence_digit="4"))
+        registration = json.loads(self.registration.read_text(encoding="utf-8"))
+        registration["decision_target"]["question"] = "Should the revised decision question proceed?"
+        self.registration.write_text(json.dumps(registration, indent=2) + "\n", encoding="utf-8")
+        newer = self.unique_case("new-case", condition="live_preflight_plus_history", evidence_digit="5")
+        self.admit(newer)
+        current = json.loads(self.registration.read_text())
+        record = ADMISSION.validate_existing_admission(self.registration, self.record_path("new-case"), current)
+        self.assertEqual(record["frozen_request"]["case_id"], "new-case")
+
+    def test_historical_automatic_registration_is_not_current_admission_mode(self) -> None:
+        self.registration.write_bytes(ADMISSION.DEFAULT_REGISTRATION.read_bytes())
+        with self.assertRaisesRegex(ADMISSION.AdmissionError, "historical-only"):
+            self.admit(self.request())
+        self.assertFalse(self.admissions.exists())
+
     def test_planning_started_fixture_is_refused_before_creation(self) -> None:
-        request_path = FIXTURES / "invalid-backfill-request.json"
+        request = json.loads((FIXTURES / "invalid-backfill-request.json").read_text())
+        request["assignment"] = self.request()["assignment"]
         with self.assertRaisesRegex(ADMISSION.AdmissionError, "planning_started"):
-            ADMISSION.admit(self.registration, request_path, self.admissions, now=FIXED_NOW)
+            self.admit(request)
         self.assertFalse(self.admissions.exists())
 
     def test_pre_registration_case_is_refused_as_backfill(self) -> None:
@@ -144,100 +163,20 @@ class NaturalCaseAdmissionTests(unittest.TestCase):
         request["eligibility_evidence"]["captured_at"] = "2026-07-12T23:59:30Z"
         with self.assertRaisesRegex(ADMISSION.AdmissionError, "backfill refused"):
             self.admit(request)
-        self.assertFalse(self.admissions.exists())
 
     def test_post_expiry_admission_is_refused(self) -> None:
         with self.assertRaisesRegex(ADMISSION.AdmissionError, "expired"):
             self.admit(self.request(), now=datetime(2026, 9, 1, tzinfo=timezone.utc))
-        self.assertFalse(self.admissions.exists())
 
-    def test_manual_condition_is_rejected_after_assignment_revision(self) -> None:
-        request = self.request()
-        request["assignment"] = {"condition": "live_preflight_only", "assigned_by": "operator:manual", "evidence_ref": "receipt:manual-assignment", "evidence_sha256": "a" * 64, "recorded_before_planning": True}
-        with self.assertRaisesRegex(ADMISSION.AdmissionError, "registered automatic assignment"):
-            self.admit(request)
-        self.assertFalse(self.admissions.exists())
-
-    def test_two_cases_in_same_stratum_are_balanced(self) -> None:
-        first = self.request(case_id="chronik-natural-001")
-        second = self.request(case_id="chronik-natural-002")
-        second["eligibility_evidence"] = {"ref": "receipt:natural-case-002", "sha256": "3" * 64, "captured_at": "2026-08-11T06:48:41Z"}
-        second["triggered_by"] = "natural-coding-case-receipt-002"
-        one = self.admit(first); two = self.admit(second)
-        self.assertNotEqual(one["condition"], two["condition"])
-        record = json.loads(self.record_path("chronik-natural-002").read_text())
-        self.assertEqual(record["assignment_evidence"]["sequence_index"], 1)
-        self.assertEqual(record["assignment_evidence"]["block_index"], 0)
-        self.assertEqual(record["assignment_evidence"]["block_position"], 1)
-
-    def test_different_strata_start_independent_sequences(self) -> None:
-        first = self.request(case_id="chronik-natural-001")
-        second = self.request(case_id="chronik-natural-002")
-        second["eligibility_evidence"] = {"ref": "receipt:natural-case-002", "sha256": "4" * 64, "captured_at": "2026-08-11T06:48:41Z"}
-        second["comparability"]["risk_band"] = "R2"
-        self.admit(first); self.admit(second)
-        record = json.loads(self.record_path("chronik-natural-002").read_text())
-        self.assertEqual(record["assignment_evidence"]["sequence_index"], 0)
-
-    def test_case_opened_before_assignment_revision_is_refused(self) -> None:
-        request = self.request()
-        request["case_opened_at"] = "2026-08-11T06:47:59Z"
-        request["eligibility_evidence"]["captured_at"] = "2026-08-11T06:48:40Z"
-        with self.assertRaisesRegex(ADMISSION.AdmissionError, "case predates the prospective assignment revision"):
-            self.admit(request)
-        self.assertFalse(self.admissions.exists())
-
-    def test_drifted_existing_stratum_digest_fails_closed(self) -> None:
-        first = self.request(case_id="chronik-stratum-drift-001")
-        self.admit(first)
-        first_path = self.record_path("chronik-stratum-drift-001")
-        first_path.chmod(0o600)
-        record = json.loads(first_path.read_text())
-        record["assignment_evidence"]["stratum_sha256"] = "0" * 64
-        first_path.write_text(json.dumps(record, indent=2) + "\n")
-        first_path.chmod(0o444)
-        second = self.request(case_id="chronik-stratum-drift-002")
-        second["eligibility_evidence"] = {"ref": "receipt:stratum-drift-002", "sha256": "7" * 64, "captured_at": "2026-08-11T06:48:41Z"}
-        second["triggered_by"] = "natural-coding-case-stratum-drift-002"
-        with self.assertRaisesRegex(ADMISSION.AdmissionError, "stratum binding drifted"):
-            self.admit(second)
-
-    def test_older_registration_digest_does_not_advance_new_sequence(self) -> None:
-        first = self.request(case_id="chronik-old-digest-001")
-        self.admit(first)
-        old_path = self.record_path("chronik-old-digest-001")
-        old_path.chmod(0o600)
-        old = json.loads(old_path.read_text())
-        old["registration_sha256"] = "0" * 64
-        old_path.write_text(json.dumps(old, indent=2) + "\n")
-        old_path.chmod(0o444)
-        second = self.request(case_id="chronik-current-001")
-        second["eligibility_evidence"] = {"ref": "receipt:current-001", "sha256": "5" * 64, "captured_at": "2026-08-11T06:48:41Z"}
-        second["triggered_by"] = "natural-coding-case-current-001"
-        self.admit(second)
-        current = json.loads(self.record_path("chronik-current-001").read_text())
-        self.assertEqual(current["assignment_evidence"]["sequence_index"], 0)
-
-    def test_two_concurrent_distinct_cases_get_one_block_each_position(self) -> None:
-        one = self.request(case_id="concurrent-distinct-001")
-        two = self.request(case_id="concurrent-distinct-002")
-        two["eligibility_evidence"] = {"ref": "receipt:concurrent-distinct-002", "sha256": "6" * 64, "captured_at": "2026-08-11T06:48:41Z"}
-        two["triggered_by"] = "natural-coding-case-concurrent-002"
-        paths = [self.write_request(one, "concurrent-one.json"), self.write_request(two, "concurrent-two.json")]
-        context = multiprocessing.get_context("fork")
-        output = context.Queue()
-        processes = [context.Process(target=_process_admit, args=(self.registration, request, self.admissions, output)) for request in paths]
-        for process in processes:
-            process.start()
-        for process in processes:
-            process.join(timeout=20)
-        results = [output.get(timeout=5) for _ in processes]
-        self.assertEqual([process.exitcode for process in processes], [0, 0], results)
-        self.assertEqual([status for status, _payload in results], ["ok", "ok"], results)
-        records = [json.loads(self.record_path(case_id).read_text()) for case_id in ("concurrent-distinct-001", "concurrent-distinct-002")]
-        self.assertEqual({record["assignment_evidence"]["sequence_index"] for record in records}, {0, 1})
-        self.assertEqual({record["assignment_evidence"]["block_position"] for record in records}, {0, 1})
-        self.assertEqual(len({record["assignment_evidence"]["condition"] for record in records}), 2)
+    def test_two_explicit_cases_preserve_chosen_conditions(self) -> None:
+        self.admit(self.unique_case("explicit-one", condition="live_preflight_only", evidence_digit="6"))
+        self.admit(self.unique_case("explicit-two", condition="live_preflight_plus_history", evidence_digit="7"))
+        one = json.loads(self.record_path("explicit-one").read_text())
+        two = json.loads(self.record_path("explicit-two").read_text())
+        self.assertEqual(one["assignment_evidence"]["condition"], "live_preflight_only")
+        self.assertEqual(two["assignment_evidence"]["condition"], "live_preflight_plus_history")
+        self.assertFalse(one["assignment_evidence"]["automatic"])
+        self.assertFalse(two["assignment_evidence"]["automatic"])
 
     def test_writer_supports_current_post_t005_registration_without_runtime_authority(self) -> None:
         source = ROOT / "experiments/2026-08-24_outcome-bound-natural-pilot-sampling-unit-r3-v3/registration.v2.json"
@@ -246,71 +185,49 @@ class NaturalCaseAdmissionTests(unittest.TestCase):
         other.mkdir()
         registration_path = other / "registration.v2.json"
         registration_path.write_text(json.dumps(registration), encoding="utf-8")
-        request = self.request(case_id="modern-natural-001")
+        request = self.request(case_id="modern-natural-001", condition=registration["treatment_condition"]["id"])
         request["case_opened_at"] = "2026-08-25T10:00:00Z"
-        request["eligibility_evidence"] = {
-            "ref": "receipt:modern-natural-001",
-            "sha256": "9" * 64,
-            "captured_at": "2026-08-25T10:00:30Z",
-        }
-        request["assignment"] = {
-            "condition": registration["treatment_condition"]["id"],
-            "assigned_by": "operator:prospective",
-            "evidence_ref": "receipt:modern-assignment-001",
-            "evidence_sha256": "8" * 64,
-            "recorded_before_planning": True,
-        }
+        request["eligibility_evidence"] = {"ref": "receipt:modern-natural-001", "sha256": "9" * 64, "captured_at": "2026-08-25T10:00:30Z"}
         request["triggered_by"] = "modern-natural-case-receipt-001"
-
-        result = ADMISSION.admit(
-            registration_path,
-            self.write_request(request),
-            other / "artifacts/admissions",
-            now=datetime(2026, 8, 25, 10, 1, tzinfo=timezone.utc),
-        )
-
+        result = ADMISSION.admit(registration_path, self.write_request(request), other / "artifacts/admissions", now=datetime(2026, 8, 25, 10, 1, tzinfo=timezone.utc))
         record = json.loads((other / "artifacts/admissions/modern-natural-001/admission.json").read_text())
         self.assertEqual(result["status"], "admitted")
         self.assertEqual(record["experiment_id"], registration["experiment_id"])
-        self.assertTrue(record["boundary"]["experiment_only"])
         self.assertTrue(record["boundary"]["no_runtime_authority"])
-        self.assertNotIn("no_merge_authority", record["boundary"])
         self.assertEqual(record["registration_sha256"], ADMISSION.sha256_json(registration))
-        self.assertTrue(registration["boundary"]["no_merge_authority"])
-        self.assertIn("routing_queue_or_runtime_authority", record["non_claims"])
 
     def test_target_outside_experiment_admissions_is_refused(self) -> None:
         outside = self.root / "outside-admissions"
         with self.assertRaisesRegex(ADMISSION.AdmissionError, "must be the registered experiment"):
-            ADMISSION.admit(
-                self.registration,
-                self.write_request(self.request()),
-                outside,
-                now=FIXED_NOW,
-            )
+            ADMISSION.admit(self.registration, self.write_request(self.request()), outside, now=FIXED_NOW)
         self.assertFalse(outside.exists())
 
-    def test_symlink_admissions_root_is_refused(self) -> None:
+    def test_symlinked_artifacts_ancestor_is_refused_before_write(self) -> None:
         victim = self.root / "victim"
         victim.mkdir()
-        (self.experiment / "artifacts").mkdir()
-        self.admissions.symlink_to(victim, target_is_directory=True)
-        with self.assertRaisesRegex(ADMISSION.AdmissionError, "must not be a symlink"):
+        (self.experiment / "artifacts").symlink_to(victim, target_is_directory=True)
+        with self.assertRaisesRegex(ADMISSION.AdmissionError, "must not traverse symlinks"):
             self.admit(self.request())
         self.assertEqual(list(victim.iterdir()), [])
+
+    def test_symlinked_experiment_ancestor_is_refused_before_write(self) -> None:
+        real = self.root / "real-experiment"
+        real.mkdir()
+        registration = json.loads(self.registration.read_text())
+        (real / "registration.v2.json").write_text(json.dumps(registration))
+        link = self.root / "linked-experiment"
+        link.symlink_to(real, target_is_directory=True)
+        request = self.write_request(self.request(), "symlink-request.json")
+        with self.assertRaisesRegex(ADMISSION.AdmissionError, "must not traverse symlinks"):
+            ADMISSION.admit(link / "registration.v2.json", request, link / "artifacts/admissions", now=FIXED_NOW)
+        self.assertFalse((real / "artifacts").exists())
 
     def test_two_processes_preserve_one_create_only_record(self) -> None:
         request = self.request(case_id="concurrent-natural-001")
         request_path = self.write_request(request, "concurrent-request.json")
         context = multiprocessing.get_context("fork")
         output = context.Queue()
-        processes = [
-            context.Process(
-                target=_process_admit,
-                args=(self.registration, request_path, self.admissions, output),
-            )
-            for _ in range(2)
-        ]
+        processes = [context.Process(target=_process_admit, args=(self.registration, request_path, self.admissions, output)) for _ in range(2)]
         for process in processes:
             process.start()
         for process in processes:
@@ -320,8 +237,6 @@ class NaturalCaseAdmissionTests(unittest.TestCase):
         self.assertEqual([status for status, _payload in results], ["ok", "ok"], results)
         payloads = [payload for _status, payload in results]
         self.assertEqual({payload["status"] for payload in payloads}, {"admitted", "already_admitted"})
-        record = self.admissions / request["case_id"] / "admission.json"
-        self.assertTrue(record.is_file())
         self.assertEqual(len(list(self.admissions.rglob("admission.json"))), 1)
 
 

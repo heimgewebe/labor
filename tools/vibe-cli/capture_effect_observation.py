@@ -306,9 +306,15 @@ def validate_binding(document: dict[str, Any], registration: dict[str, Any]) -> 
 
 
 def _bind_admission(admission_path: Path | None, registration_path: Path, registration: dict[str, Any], observation: dict[str, Any]) -> None:
+    if registration.get("assignment") is not None:
+        raise CaptureError(
+            "registered automatic assignment is historical-only; current capture requires "
+            "explicit prospective assignment evidence"
+        )
+    admission_required = not REGISTRATION_GATE.is_pre_t005_experiment(registration["experiment_id"])
     if admission_path is None:
-        if registration.get("assignment") is not None:
-            raise CaptureError("prospectively assigned experiment requires --admission")
+        if admission_required:
+            raise CaptureError("current experiment observation requires --admission")
         return
     try:
         admission = ADMISSION_CONTRACT.validate_existing_admission(
