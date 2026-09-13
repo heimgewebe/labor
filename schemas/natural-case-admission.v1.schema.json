@@ -8,7 +8,6 @@
     "schema_version",
     "experiment_id",
     "registration_sha256",
-    "registration_registered_at",
     "admission_id",
     "admitted_at",
     "request_sha256",
@@ -33,7 +32,8 @@
     },
     "registration_registered_at": {
       "type": "string",
-      "format": "date-time"
+      "format": "date-time",
+      "description": "Required on newly issued v1 receipts; absent only on legacy v1 receipts emitted before registration-time hardening."
     },
     "admission_id": {
       "$ref": "#/$defs/sha256"

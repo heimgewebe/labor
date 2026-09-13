@@ -132,6 +132,16 @@ class NaturalCaseAdmissionTests(unittest.TestCase):
         self.assertEqual(second["status"], "already_admitted")
         self.assertEqual(self.record_path().read_bytes(), before)
 
+    def test_identical_retry_after_review_is_idempotent_and_preserves_original_bytes(self) -> None:
+        request = self.request()
+        first = self.admit(request)
+        before = self.record_path().read_bytes()
+        second = self.admit(request, now=datetime(2026, 8, 20, tzinfo=timezone.utc))
+        self.assertFalse(first["idempotent"])
+        self.assertTrue(second["idempotent"])
+        self.assertEqual(second["status"], "already_admitted")
+        self.assertEqual(self.record_path().read_bytes(), before)
+
     def test_conflicting_retry_is_refused_without_mutation(self) -> None:
         request = self.request()
         self.admit(request)
@@ -451,6 +461,37 @@ class NaturalCaseAdmissionTests(unittest.TestCase):
             ADMISSION.AdmissionError, "current case already has a malformed or conflicting"
         ):
             self.admit(request)
+
+    def test_legacy_v1_receipt_without_registered_at_remains_valid_and_dedupes(self) -> None:
+        old = self.unique_case("legacy-old", evidence_digit="a")
+        registration = json.loads(self.registration.read_text(encoding="utf-8"))
+        legacy = ADMISSION.build_record(
+            old,
+            registration,
+            FIXED_NOW,
+            ADMISSION._explicit_assignment_evidence(old),
+            include_registration_registered_at=False,
+        )
+        self.assertNotIn("registration_registered_at", legacy)
+        legacy_dir = self.admissions / "legacy-old"
+        legacy_dir.mkdir(parents=True)
+        legacy_path = legacy_dir / "admission.json"
+        legacy_path.write_text(json.dumps(legacy, indent=2) + "\n", encoding="utf-8")
+
+        schema = json.loads(ADMISSION.ADMISSION_SCHEMA.read_text(encoding="utf-8"))
+        Draft202012Validator(schema, format_checker=FormatChecker()).validate(legacy)
+        validated = ADMISSION.validate_existing_admission(
+            self.registration, legacy_path, registration
+        )
+        self.assertEqual(validated, legacy)
+
+        newer = self.unique_case(
+            "legacy-new", condition="live_preflight_plus_history", evidence_digit="b"
+        )
+        newer["eligibility_evidence"] = dict(old["eligibility_evidence"])
+        with self.assertRaisesRegex(ADMISSION.AdmissionError, "eligibility evidence is already bound"):
+            self.admit(newer)
+        self.assertFalse(self.record_path("legacy-new").exists())
 
     def test_valid_old_revision_receipt_keeps_global_dedupe_authority(self) -> None:
         old = self.unique_case("old-case", evidence_digit="b")
