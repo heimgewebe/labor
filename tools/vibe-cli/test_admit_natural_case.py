@@ -112,6 +112,7 @@ class NaturalCaseAdmissionTests(unittest.TestCase):
         self.assertEqual(result["status"], "admitted")
         self.assertFalse(result["automatic_assignment"])
         self.assertEqual(record["registration_sha256"], ADMISSION.sha256_json(registration))
+        self.assertEqual(record["registration_registered_at"], registration["registered_at"])
         self.assertEqual(record["assignment_evidence"]["condition"], "live_preflight_only")
         self.assertFalse(record["assignment_evidence"]["automatic"])
         self.assertEqual(record["assignment_evidence"]["mode"], "explicit_preplanning_assignment")
@@ -192,8 +193,21 @@ class NaturalCaseAdmissionTests(unittest.TestCase):
         with self.assertRaisesRegex(ADMISSION.AdmissionError, "backfill refused"):
             self.admit(request)
 
+    def test_same_day_pre_registration_case_is_refused_as_backfill(self) -> None:
+        request = self.request()
+        request["case_opened_at"] = "2026-08-11T06:39:00Z"
+        request["eligibility_evidence"]["captured_at"] = "2026-08-11T06:39:30Z"
+        with self.assertRaisesRegex(ADMISSION.AdmissionError, "predates registration"):
+            self.admit(request)
+        self.assertFalse(self.admissions.exists())
+
+    def test_post_review_admission_is_refused_before_creation(self) -> None:
+        with self.assertRaisesRegex(ADMISSION.AdmissionError, "review boundary reached"):
+            self.admit(self.request(), now=datetime(2026, 8, 20, tzinfo=timezone.utc))
+        self.assertFalse(self.admissions.exists())
+
     def test_post_expiry_admission_is_refused(self) -> None:
-        with self.assertRaisesRegex(ADMISSION.AdmissionError, "expired"):
+        with self.assertRaisesRegex(ADMISSION.AdmissionError, "review boundary reached|expired"):
             self.admit(self.request(), now=datetime(2026, 9, 1, tzinfo=timezone.utc))
 
     def test_two_explicit_cases_preserve_chosen_conditions(self) -> None:
@@ -317,6 +331,28 @@ class NaturalCaseAdmissionTests(unittest.TestCase):
         result = self.admit(target)
         self.assertEqual(result["status"], "admitted")
         self.assertTrue(self.record_path("chronology-target").is_file())
+
+    def test_hash_consistent_pre_registration_sibling_has_no_dedupe_authority(self) -> None:
+        target = self.unique_case("registration-target", evidence_digit="1")
+        forged_request = self.unique_case("registration-forged", evidence_digit="2")
+        forged_request["eligibility_evidence"] = dict(target["eligibility_evidence"])
+        forged_request["case_opened_at"] = "2026-08-11T06:39:00Z"
+        forged_request["eligibility_evidence"]["captured_at"] = "2026-08-11T06:39:30Z"
+        registration = json.loads(self.registration.read_text(encoding="utf-8"))
+        forged = ADMISSION.build_record(
+            forged_request,
+            registration,
+            FIXED_NOW,
+            ADMISSION._explicit_assignment_evidence(forged_request),
+        )
+        forged_dir = self.admissions / "registration-forged"
+        forged_dir.mkdir(parents=True)
+        (forged_dir / "admission.json").write_text(
+            json.dumps(forged, indent=2) + "\n", encoding="utf-8"
+        )
+        result = self.admit(target)
+        self.assertEqual(result["status"], "admitted")
+        self.assertTrue(self.record_path("registration-target").is_file())
 
     def test_hash_consistent_wrong_experiment_sibling_has_no_dedupe_authority(self) -> None:
         target = self.unique_case("experiment-target", evidence_digit="8")

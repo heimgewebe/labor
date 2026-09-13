@@ -248,13 +248,21 @@ def validate_request_semantics(
         request["eligibility_evidence"]["captured_at"], "eligibility_evidence.captured_at"
     )
     start = experiment_start(registration["experiment_id"])
+    registered = utc_timestamp(registration["registered_at"], "registration.registered_at")
+    review = utc_timestamp(registration["review_at"], "registration.review_at")
     expiry = utc_timestamp(registration["expires_at"], "registration.expires_at")
     if admitted < start:
         raise AdmissionError("admission predates the registered experiment")
+    if admitted < registered:
+        raise AdmissionError("admission predates registration")
+    if admitted >= review:
+        raise AdmissionError("experiment review boundary reached; admission refused")
     if admitted >= expiry:
         raise AdmissionError("experiment is expired; admission refused")
     if opened < start:
         raise AdmissionError("case predates the registered experiment; backfill refused")
+    if opened < registered or evidence_captured < registered:
+        raise AdmissionError("case or eligibility evidence predates registration; backfill refused")
     if opened > admitted:
         raise AdmissionError("case_opened_at is after admission")
     if evidence_captured < opened or evidence_captured > admitted:
@@ -292,6 +300,7 @@ def build_record(request: dict[str, Any], registration: dict[str, Any], admitted
             "schema_version": 1,
             "experiment_id": registration["experiment_id"],
             "registration_sha256": registration_digest,
+            "registration_registered_at": registration["registered_at"],
             "request_sha256": request_digest,
             "assignment_evidence": assignment_evidence,
         }
@@ -300,6 +309,7 @@ def build_record(request: dict[str, Any], registration: dict[str, Any], admitted
         "schema_version": "natural-case-admission.v1",
         "experiment_id": registration["experiment_id"],
         "registration_sha256": registration_digest,
+        "registration_registered_at": registration["registered_at"],
         "admission_id": admission_id,
         "admitted_at": format_utc(admitted),
         "request_sha256": request_digest,
@@ -461,14 +471,22 @@ def validate_receipt_self_consistency(
     if expected_experiment_id is not None and record["experiment_id"] != expected_experiment_id:
         raise AdmissionError("existing admission experiment_id does not match its experiment directory")
     admitted_at = utc_timestamp(record["admitted_at"], "admitted_at")
+    registered_at = utc_timestamp(
+        record["registration_registered_at"], "registration_registered_at"
+    )
     case_opened_at = utc_timestamp(request["case_opened_at"], "frozen_request.case_opened_at")
     evidence_captured_at = utc_timestamp(
         request["eligibility_evidence"]["captured_at"],
         "frozen_request.eligibility_evidence.captured_at",
     )
-    if case_opened_at > evidence_captured_at or evidence_captured_at > admitted_at:
+    if (
+        registered_at > case_opened_at
+        or case_opened_at > evidence_captured_at
+        or evidence_captured_at > admitted_at
+    ):
         raise AdmissionError(
-            "existing admission chronology must satisfy case_opened_at <= evidence captured_at <= admitted_at"
+            "existing admission chronology must satisfy registered_at <= case_opened_at <= "
+            "evidence captured_at <= admitted_at"
         )
     if expected_experiment_id is not None:
         start = experiment_start(expected_experiment_id)
@@ -490,6 +508,7 @@ def validate_receipt_self_consistency(
             "schema_version": 1,
             "experiment_id": record["experiment_id"],
             "registration_sha256": record["registration_sha256"],
+            "registration_registered_at": record["registration_registered_at"],
             "request_sha256": record["request_sha256"],
             "assignment_evidence": record["assignment_evidence"],
         }
