@@ -446,7 +446,10 @@ def _explicit_assignment_evidence(request: dict[str, Any]) -> dict[str, Any]:
 
 
 def validate_receipt_self_consistency(
-    record: dict[str, Any], *, expected_case_id: str | None = None
+    record: dict[str, Any],
+    *,
+    expected_case_id: str | None = None,
+    expected_experiment_id: str | None = None,
 ) -> dict[str, Any]:
     """Validate immutable receipt commitments without reinterpreting an old registration revision."""
     request = record["frozen_request"]
@@ -455,7 +458,25 @@ def validate_receipt_self_consistency(
         raise AdmissionError("existing admission case_id does not match its directory")
     if CASE_ID_RE.fullmatch(case_id) is None:
         raise AdmissionError("existing admission case_id is not path-safe")
-    utc_timestamp(record["admitted_at"], "admitted_at")
+    if expected_experiment_id is not None and record["experiment_id"] != expected_experiment_id:
+        raise AdmissionError("existing admission experiment_id does not match its experiment directory")
+    admitted_at = utc_timestamp(record["admitted_at"], "admitted_at")
+    case_opened_at = utc_timestamp(request["case_opened_at"], "frozen_request.case_opened_at")
+    evidence_captured_at = utc_timestamp(
+        request["eligibility_evidence"]["captured_at"],
+        "frozen_request.eligibility_evidence.captured_at",
+    )
+    if case_opened_at > evidence_captured_at or evidence_captured_at > admitted_at:
+        raise AdmissionError(
+            "existing admission chronology must satisfy case_opened_at <= evidence captured_at <= admitted_at"
+        )
+    if expected_experiment_id is not None:
+        start = experiment_start(expected_experiment_id)
+        if admitted_at < start or case_opened_at < start:
+            raise AdmissionError("existing admission predates its experiment")
+    review_at = utc_timestamp(record["review_preparation"]["review_at"], "review_preparation.review_at")
+    if review_at <= admitted_at:
+        raise AdmissionError("existing admission review_at must be after admitted_at")
     if record["request_sha256"] != sha256_json(request):
         raise AdmissionError("existing admission request digest mismatch")
     comparability_digest = sha256_json(request["comparability"])
@@ -516,6 +537,7 @@ def existing_records(
 ) -> list[tuple[Path, dict[str, Any]]]:
     """Return only authoritative receipts; unrelated malformed entries cannot deny service."""
     records: list[tuple[Path, dict[str, Any]]] = []
+    expected_experiment_id = root.parent.parent.name
     for case_dir in sorted(root.iterdir()):
         try:
             if case_dir.is_symlink() or not case_dir.is_dir():
@@ -523,7 +545,11 @@ def existing_records(
             path = case_dir / "admission.json"
             value = load_object(path, "existing admission")
             validate(value, schema, "existing admission")
-            validate_receipt_self_consistency(value, expected_case_id=case_dir.name)
+            validate_receipt_self_consistency(
+                value,
+                expected_case_id=case_dir.name,
+                expected_experiment_id=expected_experiment_id,
+            )
         except (AdmissionError, OSError, KeyError, TypeError) as exc:
             if case_dir.name == current_case_id:
                 raise AdmissionError(
@@ -573,7 +599,11 @@ def validate_existing_admission(
     record = load_object(admission_absolute, "existing admission")
     validate(record, schema, "existing admission")
     try:
-        validate_receipt_self_consistency(record, expected_case_id=relative.parts[0])
+        validate_receipt_self_consistency(
+            record,
+            expected_case_id=relative.parts[0],
+            expected_experiment_id=registration["experiment_id"],
+        )
     except AdmissionError as exc:
         raise AdmissionError(
             f"existing admission semantic commitments do not match file truth: {exc}"

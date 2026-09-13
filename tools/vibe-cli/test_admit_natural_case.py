@@ -297,6 +297,104 @@ class NaturalCaseAdmissionTests(unittest.TestCase):
         self.assertEqual(result["status"], "admitted")
         self.assertTrue(self.record_path("target-case").is_file())
 
+    def test_hash_consistent_impossible_chronology_sibling_has_no_dedupe_authority(self) -> None:
+        target = self.unique_case("chronology-target", evidence_digit="6")
+        forged_request = self.unique_case("chronology-forged", evidence_digit="7")
+        forged_request["eligibility_evidence"] = dict(target["eligibility_evidence"])
+        forged_request["case_opened_at"] = "2026-08-11T06:55:00Z"
+        registration = json.loads(self.registration.read_text(encoding="utf-8"))
+        forged = ADMISSION.build_record(
+            forged_request,
+            registration,
+            FIXED_NOW,
+            ADMISSION._explicit_assignment_evidence(forged_request),
+        )
+        forged_dir = self.admissions / "chronology-forged"
+        forged_dir.mkdir(parents=True)
+        (forged_dir / "admission.json").write_text(
+            json.dumps(forged, indent=2) + "\n", encoding="utf-8"
+        )
+        result = self.admit(target)
+        self.assertEqual(result["status"], "admitted")
+        self.assertTrue(self.record_path("chronology-target").is_file())
+
+    def test_hash_consistent_wrong_experiment_sibling_has_no_dedupe_authority(self) -> None:
+        target = self.unique_case("experiment-target", evidence_digit="8")
+        forged_request = self.unique_case("experiment-forged", evidence_digit="9")
+        forged_request["eligibility_evidence"] = dict(target["eligibility_evidence"])
+        registration = json.loads(self.registration.read_text(encoding="utf-8"))
+        forged = ADMISSION.build_record(
+            forged_request,
+            registration,
+            FIXED_NOW,
+            ADMISSION._explicit_assignment_evidence(forged_request),
+        )
+        forged["experiment_id"] = "2026-08-11_other-experiment"
+        forged["admission_id"] = ADMISSION.sha256_json(
+            {
+                "schema_version": 1,
+                "experiment_id": forged["experiment_id"],
+                "registration_sha256": forged["registration_sha256"],
+                "request_sha256": forged["request_sha256"],
+                "assignment_evidence": forged["assignment_evidence"],
+            }
+        )
+        forged["review_preparation"]["blinded_case_id"] = ADMISSION.sha256_json(
+            {
+                "schema_version": 1,
+                "experiment_id": forged["experiment_id"],
+                "case_id": forged_request["case_id"],
+                "eligibility_evidence_sha256": forged_request["eligibility_evidence"]["sha256"],
+                "comparability_sha256": forged["comparability_sha256"],
+            }
+        )
+        forged_dir = self.admissions / "experiment-forged"
+        forged_dir.mkdir(parents=True)
+        (forged_dir / "admission.json").write_text(
+            json.dumps(forged, indent=2) + "\n", encoding="utf-8"
+        )
+        result = self.admit(target)
+        self.assertEqual(result["status"], "admitted")
+        self.assertTrue(self.record_path("experiment-target").is_file())
+
+    def test_hash_consistent_temporal_boundary_siblings_have_no_dedupe_authority(self) -> None:
+        target = self.unique_case("temporal-target", evidence_digit="d")
+        registration = json.loads(self.registration.read_text(encoding="utf-8"))
+
+        before_start = self.unique_case("before-start-forged", evidence_digit="e")
+        before_start["eligibility_evidence"] = dict(target["eligibility_evidence"])
+        before_start["case_opened_at"] = "2026-08-10T23:59:00Z"
+        forged_before_start = ADMISSION.build_record(
+            before_start,
+            registration,
+            FIXED_NOW,
+            ADMISSION._explicit_assignment_evidence(before_start),
+        )
+
+        stale_review = self.unique_case("stale-review-forged", evidence_digit="f")
+        stale_review["eligibility_evidence"] = dict(target["eligibility_evidence"])
+        forged_stale_review = ADMISSION.build_record(
+            stale_review,
+            registration,
+            FIXED_NOW,
+            ADMISSION._explicit_assignment_evidence(stale_review),
+        )
+        forged_stale_review["review_preparation"]["review_at"] = ADMISSION.format_utc(FIXED_NOW)
+
+        for case_id, record in (
+            ("before-start-forged", forged_before_start),
+            ("stale-review-forged", forged_stale_review),
+        ):
+            forged_dir = self.admissions / case_id
+            forged_dir.mkdir(parents=True)
+            (forged_dir / "admission.json").write_text(
+                json.dumps(record, indent=2) + "\n", encoding="utf-8"
+            )
+
+        result = self.admit(target)
+        self.assertEqual(result["status"], "admitted")
+        self.assertTrue(self.record_path("temporal-target").is_file())
+
     def test_semantically_forged_current_case_fails_closed(self) -> None:
         self.admit(self.unique_case("valid-one", evidence_digit="4"))
         request = self.unique_case("forged-current", evidence_digit="a")
