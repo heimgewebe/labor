@@ -435,6 +435,79 @@ def safe_admissions_root(registration_path: Path, admissions_dir: Path) -> Path:
     return admissions_dir
 
 
+def _explicit_assignment_evidence(request: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "condition": request["assignment"]["condition"],
+        "mode": "explicit_preplanning_assignment",
+        "automatic": False,
+        "fairness_claim": "not_established_by_registration_v2",
+        "registration_rule_status": "automatic_assignment_not_frozen",
+    }
+
+
+def validate_receipt_self_consistency(
+    record: dict[str, Any], *, expected_case_id: str | None = None
+) -> dict[str, Any]:
+    """Validate immutable receipt commitments without reinterpreting an old registration revision."""
+    request = record["frozen_request"]
+    case_id = request["case_id"]
+    if expected_case_id is not None and case_id != expected_case_id:
+        raise AdmissionError("existing admission case_id does not match its directory")
+    if CASE_ID_RE.fullmatch(case_id) is None:
+        raise AdmissionError("existing admission case_id is not path-safe")
+    utc_timestamp(record["admitted_at"], "admitted_at")
+    if record["request_sha256"] != sha256_json(request):
+        raise AdmissionError("existing admission request digest mismatch")
+    comparability_digest = sha256_json(request["comparability"])
+    if record["comparability_sha256"] != comparability_digest:
+        raise AdmissionError("existing admission comparability digest mismatch")
+    expected_assignment = _explicit_assignment_evidence(request)
+    if record["assignment_evidence"] != expected_assignment:
+        raise AdmissionError("existing admission assignment evidence mismatch")
+    expected_admission_id = sha256_json(
+        {
+            "schema_version": 1,
+            "experiment_id": record["experiment_id"],
+            "registration_sha256": record["registration_sha256"],
+            "request_sha256": record["request_sha256"],
+            "assignment_evidence": record["assignment_evidence"],
+        }
+    )
+    if record["admission_id"] != expected_admission_id:
+        raise AdmissionError("existing admission id does not match its commitments")
+    expected_blinded_case_id = sha256_json(
+        {
+            "schema_version": 1,
+            "experiment_id": record["experiment_id"],
+            "case_id": case_id,
+            "eligibility_evidence_sha256": request["eligibility_evidence"]["sha256"],
+            "comparability_sha256": comparability_digest,
+        }
+    )
+    review = record["review_preparation"]
+    if review["blinded_case_id"] != expected_blinded_case_id:
+        raise AdmissionError("existing admission blinded case id mismatch")
+    if (
+        review["status"] != "pending_independent_review"
+        or review["blinding_required"] is not True
+        or review["condition_disclosure"] != "after_score_seal"
+    ):
+        raise AdmissionError("existing admission review preparation is inconsistent")
+    if any(record["boundary"].get(key) is not True for key in ADMISSION_BOUNDARY_KEYS):
+        raise AdmissionError("existing admission authority boundary is not closed")
+    expected_traceability = {
+        "triggered_by": request["triggered_by"],
+        "policy": "registration.v2.json + method.md",
+        "action": "prospective_natural_case_admission",
+        "outcome": "explicit_condition_assignment_sealed",
+    }
+    if record["traceability"] != expected_traceability:
+        raise AdmissionError("existing admission traceability commitments mismatch")
+    if record["non_claims"] != MANUAL_NON_CLAIMS:
+        raise AdmissionError("existing admission non-claims mismatch")
+    return record
+
+
 def existing_records(
     root: Path,
     schema: dict[str, Any],
@@ -453,8 +526,7 @@ def existing_records(
             path = entries[0]
             value = load_object(path, "existing admission")
             validate(value, schema, "existing admission")
-            if value["frozen_request"]["case_id"] != case_dir.name:
-                raise AdmissionError("existing admission case_id does not match its directory")
+            validate_receipt_self_consistency(value, expected_case_id=case_dir.name)
         except (AdmissionError, OSError, KeyError, TypeError) as exc:
             if case_dir.name == current_case_id:
                 raise AdmissionError(
@@ -503,8 +575,12 @@ def validate_existing_admission(
     schema = load_schema(ADMISSION_SCHEMA)
     record = load_object(admission_absolute, "existing admission")
     validate(record, schema, "existing admission")
-    if record["frozen_request"]["case_id"] != relative.parts[0]:
-        raise AdmissionError("existing admission case_id does not match its directory")
+    try:
+        validate_receipt_self_consistency(record, expected_case_id=relative.parts[0])
+    except AdmissionError as exc:
+        raise AdmissionError(
+            f"existing admission semantic commitments do not match file truth: {exc}"
+        ) from exc
     if record["experiment_id"] != registration["experiment_id"]:
         raise AdmissionError("existing admission experiment_id mismatch")
     if record["registration_sha256"] != sha256_json(registration):
@@ -516,13 +592,7 @@ def validate_existing_admission(
         raise AdmissionError("existing admission request digest mismatch")
     if record["comparability_sha256"] != sha256_json(request["comparability"]):
         raise AdmissionError("existing admission comparability digest mismatch")
-    expected_assignment = {
-        "condition": request["assignment"]["condition"],
-        "mode": "explicit_preplanning_assignment",
-        "automatic": False,
-        "fairness_claim": "not_established_by_registration_v2",
-        "registration_rule_status": "automatic_assignment_not_frozen",
-    }
+    expected_assignment = _explicit_assignment_evidence(request)
     rebuilt = build_record(request, registration, admitted, expected_assignment)
     if record != rebuilt:
         raise AdmissionError("existing admission semantic commitments do not match file truth")
@@ -579,13 +649,7 @@ def admit(
             if "evidence_ref" in assignment and "evidence_ref" in existing_assignment and (assignment["evidence_ref"] == existing_assignment["evidence_ref"] or assignment["evidence_sha256"] == existing_assignment["evidence_sha256"]):
                 raise AdmissionError("assignment evidence is already bound to another case")
 
-        assignment_evidence = {
-            "condition": assignment["condition"],
-            "mode": "explicit_preplanning_assignment",
-            "automatic": False,
-            "fairness_claim": "not_established_by_registration_v2",
-            "registration_rule_status": "automatic_assignment_not_frozen",
-        }
+        assignment_evidence = _explicit_assignment_evidence(request)
         record = build_record(request, registration, admitted, assignment_evidence)
         validate(record, admission_schema, "admission record")
 

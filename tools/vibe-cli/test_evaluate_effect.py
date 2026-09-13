@@ -4,9 +4,11 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[2]
 SPEC = importlib.util.spec_from_file_location("effect", Path(__file__).with_name("evaluate_effect.py"))
@@ -179,25 +181,23 @@ class EffectEvaluatorTests(unittest.TestCase):
         with self.assertRaisesRegex(Exception, "registered_at"):
             EFFECT.evaluate(registration, observations)
 
-    def test_pre_t005_registration_keeps_legacy_evaluation_contract(self) -> None:
-        registration = self.registration()
-        registration["experiment_id"] = "2026-07-12_operator-intervention-effect-evaluator"
-        registration.pop("registered_at")
-        registration["consumer"].pop("relationship")
-        registration["consumer"].pop("commitment")
-        registration["decision_target"].pop("decision_ref")
-        registration["measurement"].pop("outcome_criteria")
-        registration["closure"].pop("outcome_by_result")
-        registration.pop("surface_budget")
-        registration["boundary"].pop("no_merge_authority")
-        registration["closure"]["archive_path"] = "experiments/_archive/2026-07-12_operator-intervention-effect-evaluator"
-        observations = self.observations([5, 6, 7], [1, 2, 3])
-        observations["experiment_id"] = registration["experiment_id"]
-        observations["registration_sha256"] = EFFECT.sha256_json(registration)
-        result = EFFECT.evaluate(registration, observations)
-        self.assertEqual(result["verdict"], "beneficial")
-        self.assertNotIn("registered_result", result)
-        self.assertNotIn("registered_closure_outcome", result)
+    def test_pathless_pre_t005_ids_do_not_keep_legacy_evaluation_contract(self) -> None:
+        historical_ids = (
+            "2026-07-12_operator-intervention-effect-evaluator",
+            "2026-07-13_chronik-history-brief-effect",
+            "2026-07-23_operator-routing-ml-readiness-shadow",
+        )
+        for experiment_id in historical_ids:
+            with self.subTest(experiment_id=experiment_id):
+                registration = self.registration()
+                registration["experiment_id"] = experiment_id
+                registration.pop("registered_at")
+                registration["closure"]["archive_path"] = f"experiments/_archive/{experiment_id}"
+                observations = self.observations([5, 6, 7], [1, 2, 3])
+                observations["experiment_id"] = experiment_id
+                observations["registration_sha256"] = EFFECT.sha256_json(registration)
+                with self.assertRaisesRegex(Exception, "registered_at"):
+                    EFFECT.evaluate(registration, observations)
 
     def test_minimum_sample_fails_closed(self) -> None:
         registration = self.registration(minimum=3)
@@ -466,6 +466,12 @@ class AssignedExperimentEvaluatorTests(unittest.TestCase):
             "observations": [row],
         }
 
+    def rendered_binding(self) -> str:
+        return json.dumps(
+            {"registration_sha256": EFFECT.sha256_json(self.registration)},
+            sort_keys=True,
+        ) + "\n"
+
     def test_assigned_observation_is_re_resolved_from_immutable_admission(self) -> None:
         result = EFFECT.evaluate(
             self.registration,
@@ -574,8 +580,69 @@ class AssignedExperimentEvaluatorTests(unittest.TestCase):
 
     def test_safe_output_writer_publishes_regular_file(self) -> None:
         output = self.exp / "results" / "result.json"
-        EFFECT.write_evaluation_output(self.registration_path, output, "{}\n")
-        self.assertEqual(output.read_text(encoding="utf-8"), "{}\n")
+        rendered = self.rendered_binding()
+        EFFECT.write_evaluation_output(self.registration_path, output, rendered)
+        self.assertEqual(output.read_text(encoding="utf-8"), rendered)
+
+    def test_output_write_failure_preserves_previous_result_atomically(self) -> None:
+        output = self.exp / "results" / "result.json"
+        output.write_text("old-result\n", encoding="utf-8")
+        before = output.read_bytes()
+        with mock.patch.object(EFFECT.os, "write", side_effect=OSError("injected write failure")):
+            with self.assertRaisesRegex(OSError, "injected write failure"):
+                EFFECT.write_evaluation_output(
+                    self.registration_path, output, self.rendered_binding()
+                )
+        self.assertEqual(output.read_bytes(), before)
+        self.assertEqual(list((self.exp / "results").glob(".result.json.*.tmp")), [])
+
+    def test_output_ancestor_swap_after_descriptor_open_cannot_escape(self) -> None:
+        output = self.exp / "results" / "raced.json"
+        moved = self.root / "moved-experiment"
+        external = self.root / "external-experiment"
+        external_results = external / "results"
+        external_results.mkdir(parents=True)
+        sentinel = external_results / "sentinel.txt"
+        sentinel.write_text("keep\n", encoding="utf-8")
+        original_open = EFFECT._open_directory_anchored
+        swapped = False
+
+        def raced_open(path: Path) -> int:
+            nonlocal swapped
+            descriptor = original_open(path)
+            if not swapped and Path(os.path.abspath(os.fspath(path))) == Path(
+                os.path.abspath(os.fspath(self.exp))
+            ):
+                self.exp.rename(moved)
+                self.exp.symlink_to(external, target_is_directory=True)
+                swapped = True
+            return descriptor
+
+        rendered = self.rendered_binding()
+        with mock.patch.object(EFFECT, "_open_directory_anchored", side_effect=raced_open):
+            EFFECT.write_evaluation_output(self.registration_path, output, rendered)
+        self.assertTrue(swapped)
+        self.assertEqual((moved / "results/raced.json").read_text(encoding="utf-8"), rendered)
+        self.assertFalse((external_results / "raced.json").exists())
+        self.assertEqual(sentinel.read_text(encoding="utf-8"), "keep\n")
+
+    def test_existing_hardlink_target_is_replaced_not_truncated(self) -> None:
+        sentinel = self.root / "hardlink-sentinel.json"
+        sentinel.write_text("keep\n", encoding="utf-8")
+        output = self.exp / "results" / "hardlinked.json"
+        os.link(sentinel, output)
+        rendered = self.rendered_binding()
+        EFFECT.write_evaluation_output(self.registration_path, output, rendered)
+        self.assertEqual(sentinel.read_text(encoding="utf-8"), "keep\n")
+        self.assertEqual(output.read_text(encoding="utf-8"), rendered)
+
+    def test_output_writer_fails_closed_without_nofollow_capability(self) -> None:
+        output = self.exp / "results" / "result.json"
+        with mock.patch.object(EFFECT.os, "O_NOFOLLOW", None):
+            with self.assertRaisesRegex(ValueError, "unsupported on this platform"):
+                EFFECT.write_evaluation_output(
+                    self.registration_path, output, self.rendered_binding()
+                )
 
     def test_assigned_observation_with_tampered_admission_digest_is_rejected(self) -> None:
         observations = self.observations()

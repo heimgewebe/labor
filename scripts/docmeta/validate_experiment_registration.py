@@ -80,11 +80,12 @@ PRE_T005_EXPERIMENTS = frozenset({
 # only registration artifacts that actually existed in the authorized T005
 # preimage receive legacy authority. Synthesizing active/archive or v1/v2
 # aliases from an old id would make that authority reusable by new work.
-PRE_T005_REGISTRATION_ARTIFACTS = frozenset({
-    Path("experiments/_archive/2026-07-12_operator-intervention-effect-evaluator/registration.v2.json"),
-    Path("experiments/_archive/2026-07-13_chronik-history-brief-effect/registration.v2.json"),
-    Path("experiments/_archive/2026-07-23_operator-routing-ml-readiness-shadow/registration.v2.json"),
-})
+PRE_T005_REGISTRATION_ARTIFACT_SHA256 = {
+    Path("experiments/_archive/2026-07-12_operator-intervention-effect-evaluator/registration.v2.json"): "27041e6364e145924945a29f2264839a99d88e292be370cbdae69df80734209c",
+    Path("experiments/_archive/2026-07-13_chronik-history-brief-effect/registration.v2.json"): "8477cac6aa4988bb0337d15f1f6d9e3d1d10d9e296c0f03dedd1e25c4806ce98",
+    Path("experiments/_archive/2026-07-23_operator-routing-ml-readiness-shadow/registration.v2.json"): "63cadabd337c9abd96ccb9f010c5141ce24823d303d08739ef3aa09c7e502c3e",
+}
+PRE_T005_REGISTRATION_ARTIFACTS = frozenset(PRE_T005_REGISTRATION_ARTIFACT_SHA256)
 SCHEMAS = {
     "experiment.registration.v1": ROOT / "schemas/experiment.registration.v1.schema.json",
     "experiment.registration.v2": ROOT / "schemas/experiment.registration.v2.schema.json",
@@ -95,13 +96,21 @@ def is_pre_t005_experiment(experiment_id: str) -> bool:
     return experiment_id in PRE_T005_EXPERIMENTS
 
 
-def is_pre_t005_registration_artifact(
+def _load_with_sha256(path: Path) -> tuple[dict[str, Any], str]:
+    raw = path.read_bytes()
+    value = json.loads(raw.decode("utf-8"))
+    if not isinstance(value, dict):
+        raise ValueError(f"{path}: root must be object")
+    return value, hashlib.sha256(raw).hexdigest()
+
+
+def _matches_pre_t005_registration_identity(
     path: Path,
     experiment_id: str,
+    content_sha256: str,
     *,
     repository_root: Path = ROOT,
 ) -> bool:
-    """Grant file-backed legacy compatibility only to exact historical artifacts."""
     if not is_pre_t005_experiment(experiment_id):
         return False
     try:
@@ -114,18 +123,34 @@ def is_pre_t005_registration_artifact(
         if resolved != absolute:
             return False
         relative = resolved.relative_to(canonical_root)
+        expected_sha256 = PRE_T005_REGISTRATION_ARTIFACT_SHA256.get(relative)
     except (FileNotFoundError, ValueError, OSError):
         return False
     return (
-        relative in PRE_T005_REGISTRATION_ARTIFACTS
+        expected_sha256 is not None
         and relative.parent.name == experiment_id
+        and content_sha256 == expected_sha256
+    )
+
+
+def is_pre_t005_registration_artifact(
+    path: Path,
+    experiment_id: str,
+    *,
+    repository_root: Path = ROOT,
+) -> bool:
+    """Grant legacy compatibility only to one frozen path-and-byte artifact."""
+    try:
+        content_sha256 = hashlib.sha256(path.read_bytes()).hexdigest()
+    except OSError:
+        return False
+    return _matches_pre_t005_registration_identity(
+        path, experiment_id, content_sha256, repository_root=repository_root
     )
 
 
 def _load(path: Path) -> dict[str, Any]:
-    value = json.loads(path.read_text(encoding="utf-8"))
-    if not isinstance(value, dict):
-        raise ValueError(f"{path}: root must be object")
+    value, _digest = _load_with_sha256(path)
     return value
 
 
@@ -359,15 +384,18 @@ def validate_registration(
     require_current: bool = True,
     repository_root: Path = ROOT,
 ) -> dict[str, Any]:
-    payload = _load(path)
+    payload, content_sha256 = _load_with_sha256(path)
     experiment_id = str(payload.get("experiment_id", ""))
     return validate_registration_payload(
         payload,
         path=path,
         now=now,
         require_current=require_current,
-        historical_compatibility=is_pre_t005_registration_artifact(
-            path, experiment_id, repository_root=repository_root
+        historical_compatibility=_matches_pre_t005_registration_identity(
+            path,
+            experiment_id,
+            content_sha256,
+            repository_root=repository_root,
         ),
     )
 

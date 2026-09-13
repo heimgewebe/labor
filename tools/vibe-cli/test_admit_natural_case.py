@@ -275,6 +275,64 @@ class NaturalCaseAdmissionTests(unittest.TestCase):
         self.assertTrue(self.record_path("valid-two").is_file())
         self.assertEqual((malformed / "admission.json").read_text(), "{not-json\n")
 
+    def test_schema_valid_semantically_forged_sibling_has_no_dedupe_authority(self) -> None:
+        self.admit(self.unique_case("valid-one", evidence_digit="4"))
+        target = self.unique_case("target-case", evidence_digit="9")
+        forged_request = self.unique_case("forged-neighbor", evidence_digit="8")
+        forged_request["eligibility_evidence"] = dict(target["eligibility_evidence"])
+        registration = json.loads(self.registration.read_text(encoding="utf-8"))
+        forged = ADMISSION.build_record(
+            forged_request,
+            registration,
+            FIXED_NOW,
+            ADMISSION._explicit_assignment_evidence(forged_request),
+        )
+        forged["request_sha256"] = "0" * 64
+        forged_dir = self.admissions / "forged-neighbor"
+        forged_dir.mkdir()
+        (forged_dir / "admission.json").write_text(
+            json.dumps(forged, indent=2) + "\n", encoding="utf-8"
+        )
+        result = self.admit(target)
+        self.assertEqual(result["status"], "admitted")
+        self.assertTrue(self.record_path("target-case").is_file())
+
+    def test_semantically_forged_current_case_fails_closed(self) -> None:
+        self.admit(self.unique_case("valid-one", evidence_digit="4"))
+        request = self.unique_case("forged-current", evidence_digit="a")
+        registration = json.loads(self.registration.read_text(encoding="utf-8"))
+        forged = ADMISSION.build_record(
+            request,
+            registration,
+            FIXED_NOW,
+            ADMISSION._explicit_assignment_evidence(request),
+        )
+        forged["admission_id"] = "0" * 64
+        forged_dir = self.admissions / "forged-current"
+        forged_dir.mkdir()
+        (forged_dir / "admission.json").write_text(
+            json.dumps(forged, indent=2) + "\n", encoding="utf-8"
+        )
+        with self.assertRaisesRegex(
+            ADMISSION.AdmissionError, "current case already has a malformed or conflicting"
+        ):
+            self.admit(request)
+
+    def test_valid_old_revision_receipt_keeps_global_dedupe_authority(self) -> None:
+        old = self.unique_case("old-case", evidence_digit="b")
+        self.admit(old)
+        registration = json.loads(self.registration.read_text(encoding="utf-8"))
+        registration["decision_target"]["question"] = "Should the revised decision question proceed?"
+        self.registration.write_text(json.dumps(registration, indent=2) + "\n", encoding="utf-8")
+        self.sync_active_registry()
+        newer = self.unique_case(
+            "new-case", condition="live_preflight_plus_history", evidence_digit="c"
+        )
+        newer["eligibility_evidence"] = dict(old["eligibility_evidence"])
+        with self.assertRaisesRegex(ADMISSION.AdmissionError, "eligibility evidence is already bound"):
+            self.admit(newer)
+        self.assertFalse(self.record_path("new-case").exists())
+
     def test_target_outside_experiment_admissions_is_refused(self) -> None:
         outside = self.root / "outside-admissions"
         with self.assertRaisesRegex(ADMISSION.AdmissionError, "must be the registered experiment"):

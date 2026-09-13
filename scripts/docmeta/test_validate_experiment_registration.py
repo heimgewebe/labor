@@ -373,7 +373,21 @@ def test_pre_t005_file_compatibility_is_bound_to_canonical_artifact_path() -> No
         Path("experiments/_archive/2026-07-23_operator-routing-ml-readiness-shadow/registration.v2.json"),
     })
     assert MODULE.PRE_T005_REGISTRATION_ARTIFACTS == expected
+    expected_digests = {
+        Path("experiments/_archive/2026-07-12_operator-intervention-effect-evaluator/registration.v2.json"): "27041e6364e145924945a29f2264839a99d88e292be370cbdae69df80734209c",
+        Path("experiments/_archive/2026-07-13_chronik-history-brief-effect/registration.v2.json"): "8477cac6aa4988bb0337d15f1f6d9e3d1d10d9e296c0f03dedd1e25c4806ce98",
+        Path("experiments/_archive/2026-07-23_operator-routing-ml-readiness-shadow/registration.v2.json"): "63cadabd337c9abd96ccb9f010c5141ce24823d303d08739ef3aa09c7e502c3e",
+    }
+    assert MODULE.PRE_T005_REGISTRATION_ARTIFACT_SHA256 == expected_digests
+    canonical_digest = hashlib.sha256(canonical.read_bytes()).hexdigest()
+    assert canonical_digest == expected_digests[canonical.relative_to(ROOT)]
     assert MODULE.is_pre_t005_registration_artifact(canonical, experiment_id)
+    assert MODULE._matches_pre_t005_registration_identity(
+        canonical, experiment_id, canonical_digest
+    )
+    assert not MODULE._matches_pre_t005_registration_identity(
+        canonical, experiment_id, "0" * 64
+    )
     assert not MODULE.is_pre_t005_registration_artifact(
         ROOT / "experiments" / experiment_id / "registration.v2.json",
         experiment_id,
