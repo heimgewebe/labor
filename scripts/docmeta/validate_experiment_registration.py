@@ -76,6 +76,16 @@ PRE_T005_EXPERIMENTS = frozenset({
     "2026-07-13_chronik-history-brief-effect",
     "2026-07-23_operator-routing-ml-readiness-shadow",
 })
+# File-backed compatibility is narrower than the historical experiment-id set:
+# only registration artifacts that actually existed in the authorized T005
+# preimage receive legacy authority. Synthesizing active/archive or v1/v2
+# aliases from an old id would make that authority reusable by new work.
+PRE_T005_REGISTRATION_ARTIFACT_SHA256 = {
+    Path("experiments/_archive/2026-07-12_operator-intervention-effect-evaluator/registration.v2.json"): "27041e6364e145924945a29f2264839a99d88e292be370cbdae69df80734209c",
+    Path("experiments/_archive/2026-07-13_chronik-history-brief-effect/registration.v2.json"): "8477cac6aa4988bb0337d15f1f6d9e3d1d10d9e296c0f03dedd1e25c4806ce98",
+    Path("experiments/_archive/2026-07-23_operator-routing-ml-readiness-shadow/registration.v2.json"): "63cadabd337c9abd96ccb9f010c5141ce24823d303d08739ef3aa09c7e502c3e",
+}
+PRE_T005_REGISTRATION_ARTIFACTS = frozenset(PRE_T005_REGISTRATION_ARTIFACT_SHA256)
 SCHEMAS = {
     "experiment.registration.v1": ROOT / "schemas/experiment.registration.v1.schema.json",
     "experiment.registration.v2": ROOT / "schemas/experiment.registration.v2.schema.json",
@@ -86,36 +96,61 @@ def is_pre_t005_experiment(experiment_id: str) -> bool:
     return experiment_id in PRE_T005_EXPERIMENTS
 
 
+def _load_with_sha256(path: Path) -> tuple[dict[str, Any], str]:
+    raw = path.read_bytes()
+    value = json.loads(raw.decode("utf-8"))
+    if not isinstance(value, dict):
+        raise ValueError(f"{path}: root must be object")
+    return value, hashlib.sha256(raw).hexdigest()
+
+
+def _matches_pre_t005_registration_identity(
+    path: Path,
+    experiment_id: str,
+    content_sha256: str,
+    *,
+    repository_root: Path = ROOT,
+) -> bool:
+    if not is_pre_t005_experiment(experiment_id):
+        return False
+    try:
+        canonical_root = ROOT.resolve(strict=True)
+        supplied_root = repository_root.resolve(strict=True)
+        absolute = path.absolute()
+        resolved = path.resolve(strict=True)
+        if supplied_root != canonical_root or repository_root.absolute() != canonical_root:
+            return False
+        if resolved != absolute:
+            return False
+        relative = resolved.relative_to(canonical_root)
+        expected_sha256 = PRE_T005_REGISTRATION_ARTIFACT_SHA256.get(relative)
+    except (FileNotFoundError, ValueError, OSError):
+        return False
+    return (
+        expected_sha256 is not None
+        and relative.parent.name == experiment_id
+        and content_sha256 == expected_sha256
+    )
+
+
 def is_pre_t005_registration_artifact(
     path: Path,
     experiment_id: str,
     *,
     repository_root: Path = ROOT,
 ) -> bool:
-    """Grant file-backed legacy compatibility only to canonical repository artifacts."""
-    if not is_pre_t005_experiment(experiment_id):
-        return False
+    """Grant legacy compatibility only to one frozen path-and-byte artifact."""
     try:
-        absolute = path.absolute()
-        root_absolute = repository_root.absolute()
-        if path.resolve(strict=True) != absolute or repository_root.resolve(strict=True) != root_absolute:
-            return False
-        relative = absolute.relative_to(root_absolute)
-    except (FileNotFoundError, ValueError, OSError):
+        content_sha256 = hashlib.sha256(path.read_bytes()).hexdigest()
+    except OSError:
         return False
-    allowed = {
-        Path("experiments") / experiment_id / "registration.v1.json",
-        Path("experiments") / experiment_id / "registration.v2.json",
-        Path("experiments") / "_archive" / experiment_id / "registration.v1.json",
-        Path("experiments") / "_archive" / experiment_id / "registration.v2.json",
-    }
-    return relative in allowed
+    return _matches_pre_t005_registration_identity(
+        path, experiment_id, content_sha256, repository_root=repository_root
+    )
 
 
 def _load(path: Path) -> dict[str, Any]:
-    value = json.loads(path.read_text(encoding="utf-8"))
-    if not isinstance(value, dict):
-        raise ValueError(f"{path}: root must be object")
+    value, _digest = _load_with_sha256(path)
     return value
 
 
@@ -316,18 +351,16 @@ def validate_registration_payload(
                 raise ValueError(f"{path}: scorecard component ids must be unique")
         assignment = payload.get("assignment")
         if assignment is not None:
+            if not grandfathered:
+                raise ValueError(
+                    f"{path}: registered automatic assignment is historical-only"
+                )
             prior_payload = dict(payload)
             prior_payload.pop("assignment", None)
             prior_raw = (json.dumps(prior_payload, sort_keys=True, separators=(",", ":"), allow_nan=False) + "\n").encode("utf-8")
             if assignment["prior_registration_sha256"] != hashlib.sha256(prior_raw).hexdigest():
                 raise ValueError(f"{path}: assignment prior_registration_sha256 does not match the pre-assignment registration")
             assigned_at = _utc(assignment["registered_at"], f"{path}.assignment.registered_at")
-            if not grandfathered:
-                experiment_registered_at = _utc(payload["registered_at"], f"{path}.registered_at")
-                if assigned_at < experiment_registered_at:
-                    raise ValueError(f"{path}: assignment registration must not precede registered_at")
-                if assigned_at > clock:
-                    raise ValueError(f"{path}: assignment registration cannot be in the future")
             if assigned_at >= review or assigned_at >= expires:
                 raise ValueError(f"{path}: assignment registration must precede review and expiry")
             if assignment["strata"] != ["task_class", "risk_band", "repository_familiarity_band"]:
@@ -351,15 +384,18 @@ def validate_registration(
     require_current: bool = True,
     repository_root: Path = ROOT,
 ) -> dict[str, Any]:
-    payload = _load(path)
+    payload, content_sha256 = _load_with_sha256(path)
     experiment_id = str(payload.get("experiment_id", ""))
     return validate_registration_payload(
         payload,
         path=path,
         now=now,
         require_current=require_current,
-        historical_compatibility=is_pre_t005_registration_artifact(
-            path, experiment_id, repository_root=repository_root
+        historical_compatibility=_matches_pre_t005_registration_identity(
+            path,
+            experiment_id,
+            content_sha256,
+            repository_root=repository_root,
         ),
     )
 

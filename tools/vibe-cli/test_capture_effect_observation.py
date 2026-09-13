@@ -374,6 +374,7 @@ class ChronikAdmissionBindingTests(unittest.TestCase):
         registration_path.write_text(json.dumps(registration, indent=2) + "\n")
         decision = exp / "results/decision.yml"
         decision.write_text("verdict: not_executed\n", encoding="utf-8")
+        (exp / "manifest.yml").write_text("experiment:\n  status: designed\n", encoding="utf-8")
         active = {
             "schema_version": "active-experiments.v1",
             "max_active": 5,
@@ -479,6 +480,19 @@ class ChronikAdmissionBindingTests(unittest.TestCase):
         registration_path.write_text(json.dumps(registration, indent=2) + "\n")
         with self.assertRaisesRegex(CAPTURE.CaptureError, "requires --admission"):
             CAPTURE.capture(registration_path, exp / "results/observations.v2.json", self.row())
+
+    def test_replayed_pre_t005_id_does_not_waive_current_chronology(self) -> None:
+        registration = CaptureEffectObservationTests().registration()
+        registration["experiment_id"] = "2026-07-12_operator-intervention-effect-evaluator"
+        registration["registered_at"] = "2026-08-01T00:00:00Z"
+        row = self.row()
+        row["captured_at"] = "2026-07-31T23:59:59Z"
+        with self.assertRaisesRegex(CAPTURE.CaptureError, "before experiment registration"):
+            CAPTURE.validate_observation_semantics(
+                row,
+                registration,
+                historical_compatibility=False,
+            )
 
     def test_current_observation_without_admission_is_rejected(self) -> None:
         with self.assertRaisesRegex(CAPTURE.CaptureError, "requires --admission"):

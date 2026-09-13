@@ -91,7 +91,7 @@ class ActiveExperimentRegistryTests(unittest.TestCase):
         self.assertEqual(result["registration_bound_count"], 1)
         self.assertEqual(result["grandfathered_count"], 0)
 
-    def test_v1_registration_metric_is_supported(self) -> None:
+    def test_synthetic_pre_t005_v1_registration_is_not_product_compatible(self) -> None:
         (self.exp / "registration.v2.json").unlink()
         v1_exp = self.root / "experiments/2026-07-09_repobrief-workbench-usefulness-eval"
         self.exp.rename(v1_exp)
@@ -129,8 +129,8 @@ class ActiveExperimentRegistryTests(unittest.TestCase):
         (v1_exp / "registration.v1.json").write_text(json.dumps(registration))
         payload = self.payload()
         self.update_item_for_directory(payload, v1_exp)
-        result = self.validate(payload)
-        self.assertEqual(result["registration_bound_count"], 1)
+        with self.assertRaisesRegex(ValueError, "new experiment requires registration.v2.json"):
+            self.validate(payload)
 
     def test_missing_required_registration_fails(self) -> None:
         (self.exp / "registration.v2.json").unlink()
