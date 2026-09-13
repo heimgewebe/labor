@@ -520,10 +520,7 @@ def existing_records(
         try:
             if case_dir.is_symlink() or not case_dir.is_dir():
                 raise AdmissionError("unexpected non-directory entry in admissions root")
-            entries = list(case_dir.iterdir())
-            if len(entries) != 1 or entries[0].name != "admission.json":
-                raise AdmissionError("admission case directory must contain only admission.json")
-            path = entries[0]
+            path = case_dir / "admission.json"
             value = load_object(path, "existing admission")
             validate(value, schema, "existing admission")
             validate_receipt_self_consistency(value, expected_case_id=case_dir.name)

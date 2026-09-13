@@ -333,6 +333,20 @@ class NaturalCaseAdmissionTests(unittest.TestCase):
             self.admit(newer)
         self.assertFalse(self.record_path("new-case").exists())
 
+    def test_valid_receipt_keeps_dedupe_authority_with_unrelated_sibling_file(self) -> None:
+        old = self.unique_case("old-case", evidence_digit="d")
+        self.admit(old)
+        sibling = self.admissions / "old-case" / "diagnostic.txt"
+        sibling.write_text("non-authoritative diagnostic\n", encoding="utf-8")
+        newer = self.unique_case(
+            "new-case", condition="live_preflight_plus_history", evidence_digit="e"
+        )
+        newer["eligibility_evidence"] = dict(old["eligibility_evidence"])
+        with self.assertRaisesRegex(ADMISSION.AdmissionError, "eligibility evidence is already bound"):
+            self.admit(newer)
+        self.assertFalse(self.record_path("new-case").exists())
+        self.assertEqual(sibling.read_text(encoding="utf-8"), "non-authoritative diagnostic\n")
+
     def test_target_outside_experiment_admissions_is_refused(self) -> None:
         outside = self.root / "outside-admissions"
         with self.assertRaisesRegex(ADMISSION.AdmissionError, "must be the registered experiment"):
