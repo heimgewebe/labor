@@ -222,7 +222,11 @@ def request_schema(admission_schema: dict[str, Any]) -> dict[str, Any]:
 
 
 def validate_request_semantics(
-    request: dict[str, Any], registration: dict[str, Any], admitted: datetime
+    request: dict[str, Any],
+    registration: dict[str, Any],
+    admitted: datetime,
+    *,
+    hardened_registration_lifecycle: bool = True,
 ) -> None:
     case_id = request["case_id"]
     if CASE_ID_RE.fullmatch(case_id) is None:
@@ -253,15 +257,15 @@ def validate_request_semantics(
     expiry = utc_timestamp(registration["expires_at"], "registration.expires_at")
     if admitted < start:
         raise AdmissionError("admission predates the registered experiment")
-    if admitted < registered:
+    if hardened_registration_lifecycle and admitted < registered:
         raise AdmissionError("admission predates registration")
-    if admitted >= review:
+    if hardened_registration_lifecycle and admitted >= review:
         raise AdmissionError("experiment review boundary reached; admission refused")
     if admitted >= expiry:
         raise AdmissionError("experiment is expired; admission refused")
     if opened < start:
         raise AdmissionError("case predates the registered experiment; backfill refused")
-    if opened < registered or evidence_captured < registered:
+    if hardened_registration_lifecycle and (opened < registered or evidence_captured < registered):
         raise AdmissionError("case or eligibility evidence predates registration; backfill refused")
     if opened > admitted:
         raise AdmissionError("case_opened_at is after admission")
@@ -512,7 +516,7 @@ def validate_receipt_self_consistency(
         if admitted_at < start or case_opened_at < start:
             raise AdmissionError("existing admission predates its experiment")
     review_at = utc_timestamp(record["review_preparation"]["review_at"], "review_preparation.review_at")
-    if review_at <= admitted_at:
+    if registered_at is not None and review_at <= admitted_at:
         raise AdmissionError("existing admission review_at must be after admitted_at")
     if record["request_sha256"] != sha256_json(request):
         raise AdmissionError("existing admission request digest mismatch")
@@ -652,7 +656,12 @@ def validate_existing_admission(
         raise AdmissionError("existing admission registration digest mismatch")
     admitted = utc_timestamp(record["admitted_at"], "admitted_at")
     request = record["frozen_request"]
-    validate_request_semantics(request, registration, admitted)
+    validate_request_semantics(
+        request,
+        registration,
+        admitted,
+        hardened_registration_lifecycle="registration_registered_at" in record,
+    )
     if record["request_sha256"] != sha256_json(request):
         raise AdmissionError("existing admission request digest mismatch")
     if record["comparability_sha256"] != sha256_json(request["comparability"]):

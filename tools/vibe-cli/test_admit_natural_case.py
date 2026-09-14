@@ -493,6 +493,38 @@ class NaturalCaseAdmissionTests(unittest.TestCase):
             self.admit(newer)
         self.assertFalse(self.record_path("legacy-new").exists())
 
+    def test_legacy_v1_receipt_issued_after_review_remains_valid_and_authoritative(self) -> None:
+        old = self.unique_case("legacy-post-review", evidence_digit="d")
+        registration = json.loads(self.registration.read_text(encoding="utf-8"))
+        legacy_admitted = datetime(2026, 8, 21, 6, 49, tzinfo=timezone.utc)
+        legacy = ADMISSION.build_record(
+            old,
+            registration,
+            legacy_admitted,
+            ADMISSION._explicit_assignment_evidence(old),
+            include_registration_registered_at=False,
+        )
+        self.assertNotIn("registration_registered_at", legacy)
+        self.assertGreaterEqual(
+            ADMISSION.utc_timestamp(legacy["admitted_at"], "admitted_at"),
+            ADMISSION.utc_timestamp(registration["review_at"], "registration.review_at"),
+        )
+        legacy_dir = self.admissions / "legacy-post-review"
+        legacy_dir.mkdir(parents=True)
+        legacy_path = legacy_dir / "admission.json"
+        legacy_path.write_text(json.dumps(legacy, indent=2) + "\n", encoding="utf-8")
+
+        schema = json.loads(ADMISSION.ADMISSION_SCHEMA.read_text(encoding="utf-8"))
+        Draft202012Validator(schema, format_checker=FormatChecker()).validate(legacy)
+        validated = ADMISSION.validate_existing_admission(
+            self.registration, legacy_path, registration
+        )
+        self.assertEqual(validated, legacy)
+        records = ADMISSION.existing_records(
+            self.admissions, schema, current_case_id="unrelated-current-case"
+        )
+        self.assertIn(legacy_path, [path for path, _record in records])
+
     def test_valid_old_revision_receipt_keeps_global_dedupe_authority(self) -> None:
         old = self.unique_case("old-case", evidence_digit="b")
         self.admit(old)
