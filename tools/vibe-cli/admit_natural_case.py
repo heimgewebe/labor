@@ -52,6 +52,13 @@ MANUAL_NON_CLAIMS = [
     "condition_effect",
     "routing_queue_or_runtime_authority",
 ]
+# Legacy v1 authority is explicit receipt identity, never merely the absence of
+# registration_registered_at. No pre-hardening admission receipt exists in the
+# canonical repository history or retained Labor worktrees at this hardening
+# boundary, so the frozen compatibility set is intentionally empty. If a real
+# historical receipt is recovered later, add its exact raw-file SHA-256 only
+# through a reviewed compatibility migration.
+LEGACY_ADMISSION_RECEIPT_SHA256: frozenset[str] = frozenset()
 
 class AdmissionError(RuntimeError):
     pass
@@ -101,18 +108,31 @@ def sha256_json(value: Any) -> str:
     return hashlib.sha256(canonical_json_bytes(value)).hexdigest()
 
 
-def load_object(path: Path, label: str) -> dict[str, Any]:
+def load_object_with_sha256(path: Path, label: str) -> tuple[dict[str, Any], str]:
     if path.is_symlink() or not path.is_file():
         raise AdmissionError(f"{label} must be a regular non-symlink file")
     if path.stat().st_size > 1_000_000:
         raise AdmissionError(f"{label} exceeds 1 MiB")
     try:
-        value = json.loads(path.read_text(encoding="utf-8"))
+        raw = path.read_bytes()
+        value = json.loads(raw.decode("utf-8"))
     except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise AdmissionError(f"{label} must contain UTF-8 JSON") from exc
     if not isinstance(value, dict):
         raise AdmissionError(f"{label} must contain an object")
+    return value, hashlib.sha256(raw).hexdigest()
+
+
+def load_object(path: Path, label: str) -> dict[str, Any]:
+    value, _raw_sha256 = load_object_with_sha256(path, label)
     return value
+
+
+def legacy_receipt_authenticated(record: dict[str, Any], raw_sha256: str) -> bool:
+    return (
+        "registration_registered_at" not in record
+        and raw_sha256 in LEGACY_ADMISSION_RECEIPT_SHA256
+    )
 
 
 def load_schema(path: Path) -> dict[str, Any]:
@@ -481,6 +501,7 @@ def validate_receipt_self_consistency(
     *,
     expected_case_id: str | None = None,
     expected_experiment_id: str | None = None,
+    legacy_receipt_is_authenticated: bool = False,
 ) -> dict[str, Any]:
     """Validate immutable receipt commitments without reinterpreting an old registration revision."""
     request = record["frozen_request"]
@@ -498,6 +519,10 @@ def validate_receipt_self_consistency(
         if registered_at_raw is not None
         else None
     )
+    if registered_at is None and not legacy_receipt_is_authenticated:
+        raise AdmissionError(
+            "legacy admission receipt is not in the frozen authenticated receipt set"
+        )
     case_opened_at = utc_timestamp(request["case_opened_at"], "frozen_request.case_opened_at")
     evidence_captured_at = utc_timestamp(
         request["eligibility_evidence"]["captured_at"],
@@ -577,29 +602,45 @@ def existing_records(
     *,
     current_case_id: str,
 ) -> list[tuple[Path, dict[str, Any]]]:
-    """Return only authoritative receipts; unrelated malformed entries cannot deny service."""
+    """Return authoritative receipts and fail closed on malformed receipt files."""
     records: list[tuple[Path, dict[str, Any]]] = []
     expected_experiment_id = root.parent.parent.name
     for case_dir in sorted(root.iterdir()):
+        if case_dir.is_symlink() or not case_dir.is_dir():
+            if case_dir.name == current_case_id:
+                raise AdmissionError(
+                    "current case already has a malformed or conflicting admission entry"
+                )
+            # Non-case siblings have no admission authority.
+            continue
+        path = case_dir / "admission.json"
+        if not path.exists() and not path.is_symlink():
+            if case_dir.name == current_case_id:
+                raise AdmissionError(
+                    "current case already has a malformed or conflicting admission entry"
+                )
+            # A directory without the authoritative receipt can be crash residue;
+            # it carries no dedupe authority for a different case.
+            continue
         try:
-            if case_dir.is_symlink() or not case_dir.is_dir():
-                raise AdmissionError("unexpected non-directory entry in admissions root")
-            path = case_dir / "admission.json"
-            value = load_object(path, "existing admission")
+            value, raw_sha256 = load_object_with_sha256(path, "existing admission")
             validate(value, schema, "existing admission")
             validate_receipt_self_consistency(
                 value,
                 expected_case_id=case_dir.name,
                 expected_experiment_id=expected_experiment_id,
+                legacy_receipt_is_authenticated=legacy_receipt_authenticated(
+                    value, raw_sha256
+                ),
             )
         except (AdmissionError, OSError, KeyError, TypeError) as exc:
             if case_dir.name == current_case_id:
                 raise AdmissionError(
                     "current case already has a malformed or conflicting admission entry"
                 ) from exc
-            # Invalid unrelated state is not authoritative evidence for global
-            # deduplication. Valid immutable receipts remain fully deduplicating.
-            continue
+            raise AdmissionError(
+                f"authoritative admission receipt for {case_dir.name!r} is malformed or unauthenticated"
+            ) from exc
         records.append((path, value))
     return records
 
@@ -638,13 +679,16 @@ def validate_existing_admission(
         raise AdmissionError("admission case directory must be a real directory")
 
     schema = load_schema(ADMISSION_SCHEMA)
-    record = load_object(admission_absolute, "existing admission")
+    record, raw_sha256 = load_object_with_sha256(admission_absolute, "existing admission")
     validate(record, schema, "existing admission")
     try:
         validate_receipt_self_consistency(
             record,
             expected_case_id=relative.parts[0],
             expected_experiment_id=registration["experiment_id"],
+            legacy_receipt_is_authenticated=legacy_receipt_authenticated(
+                record, raw_sha256
+            ),
         )
     except AdmissionError as exc:
         raise AdmissionError(
@@ -709,12 +753,15 @@ def admit(
         if case_dir.exists() or case_dir.is_symlink():
             path = case_dir / "admission.json"
             try:
-                existing = load_object(path, "existing admission")
+                existing, raw_sha256 = load_object_with_sha256(path, "existing admission")
                 validate(existing, admission_schema, "existing admission")
                 validate_receipt_self_consistency(
                     existing,
                     expected_case_id=case_id,
                     expected_experiment_id=registration["experiment_id"],
+                    legacy_receipt_is_authenticated=legacy_receipt_authenticated(
+                        existing, raw_sha256
+                    ),
                 )
             except (AdmissionError, OSError, KeyError, TypeError) as exc:
                 raise AdmissionError(

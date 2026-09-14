@@ -9,6 +9,7 @@ import multiprocessing
 from pathlib import Path
 import tempfile
 import unittest
+from unittest import mock
 
 from jsonschema import Draft202012Validator, FormatChecker
 
@@ -287,19 +288,23 @@ class NaturalCaseAdmissionTests(unittest.TestCase):
             self.admit(self.request())
         self.assertFalse(self.admissions.exists())
 
-    def test_malformed_unrelated_sibling_does_not_block_valid_case(self) -> None:
+    def test_malformed_authoritative_sibling_fails_closed(self) -> None:
         self.admit(self.unique_case("valid-one", evidence_digit="4"))
         malformed = self.admissions / "broken-neighbor"
         malformed.mkdir()
         (malformed / "admission.json").write_text("{not-json\n", encoding="utf-8")
-        result = self.admit(
-            self.unique_case("valid-two", condition="live_preflight_plus_history", evidence_digit="5")
-        )
-        self.assertEqual(result["status"], "admitted")
-        self.assertTrue(self.record_path("valid-two").is_file())
+        with self.assertRaisesRegex(
+            ADMISSION.AdmissionError, "authoritative admission receipt.*malformed or unauthenticated"
+        ):
+            self.admit(
+                self.unique_case(
+                    "valid-two", condition="live_preflight_plus_history", evidence_digit="5"
+                )
+            )
+        self.assertFalse(self.record_path("valid-two").exists())
         self.assertEqual((malformed / "admission.json").read_text(), "{not-json\n")
 
-    def test_schema_valid_semantically_forged_sibling_has_no_dedupe_authority(self) -> None:
+    def test_schema_valid_semantically_forged_sibling_fails_closed(self) -> None:
         self.admit(self.unique_case("valid-one", evidence_digit="4"))
         target = self.unique_case("target-case", evidence_digit="9")
         forged_request = self.unique_case("forged-neighbor", evidence_digit="8")
@@ -317,11 +322,13 @@ class NaturalCaseAdmissionTests(unittest.TestCase):
         (forged_dir / "admission.json").write_text(
             json.dumps(forged, indent=2) + "\n", encoding="utf-8"
         )
-        result = self.admit(target)
-        self.assertEqual(result["status"], "admitted")
-        self.assertTrue(self.record_path("target-case").is_file())
+        with self.assertRaisesRegex(
+            ADMISSION.AdmissionError, "authoritative admission receipt.*malformed or unauthenticated"
+        ):
+            self.admit(target)
+        self.assertFalse(self.record_path("target-case").exists())
 
-    def test_hash_consistent_impossible_chronology_sibling_has_no_dedupe_authority(self) -> None:
+    def test_hash_consistent_impossible_chronology_sibling_fails_closed(self) -> None:
         target = self.unique_case("chronology-target", evidence_digit="6")
         forged_request = self.unique_case("chronology-forged", evidence_digit="7")
         forged_request["eligibility_evidence"] = dict(target["eligibility_evidence"])
@@ -338,11 +345,13 @@ class NaturalCaseAdmissionTests(unittest.TestCase):
         (forged_dir / "admission.json").write_text(
             json.dumps(forged, indent=2) + "\n", encoding="utf-8"
         )
-        result = self.admit(target)
-        self.assertEqual(result["status"], "admitted")
-        self.assertTrue(self.record_path("chronology-target").is_file())
+        with self.assertRaisesRegex(
+            ADMISSION.AdmissionError, "authoritative admission receipt.*malformed or unauthenticated"
+        ):
+            self.admit(target)
+        self.assertFalse(self.record_path("chronology-target").exists())
 
-    def test_hash_consistent_pre_registration_sibling_has_no_dedupe_authority(self) -> None:
+    def test_hash_consistent_pre_registration_sibling_fails_closed(self) -> None:
         target = self.unique_case("registration-target", evidence_digit="1")
         forged_request = self.unique_case("registration-forged", evidence_digit="2")
         forged_request["eligibility_evidence"] = dict(target["eligibility_evidence"])
@@ -360,11 +369,13 @@ class NaturalCaseAdmissionTests(unittest.TestCase):
         (forged_dir / "admission.json").write_text(
             json.dumps(forged, indent=2) + "\n", encoding="utf-8"
         )
-        result = self.admit(target)
-        self.assertEqual(result["status"], "admitted")
-        self.assertTrue(self.record_path("registration-target").is_file())
+        with self.assertRaisesRegex(
+            ADMISSION.AdmissionError, "authoritative admission receipt.*malformed or unauthenticated"
+        ):
+            self.admit(target)
+        self.assertFalse(self.record_path("registration-target").exists())
 
-    def test_hash_consistent_wrong_experiment_sibling_has_no_dedupe_authority(self) -> None:
+    def test_hash_consistent_wrong_experiment_sibling_fails_closed(self) -> None:
         target = self.unique_case("experiment-target", evidence_digit="8")
         forged_request = self.unique_case("experiment-forged", evidence_digit="9")
         forged_request["eligibility_evidence"] = dict(target["eligibility_evidence"])
@@ -399,11 +410,13 @@ class NaturalCaseAdmissionTests(unittest.TestCase):
         (forged_dir / "admission.json").write_text(
             json.dumps(forged, indent=2) + "\n", encoding="utf-8"
         )
-        result = self.admit(target)
-        self.assertEqual(result["status"], "admitted")
-        self.assertTrue(self.record_path("experiment-target").is_file())
+        with self.assertRaisesRegex(
+            ADMISSION.AdmissionError, "authoritative admission receipt.*malformed or unauthenticated"
+        ):
+            self.admit(target)
+        self.assertFalse(self.record_path("experiment-target").exists())
 
-    def test_hash_consistent_temporal_boundary_siblings_have_no_dedupe_authority(self) -> None:
+    def test_hash_consistent_temporal_boundary_siblings_fail_closed(self) -> None:
         target = self.unique_case("temporal-target", evidence_digit="d")
         registration = json.loads(self.registration.read_text(encoding="utf-8"))
 
@@ -437,9 +450,11 @@ class NaturalCaseAdmissionTests(unittest.TestCase):
                 json.dumps(record, indent=2) + "\n", encoding="utf-8"
             )
 
-        result = self.admit(target)
-        self.assertEqual(result["status"], "admitted")
-        self.assertTrue(self.record_path("temporal-target").is_file())
+        with self.assertRaisesRegex(
+            ADMISSION.AdmissionError, "authoritative admission receipt.*malformed or unauthenticated"
+        ):
+            self.admit(target)
+        self.assertFalse(self.record_path("temporal-target").exists())
 
     def test_semantically_forged_current_case_fails_closed(self) -> None:
         self.admit(self.unique_case("valid-one", evidence_digit="4"))
@@ -462,7 +477,7 @@ class NaturalCaseAdmissionTests(unittest.TestCase):
         ):
             self.admit(request)
 
-    def test_legacy_v1_receipt_without_registered_at_remains_valid_and_dedupes(self) -> None:
+    def test_unlisted_legacy_v1_receipt_without_registered_at_is_rejected(self) -> None:
         old = self.unique_case("legacy-old", evidence_digit="a")
         registration = json.loads(self.registration.read_text(encoding="utf-8"))
         legacy = ADMISSION.build_record(
@@ -472,7 +487,6 @@ class NaturalCaseAdmissionTests(unittest.TestCase):
             ADMISSION._explicit_assignment_evidence(old),
             include_registration_registered_at=False,
         )
-        self.assertNotIn("registration_registered_at", legacy)
         legacy_dir = self.admissions / "legacy-old"
         legacy_dir.mkdir(parents=True)
         legacy_path = legacy_dir / "admission.json"
@@ -480,20 +494,22 @@ class NaturalCaseAdmissionTests(unittest.TestCase):
 
         schema = json.loads(ADMISSION.ADMISSION_SCHEMA.read_text(encoding="utf-8"))
         Draft202012Validator(schema, format_checker=FormatChecker()).validate(legacy)
-        validated = ADMISSION.validate_existing_admission(
-            self.registration, legacy_path, registration
-        )
-        self.assertEqual(validated, legacy)
+        with self.assertRaisesRegex(
+            ADMISSION.AdmissionError, "frozen authenticated receipt set"
+        ):
+            ADMISSION.validate_existing_admission(self.registration, legacy_path, registration)
 
         newer = self.unique_case(
             "legacy-new", condition="live_preflight_plus_history", evidence_digit="b"
         )
         newer["eligibility_evidence"] = dict(old["eligibility_evidence"])
-        with self.assertRaisesRegex(ADMISSION.AdmissionError, "eligibility evidence is already bound"):
+        with self.assertRaisesRegex(
+            ADMISSION.AdmissionError, "authoritative admission receipt.*malformed or unauthenticated"
+        ):
             self.admit(newer)
         self.assertFalse(self.record_path("legacy-new").exists())
 
-    def test_legacy_v1_receipt_issued_after_review_remains_valid_and_authoritative(self) -> None:
+    def test_allowlisted_legacy_v1_receipt_after_review_remains_authoritative(self) -> None:
         old = self.unique_case("legacy-post-review", evidence_digit="d")
         registration = json.loads(self.registration.read_text(encoding="utf-8"))
         legacy_admitted = datetime(2026, 8, 21, 6, 49, tzinfo=timezone.utc)
@@ -504,26 +520,25 @@ class NaturalCaseAdmissionTests(unittest.TestCase):
             ADMISSION._explicit_assignment_evidence(old),
             include_registration_registered_at=False,
         )
-        self.assertNotIn("registration_registered_at", legacy)
-        self.assertGreaterEqual(
-            ADMISSION.utc_timestamp(legacy["admitted_at"], "admitted_at"),
-            ADMISSION.utc_timestamp(registration["review_at"], "registration.review_at"),
-        )
         legacy_dir = self.admissions / "legacy-post-review"
         legacy_dir.mkdir(parents=True)
         legacy_path = legacy_dir / "admission.json"
         legacy_path.write_text(json.dumps(legacy, indent=2) + "\n", encoding="utf-8")
+        raw_sha256 = hashlib.sha256(legacy_path.read_bytes()).hexdigest()
 
         schema = json.loads(ADMISSION.ADMISSION_SCHEMA.read_text(encoding="utf-8"))
         Draft202012Validator(schema, format_checker=FormatChecker()).validate(legacy)
-        validated = ADMISSION.validate_existing_admission(
-            self.registration, legacy_path, registration
-        )
-        self.assertEqual(validated, legacy)
-        records = ADMISSION.existing_records(
-            self.admissions, schema, current_case_id="unrelated-current-case"
-        )
-        self.assertIn(legacy_path, [path for path, _record in records])
+        with mock.patch.object(
+            ADMISSION, "LEGACY_ADMISSION_RECEIPT_SHA256", frozenset({raw_sha256})
+        ):
+            validated = ADMISSION.validate_existing_admission(
+                self.registration, legacy_path, registration
+            )
+            self.assertEqual(validated, legacy)
+            records = ADMISSION.existing_records(
+                self.admissions, schema, current_case_id="unrelated-current-case"
+            )
+            self.assertIn(legacy_path, [path for path, _record in records])
 
     def test_valid_old_revision_receipt_keeps_global_dedupe_authority(self) -> None:
         old = self.unique_case("old-case", evidence_digit="b")
