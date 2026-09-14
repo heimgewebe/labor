@@ -7,6 +7,9 @@ import hashlib
 import importlib.util
 import json
 import math
+import os
+import secrets
+import stat
 import statistics
 from collections import Counter
 from datetime import datetime, timezone
@@ -90,6 +93,7 @@ def validate_registration_contract(
         registration,
         path=synthetic_path,
         require_current=False,
+        historical_compatibility=False,
     )
 
 
@@ -192,16 +196,14 @@ def _validate_assigned_observation(
     registration: dict[str, Any],
     *,
     registration_path: Path | None,
-    repo_root: Path,
+    historical_compatibility: bool,
 ) -> None:
     if registration.get("assignment") is not None:
         raise ValueError(
             "registered automatic assignment is historical-only; current evaluation requires "
             "explicit prospective assignment evidence"
         )
-    admission_required = registration_path is not None and not REGISTRATION_GATE.is_pre_t005_registration_artifact(
-        registration_path, registration["experiment_id"]
-    )
+    admission_required = registration_path is not None and not historical_compatibility
     binding = row.get("admission_binding")
     if not isinstance(binding, dict):
         if admission_required:
@@ -233,6 +235,22 @@ def _validate_assigned_observation(
         raise ValueError("admission comparison_key mismatch")
 
 
+def _historical_compatibility(
+    registration: dict[str, Any],
+    *,
+    registration_path: Path | None,
+    repo_root: Path,
+) -> bool:
+    if registration_path is None:
+        # Historical authority is artifact identity, never a reusable experiment id.
+        return False
+    return REGISTRATION_GATE.is_pre_t005_registration_artifact(
+        registration_path,
+        registration["experiment_id"],
+        repository_root=repo_root,
+    )
+
+
 def evaluate(
     registration: dict[str, Any],
     observations: dict[str, Any],
@@ -246,7 +264,12 @@ def evaluate(
         registration_path=registration_path,
     )
     validate_schema(observations, repo_root / "schemas/effect-evaluation.observations.v2.schema.json")
-    t005_contract = not REGISTRATION_GATE.is_pre_t005_experiment(registration["experiment_id"])
+    historical_compatibility = _historical_compatibility(
+        registration,
+        registration_path=registration_path,
+        repo_root=repo_root,
+    )
+    t005_contract = not historical_compatibility
     registered_at = None
     if t005_contract:
         registered_at = datetime.fromisoformat(registration["registered_at"].replace("Z", "+00:00")).astimezone(timezone.utc)
@@ -270,7 +293,10 @@ def evaluate(
     reasons: list[str] = []
     for row in rows:
         _validate_assigned_observation(
-            row, registration, registration_path=registration_path, repo_root=repo_root
+            row,
+            registration,
+            registration_path=registration_path,
+            historical_compatibility=historical_compatibility,
         )
         if row["observation_id"] in ids:
             raise ValueError("duplicate observation_id")
@@ -520,29 +546,205 @@ def evaluate(
     return result
 
 
-def safe_output_path(registration_path: Path, output_path: Path) -> Path:
-    """Keep file-backed result publication inside the registered experiment results tree."""
+def _require_secure_output_capabilities() -> None:
+    required_flags = ("O_DIRECTORY", "O_NOFOLLOW", "O_CLOEXEC")
+    missing = [name for name in required_flags if not isinstance(getattr(os, name, None), int)]
+    required_dir_fd = (os.open, os.stat, os.unlink, os.rename)
+    unsupported = [function.__name__ for function in required_dir_fd if function not in os.supports_dir_fd]
+    if missing or unsupported:
+        detail = ", ".join(missing + unsupported)
+        raise ValueError(f"secure evaluation output publication is unsupported on this platform: {detail}")
+
+
+def _lexical_output_location(
+    registration_path: Path, output_path: Path
+) -> tuple[Path, Path, Path]:
+    registration_absolute = Path(os.path.abspath(os.fspath(registration_path)))
+    if registration_absolute.name != "registration.v2.json":
+        raise ValueError("evaluation output requires a registration.v2.json path")
+    if any(part == ".." for part in output_path.parts):
+        raise ValueError("evaluation output must be inside the registered experiment results directory; unsafe traversal component")
+    experiment_root = registration_absolute.parent
+    results_root = experiment_root / "results"
+    target = Path(os.path.abspath(os.fspath(output_path)))
     try:
-        ADMISSION_CONTRACT.reject_symlink_chain(registration_path, "registration path")
-        experiment_root = registration_path.absolute().parent
-        ADMISSION_CONTRACT.reject_symlink_chain(experiment_root, "experiment path")
-        results_root = experiment_root / "results"
-        ADMISSION_CONTRACT.reject_symlink_chain(results_root, "experiment results path")
-        if not results_root.is_dir():
-            raise ValueError("experiment results directory must already exist")
-        target = output_path.absolute()
-        ADMISSION_CONTRACT.reject_symlink_chain(target, "evaluation output path")
-        target.relative_to(results_root)
-    except ADMISSION_CONTRACT.AdmissionError as exc:
-        raise ValueError(f"unsafe evaluation output path: {exc}") from exc
+        relative = target.relative_to(results_root)
     except ValueError as exc:
-        if str(exc) == "experiment results directory must already exist":
-            raise
-        raise ValueError("evaluation output must be inside the registered experiment results directory") from exc
-    if target == results_root:
-        raise ValueError("evaluation output must name a file inside the registered experiment results directory")
+        raise ValueError(
+            "evaluation output must be inside the registered experiment results directory"
+        ) from exc
+    if not relative.parts or any(part in {"", ".", ".."} for part in relative.parts):
+        raise ValueError(
+            "evaluation output must name a safe file inside the registered experiment results directory"
+        )
+    return experiment_root, relative, target
+
+
+def _directory_flags() -> int:
+    _require_secure_output_capabilities()
+    return os.O_RDONLY | os.O_DIRECTORY | os.O_CLOEXEC | os.O_NOFOLLOW
+
+
+def _open_directory_anchored(path: Path) -> int:
+    """Open an absolute directory by walking from the filesystem root without symlinks."""
+    absolute = Path(os.path.abspath(os.fspath(path)))
+    if absolute.anchor != os.sep:
+        raise ValueError("secure evaluation output publication requires an absolute POSIX path")
+    flags = _directory_flags()
+    descriptor = os.open(os.sep, flags)
+    try:
+        for component in absolute.parts[1:]:
+            next_descriptor = os.open(component, flags, dir_fd=descriptor)
+            os.close(descriptor)
+            descriptor = next_descriptor
+        return descriptor
+    except Exception:
+        os.close(descriptor)
+        raise
+
+
+def _read_regular_file_at(directory_fd: int, name: str, *, label: str) -> bytes:
+    flags = os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW
+    descriptor = os.open(name, flags, dir_fd=directory_fd)
+    try:
+        info = os.fstat(descriptor)
+        if not stat.S_ISREG(info.st_mode):
+            raise ValueError(f"{label} must be a regular file")
+        if info.st_size > 1_000_000:
+            raise ValueError(f"{label} exceeds 1 MiB")
+        chunks: list[bytes] = []
+        remaining = 1_000_001
+        while remaining > 0:
+            chunk = os.read(descriptor, min(65536, remaining))
+            if not chunk:
+                break
+            chunks.append(chunk)
+            remaining -= len(chunk)
+        raw = b"".join(chunks)
+        if len(raw) > 1_000_000:
+            raise ValueError(f"{label} exceeds 1 MiB")
+        return raw
+    finally:
+        os.close(descriptor)
+
+
+def _verify_registration_binding(
+    experiment_fd: int, registration_name: str, rendered: str
+) -> None:
+    try:
+        result = json.loads(rendered)
+    except json.JSONDecodeError as exc:
+        raise ValueError("evaluation output must contain JSON") from exc
+    if not isinstance(result, dict) or not isinstance(result.get("registration_sha256"), str):
+        raise ValueError("evaluation output must bind registration_sha256")
+    raw = _read_regular_file_at(experiment_fd, registration_name, label="registration")
+    try:
+        registration = json.loads(raw.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise ValueError("registration must contain UTF-8 JSON") from exc
+    if not isinstance(registration, dict):
+        raise ValueError("registration must contain an object")
+    if sha256_json(registration) != result["registration_sha256"]:
+        raise ValueError("evaluation output registration binding changed before publication")
+
+
+def _open_output_directory(experiment_fd: int, relative: Path) -> int:
+    flags = _directory_flags()
+    descriptor = os.open("results", flags, dir_fd=experiment_fd)
+    try:
+        for component in relative.parts[:-1]:
+            next_descriptor = os.open(component, flags, dir_fd=descriptor)
+            os.close(descriptor)
+            descriptor = next_descriptor
+        return descriptor
+    except Exception:
+        os.close(descriptor)
+        raise
+
+
+def _validate_destination_entry(directory_fd: int, name: str) -> None:
+    try:
+        info = os.stat(name, dir_fd=directory_fd, follow_symlinks=False)
+    except FileNotFoundError:
+        return
+    if not stat.S_ISREG(info.st_mode):
+        raise ValueError("evaluation output must be a regular non-symlink file")
+
+
+def safe_output_path(registration_path: Path, output_path: Path) -> Path:
+    """Validate the current target tree without granting future pathname authority."""
+    _require_secure_output_capabilities()
+    experiment_root, relative, target = _lexical_output_location(registration_path, output_path)
+    experiment_fd = _open_directory_anchored(experiment_root)
+    try:
+        output_fd = _open_output_directory(experiment_fd, relative)
+        try:
+            _validate_destination_entry(output_fd, relative.parts[-1])
+        finally:
+            os.close(output_fd)
+    except (FileNotFoundError, NotADirectoryError, OSError, ValueError) as exc:
+        raise ValueError("unsafe evaluation output path") from exc
+    finally:
+        os.close(experiment_fd)
     return target
 
+
+def _create_temporary_output(directory_fd: int, final_name: str) -> tuple[int, str]:
+    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_CLOEXEC | os.O_NOFOLLOW
+    for _attempt in range(16):
+        name = f".{final_name}.{secrets.token_hex(12)}.tmp"
+        try:
+            return os.open(name, flags, 0o644, dir_fd=directory_fd), name
+        except FileExistsError:
+            continue
+    raise OSError("could not allocate unique evaluation output temporary file")
+
+
+def write_evaluation_output(registration_path: Path, output_path: Path, rendered: str) -> None:
+    """Atomically publish one result through stable no-symlink directory descriptors."""
+    _require_secure_output_capabilities()
+    experiment_root, relative, _target = _lexical_output_location(registration_path, output_path)
+    registration_name = Path(os.path.abspath(os.fspath(registration_path))).name
+    experiment_fd = _open_directory_anchored(experiment_root)
+    output_fd: int | None = None
+    temporary_name: str | None = None
+    temporary_fd: int | None = None
+    try:
+        _verify_registration_binding(experiment_fd, registration_name, rendered)
+        output_fd = _open_output_directory(experiment_fd, relative)
+        final_name = relative.parts[-1]
+        _validate_destination_entry(output_fd, final_name)
+        temporary_fd, temporary_name = _create_temporary_output(output_fd, final_name)
+        payload = rendered.encode("utf-8")
+        view = memoryview(payload)
+        while view:
+            written = os.write(temporary_fd, view)
+            if written <= 0:
+                raise OSError("short evaluation output write")
+            view = view[written:]
+        os.fsync(temporary_fd)
+        os.close(temporary_fd)
+        temporary_fd = None
+        os.rename(
+            temporary_name,
+            final_name,
+            src_dir_fd=output_fd,
+            dst_dir_fd=output_fd,
+        )
+        temporary_name = None
+        os.fsync(output_fd)
+    finally:
+        if temporary_fd is not None:
+            os.close(temporary_fd)
+        if temporary_name is not None and output_fd is not None:
+            try:
+                os.unlink(temporary_name, dir_fd=output_fd)
+                os.fsync(output_fd)
+            except FileNotFoundError:
+                pass
+        if output_fd is not None:
+            os.close(output_fd)
+        os.close(experiment_fd)
 
 def main() -> int:
     parser = argparse.ArgumentParser()
@@ -557,7 +759,7 @@ def main() -> int:
     )
     rendered = json.dumps(result, indent=2, sort_keys=True) + "\n"
     if args.output:
-        safe_output_path(args.registration, args.output).write_text(rendered, encoding="utf-8")
+        write_evaluation_output(args.registration, args.output, rendered)
     else:
         print(rendered, end="")
     return 0

@@ -181,6 +181,8 @@ def _scorecard_weights(registration: dict[str, Any]) -> dict[str, float] | None:
 def validate_observation_semantics(
     observation: dict[str, Any],
     registration: dict[str, Any],
+    *,
+    historical_compatibility: bool | None = None,
 ) -> None:
     if not math.isfinite(float(observation["value"])):
         raise CaptureError("observation value must be finite")
@@ -208,7 +210,12 @@ def validate_observation_semantics(
     ):
         raise CaptureError("independent scorer must differ from decision maker")
     captured_at = parse_timestamp(observation["captured_at"])
-    if not REGISTRATION_GATE.is_pre_t005_experiment(registration["experiment_id"]):
+    grandfathered = (
+        REGISTRATION_GATE.is_pre_t005_experiment(registration["experiment_id"])
+        if historical_compatibility is None
+        else historical_compatibility
+    )
+    if not grandfathered:
         if captured_at < parse_timestamp(registration["registered_at"]):
             raise CaptureError("observation was captured before experiment registration")
     if captured_at > parse_timestamp(registration["expires_at"]):
@@ -353,6 +360,10 @@ def capture(
     admission_path: Path | None = None,
 ) -> dict[str, Any]:
     registration = validate_registration_contract(registration_path)
+    historical_compatibility = REGISTRATION_GATE.is_pre_t005_registration_artifact(
+        registration_path,
+        registration["experiment_id"],
+    )
     observation = dict(observation)
     _bind_admission(admission_path, registration_path, registration, observation)
     validate_schema(
@@ -362,7 +373,11 @@ def capture(
         },
         OBSERVATIONS_SCHEMA,
     )
-    validate_observation_semantics(observation, registration)
+    validate_observation_semantics(
+        observation,
+        registration,
+        historical_compatibility=historical_compatibility,
+    )
 
     if observations_path.is_symlink():
         raise CaptureError("observations path must not be a symlink")
@@ -406,7 +421,11 @@ def capture(
         rows.append(observation)
         rows.sort(key=lambda row: row["observation_id"])
         for row in rows:
-            validate_observation_semantics(row, registration)
+            validate_observation_semantics(
+                row,
+                registration,
+                historical_compatibility=historical_compatibility,
+            )
         validate_pair_semantics(rows, registration)
         validate_schema(document, OBSERVATIONS_SCHEMA)
         atomic_json(observations_path, document)

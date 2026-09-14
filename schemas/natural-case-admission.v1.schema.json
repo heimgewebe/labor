@@ -30,6 +30,11 @@
     "registration_sha256": {
       "$ref": "#/$defs/sha256"
     },
+    "registration_registered_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Required on newly issued v1 receipts; absent only on legacy v1 receipts emitted before registration-time hardening."
+    },
     "admission_id": {
       "$ref": "#/$defs/sha256"
     },
