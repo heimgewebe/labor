@@ -400,7 +400,7 @@ def validate_registration(
     )
 
 
-def validate_all(*, now: datetime | None = None) -> dict[str, Any]:
+def validate_all(*, now: datetime | None = None, require_current: bool = True) -> dict[str, Any]:
     checked_v1 = 0
     checked_v2 = 0
     grandfathered = 0
@@ -417,27 +417,27 @@ def validate_all(*, now: datetime | None = None) -> dict[str, Any]:
         if not is_pre_t005_experiment(directory.name):
             if not v2.is_file():
                 raise ValueError(f"{directory}: new experiment requires registration.v2.json")
-            validate_registration(v2, now=now)
+            validate_registration(v2, now=now, require_current=require_current)
             checked_v2 += 1
             continue
         if created < V1_ENFORCEMENT_DATE:
             grandfathered += 1
             candidate = v2 if v2.exists() else v1 if v1.exists() else None
             if candidate:
-                payload = validate_registration(candidate, now=now)
+                payload = validate_registration(candidate, now=now, require_current=require_current)
                 checked_v2 += payload["schema_version"].endswith("v2")
                 checked_v1 += payload["schema_version"].endswith("v1")
             continue
         if created >= V2_ENFORCEMENT_DATE:
             if not v2.is_file():
                 raise ValueError(f"{directory}: new experiment requires registration.v2.json")
-            validate_registration(v2, now=now)
+            validate_registration(v2, now=now, require_current=require_current)
             checked_v2 += 1
             continue
         candidate = v2 if v2.is_file() else v1
         if not candidate.is_file():
             raise ValueError(f"{directory}: experiment requires registration.v1.json or registration.v2.json")
-        payload = validate_registration(candidate, now=now)
+        payload = validate_registration(candidate, now=now, require_current=require_current)
         checked_v2 += payload["schema_version"].endswith("v2")
         checked_v1 += payload["schema_version"].endswith("v1")
     return {
@@ -454,7 +454,13 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("path", nargs="?", type=Path)
     args = parser.parse_args()
-    result = validate_registration(args.path.resolve()) if args.path else validate_all()
+    if args.path:
+        # Individual admission remains bound to the actual clock.
+        result = validate_registration(args.path.resolve())
+    else:
+        # Repository-corpus checks are historical; active registry validation
+        # independently enforces live expiry and current experiment membership.
+        result = validate_all(require_current=False)
     print(json.dumps(result if args.path is None else {"status": "valid", "experiment_id": result["experiment_id"], "schema_version": result["schema_version"]}, sort_keys=True))
     return 0
 

@@ -24,10 +24,17 @@ def main():
     for md_file in sorted(REPO_ROOT.rglob("*.md")):
         if should_skip(md_file, REPO_ROOT, skip_generated=True):
             continue
-        if "_template" in md_file.relative_to(REPO_ROOT).parts:
+        rel_path = md_file.relative_to(REPO_ROOT)
+        # Only temporary Model-Lab test directories; actual fixtures remain indexed.
+        if (
+            rel_path.parts[:3] == ("tests", "fixtures", "model_lab_condition_design")
+            and len(rel_path.parts) > 3
+            and rel_path.parts[3].startswith("_scratch_")
+        ):
+            continue
+        if "_template" in rel_path.parts:
             continue
 
-        rel_path = md_file.relative_to(REPO_ROOT)
         fm = extract_frontmatter(md_file)
         title = fm.get("title", rel_path.stem) if fm else rel_path.stem
         status = fm.get("status", "—") if fm else "—"
