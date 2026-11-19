@@ -5,7 +5,7 @@ import importlib.util
 import json
 import tempfile
 from copy import deepcopy
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from jsonschema import Draft202012Validator
@@ -426,6 +426,32 @@ def test_new_work_cannot_hide_v2_payload_under_v1_filename() -> None:
         disguised = path.with_name("registration.v1.json")
         path.rename(disguised)
         _assert_invalid(disguised, "new experiment requires registration.v2.json", now=T005_NOW)
+
+
+def test_expired_corpus_stays_structurally_valid_but_live_admission_rejects() -> None:
+    with tempfile.TemporaryDirectory() as raw:
+        experiments = Path(raw) / "experiments"
+        experiments.mkdir()
+        path = _valid_v2(experiments / "2026-08-08_expired-corpus")
+        expires_at = datetime.fromisoformat(json.loads(path.read_text())["expires_at"].replace("Z", "+00:00"))
+        later = expires_at + timedelta(days=1)
+        original = MODULE.EXPERIMENTS
+        MODULE.EXPERIMENTS = experiments
+        try:
+            result = MODULE.validate_all(now=later, require_current=False)
+            assert result["checked_v2"] == 1
+            for check in (
+                lambda: MODULE.validate_all(now=later),
+                lambda: MODULE.validate_registration(path, now=later),
+            ):
+                try:
+                    check()
+                except ValueError as exc:
+                    assert "registration already expired" in str(exc)
+                else:
+                    raise AssertionError("expired live admission was accepted")
+        finally:
+            MODULE.EXPERIMENTS = original
 
 
 def test_v2_registration_remains_valid_after_review_until_expiry() -> None:
