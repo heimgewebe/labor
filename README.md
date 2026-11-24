@@ -79,6 +79,21 @@ python3 -m pip install -r requirements.txt
 make validate
 ```
 
+Die normale Validierung prüft auch die eingefrorenen Run-004-Belege und
+deren portable Regressionstests, benötigt dafür aber keine Ubuntu-spezifischen
+Sandboxpakete. Die erneute Live-Prüfung des historischen Bubblewrap/libseccomp-
+Vertrags ist eine eigene, explizite Handlung auf einem kompatiblen Host:
+
+```bash
+python3 scripts/docmeta/test_validate_model_lab_run004_access_policy.py LiveAccessPolicyTests
+```
+
+Ein fehlgeschlagener Live-Test bleibt ein Fehler; erfolgreiche Belegvalidierung
+allein belegt weder aktuelle Sandbox-Verfügbarkeit noch Run-004-Ausführungsfreigabe.
+Die eingefrorene Policy, der Launcher und die aufgezeichnete Probe bleiben
+unverändert. Hintergrund: [Bureau #2290](https://github.com/heimgewebe/bureau/issues/2290),
+Audit vom 24. November 2026.
+
 ## Drei Phasen, aufsteigende Strenge
 
 | Phase | Ort | Anforderung | Charakter |

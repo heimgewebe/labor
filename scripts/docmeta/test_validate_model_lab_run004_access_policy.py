@@ -11,6 +11,7 @@ import shutil
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 import yaml
 
@@ -24,7 +25,6 @@ REAL_POLICY = validator.DEFAULT_POLICY
 REAL_BUNDLE_DIR = REAL_POLICY.parent
 SCRATCH_PREFIX = f"_scratch_access_policy_{os.getpid()}_"
 _CREATED_SCRATCH: set[Path] = set()
-GITHUB_UID_MAP_DENIED = "bwrap: setting up uid map: Permission denied"
 
 
 def _sha(path: Path) -> str:
@@ -56,14 +56,6 @@ def _write_json(path: Path, data: dict) -> None:
 
 def _repo_rel(path: Path) -> str:
     return path.resolve().relative_to(REPO_ROOT.resolve()).as_posix()
-
-
-def _github_actions_uid_map_unavailable(exc: Exception, environ: dict[str, str] | None = None) -> bool:
-    effective_environ = os.environ if environ is None else environ
-    return (
-        effective_environ.get("GITHUB_ACTIONS") == "true"
-        and GITHUB_UID_MAP_DENIED in str(exc)
-    )
 
 
 def _register(path: Path) -> Path:
@@ -157,6 +149,14 @@ class AccessPolicyBundleTests(unittest.TestCase):
 
     def test_real_access_policy_bundle_validates(self):
         self.assertEqual([], validator.validate_bundle(REAL_POLICY))
+
+    def test_static_bundle_does_not_require_local_sandbox(self):
+        # Historical evidence remains verifiable on a host without libseccomp.
+        # A fresh runtime probe is an explicitly different claim.
+        with patch("ctypes.util.find_library", return_value=None), patch.object(
+            sandbox, "run_sandbox", side_effect=AssertionError("unexpected live execution")
+        ):
+            self.assertEqual([], validator.validate_bundle(REAL_POLICY))
 
     def test_policy_hash_drift_fails(self):
         policy_path = self.make_bundle()
@@ -268,7 +268,7 @@ class AccessPolicyBundleTests(unittest.TestCase):
         policy = _read_yaml(REAL_POLICY)
         runtime_root = Path(policy["runtime_root"])
         if runtime_root.exists() or runtime_root.is_symlink():
-            with self.assertRaises(probe.ProbeError):
+            with self.assertRaisesRegex(probe.ProbeError, "canonical runtime root already exists"):
                 probe.run_probe(REAL_POLICY, generated_at="2026-06-27T11:30:01Z")
             self.assertTrue(runtime_root.exists() or runtime_root.is_symlink())
             return
@@ -276,30 +276,26 @@ class AccessPolicyBundleTests(unittest.TestCase):
         sentinel = runtime_root / "sentinel"
         sentinel.write_text("do not delete\n", encoding="utf-8")
         try:
-            with self.assertRaises(probe.ProbeError):
+            with self.assertRaisesRegex(probe.ProbeError, "canonical runtime root already exists"):
                 probe.run_probe(REAL_POLICY, generated_at="2026-06-27T11:30:01Z")
             self.assertTrue(sentinel.exists())
         finally:
             shutil.rmtree(runtime_root)
 
-    def test_github_uid_map_skip_is_exact_and_ci_only(self):
-        error = probe.ProbeError(f"control diagnostic exited 1: {GITHUB_UID_MAP_DENIED}")
-        self.assertTrue(_github_actions_uid_map_unavailable(error, {"GITHUB_ACTIONS": "true"}))
-        self.assertFalse(_github_actions_uid_map_unavailable(error, {}))
-        self.assertFalse(
-            _github_actions_uid_map_unavailable(
-                probe.ProbeError("control diagnostic exited 1: another sandbox error"),
-                {"GITHUB_ACTIONS": "true"},
-            )
-        )
+    def test_real_evidence_files_are_kind_separated(self):
+        access = _read_yaml(REAL_BUNDLE_DIR / "access-policy-evidence.yml")
+        visibility = _read_yaml(REAL_BUNDLE_DIR / "visibility-boundary-evidence.yml")
+        self.assertEqual(["access_policy"], [claim["kind"] for claim in access["claims"]])
+        self.assertEqual(["visibility_boundary"], [claim["kind"] for claim in visibility["claims"]])
+        self.assertFalse(access["synthetic_fixture"])
+        self.assertFalse(visibility["synthetic_fixture"])
+
+
+class LiveAccessPolicyTests(unittest.TestCase):
+    """Explicit host-specific replay of the historical sandbox probe."""
 
     def test_live_probe_enforces_visibility_and_process_boundaries(self):
-        try:
-            result = probe.run_probe(REAL_POLICY, generated_at="2026-06-27T11:30:02Z")
-        except probe.ProbeError as exc:
-            if _github_actions_uid_map_unavailable(exc):
-                self.skipTest("GitHub Actions runner forbids the Bubblewrap UID map")
-            raise
+        result = probe.run_probe(REAL_POLICY, generated_at="2026-06-27T11:30:02Z")
         self.assertFalse(Path(result["materialized_runtime_root"]).exists())
         self.assertTrue(result["cleanup"]["runtime_root_removed_by_probe"])
         for role in ("control", "treatment"):
@@ -322,14 +318,6 @@ class AccessPolicyBundleTests(unittest.TestCase):
                 "workspace_has_no_prompt_file",
             ):
                 self.assertIs(checks[name], True, f"{role} {name}")
-
-    def test_real_evidence_files_are_kind_separated(self):
-        access = _read_yaml(REAL_BUNDLE_DIR / "access-policy-evidence.yml")
-        visibility = _read_yaml(REAL_BUNDLE_DIR / "visibility-boundary-evidence.yml")
-        self.assertEqual(["access_policy"], [claim["kind"] for claim in access["claims"]])
-        self.assertEqual(["visibility_boundary"], [claim["kind"] for claim in visibility["claims"]])
-        self.assertFalse(access["synthetic_fixture"])
-        self.assertFalse(visibility["synthetic_fixture"])
 
 
 if __name__ == "__main__":
