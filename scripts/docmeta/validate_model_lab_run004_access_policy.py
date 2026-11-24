@@ -3,16 +3,14 @@
 
 The validator is deliberately Run-004-specific. It never executes a model or
 agent and does not rerun the live probe; it verifies the recorded access-policy
-bundle semantically and cryptographically. The separate probe script performs
-live negative checks.
+bundle semantically and cryptographically, independently of local sandbox tools.
+The separate live probe and the frozen sandbox launcher check the execution host.
 """
 from __future__ import annotations
 
 import argparse
-import ctypes.util
 import hashlib
 import json
-import subprocess
 import sys
 from pathlib import Path, PurePosixPath
 
@@ -135,33 +133,6 @@ def _safe_repo_file(raw: str) -> Path | None:
     if code is not None or resolved is None or not resolved.is_file():
         return None
     return resolved
-
-
-def _check_environment_tools(policy: dict) -> list[str]:
-    problems = []
-    executable = Path(policy["backend"]["executable"])
-    if not executable.is_file() or executable.is_symlink():
-        problems.append("bubblewrap executable is missing or unsafe")
-    else:
-        try:
-            version = subprocess.run(
-                [str(executable), "--version"],
-                capture_output=True,
-                text=True,
-                encoding="utf-8",
-                errors="strict",
-                check=False,
-                timeout=10,
-            )
-        except (OSError, subprocess.SubprocessError) as exc:
-            raise ToolError(f"cannot check bubblewrap version: {exc}") from exc
-        if version.returncode != 0:
-            problems.append("bubblewrap --version failed")
-        elif sandbox._version_tuple(version.stdout) < sandbox._version_tuple(policy["backend"]["minimum_version"]):
-            problems.append("bubblewrap version is below the policy minimum")
-    if ctypes.util.find_library("seccomp") is None:
-        problems.append("libseccomp is unavailable")
-    return problems
 
 
 def _validate_probe_result(probe: dict, probe_path: Path, policy: dict, policy_path: Path) -> list[str]:
@@ -294,7 +265,6 @@ def validate_bundle(policy_path: Path = DEFAULT_POLICY) -> list[str]:
     problems.extend(_schema_errors(POLICY_SCHEMA_PATH, policy_data, policy_path))
     if policy_data.get("synthetic_fixture") is True:
         problems.append("canonical access policy must not be synthetic")
-    problems.extend(_check_environment_tools(policy_data))
 
     bundle_dir = policy_path.resolve().parent
     probe_path = bundle_dir / BOUNDARY_PROBE_NAME

@@ -228,9 +228,11 @@ validate-model-lab-condition-design:
 	@echo "🧭 Validating model-lab condition-design artifacts..."
 	@python3 scripts/docmeta/validate_model_lab_condition_design.py
 
+# Historical bundle validation is portable. Replay the live probe explicitly on
+# a compatible execution host (Bureau #2290; user audit 2026-11-24).
 validate-model-lab-access-policy-tests:
-	@echo "🧪 Running Run-004 access-policy sandbox regression tests..."
-	@python3 scripts/docmeta/test_validate_model_lab_run004_access_policy.py
+	@echo "🧪 Running Run-004 access-policy bundle regression tests..."
+	@python3 scripts/docmeta/test_validate_model_lab_run004_access_policy.py AccessPolicyBundleTests
 
 validate-model-lab-access-policy:
 	@echo "🧭 Validating canonical Run-004 access-policy bundle..."
