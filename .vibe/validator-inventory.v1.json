@@ -6,7 +6,7 @@
     "pull_request_runs_all_groups": true,
     "main_runs_all_groups": true,
     "new_target_requires_classification": true,
-    "classified_target_count": 89,
+    "classified_target_count": 80,
     "max_validate_job_named_steps": 10
   },
   "groups": [
@@ -120,7 +120,7 @@
         "main": "blocking"
       },
       "review_at": "2026-09-01",
-      "retirement_rule": "A target may be removed only after its protected artifact family is archived or a generic core validator proves equivalent coverage.",
+      "retirement_rule": "A target may be removed only after its protected artifact family is archived or a generic core validator proves equivalent coverage. For a closed, path-bound legacy family, a reviewed terminal in-place archive with a pinned Git preimage may retire specialist fixture-test frontdoors while retaining actual artifact validation and replay.",
       "targets": [
         "validate-ecosystem-organ-preflight-tests",
         "validate-ecosystem-organ-preflight",
@@ -140,23 +140,14 @@
         "validate-replay-dry-run",
         "validate-replay-tests",
         "validate-replay-trace-contract",
-        "validate-model-lab-next-blocker-triage-tests",
         "validate-model-lab-next-blocker-triage",
-        "validate-model-lab-condition-contrast-design-gate-tests",
         "validate-model-lab-condition-contrast-design-gate",
-        "validate-model-lab-condition-design-tests",
         "validate-model-lab-condition-design",
-        "validate-model-lab-access-policy-tests",
         "validate-model-lab-access-policy",
-        "validate-model-lab-runtime-binding-tests",
         "validate-model-lab-runtime-binding",
-        "validate-model-lab-runtime-candidate-tests",
         "validate-model-lab-runtime-candidate",
-        "validate-model-lab-execution-readiness-tests",
         "validate-model-lab-execution-readiness",
-        "validate-model-lab-execution-seed-tests",
         "validate-model-lab-execution-seed",
-        "validate-model-lab-workspace-isolation-tests",
         "validate-model-lab-workspace-isolation",
         "validate-outcome-series-tests",
         "validate-outcome-series"

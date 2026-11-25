@@ -1,7 +1,7 @@
 # Makefile — Schlanke Routine-Frontdoor
 # Siehe: docs/foundations/repo-plan.md → Scaffolding-CLI & Frontdoor
 
-.PHONY: validate-experiment-registration validate-experiment-registration-tests validate validate-doc-freshness-registry validate-doc-freshness-registry-tests validate-bundle-freshness-receipt-tests validate-ecosystem-organ-preflight validate-ecosystem-organ-preflight-tests validate-schemas validate-schemas-counterevidence-tests validate-execution-proof validate-run-bundle validate-run-bundle-tests validate-model-lab-control-tests validate-model-lab-control validate-challenge-version-tests validate-challenge-versions validate-relations validate-relations-tests validate-backlinks-tests validate-orphans-tests validate-epistemics validate-epistemics-tests validate-agent-handoff validate-agent-handoff-tests validate-agent-commands validate-agent-commands-tests validate-command-chain validate-command-chain-tests validate-command-version-policy-tests validate-fixture-matrix-audit-tests validate-known-gaps-audit validate-cross-contract validate-cross-contract-tests validate-replay-dry-run validate-replay-mutation-guard validate-replay-tests validate-replay-trace-contract validate-adoption-completeness validate-adoption-completeness-tests validate-epistemic-state-tests validate-exports-tests validate-export-parity validate-export-parity-tests validate-promotion-readiness validate-promotion-readiness-tests validate-promotion-readiness-ratchet validate-ratchet validate-generated-artifacts-contract validate-generated-artifacts-contract-tests validate-artifact-taxonomy validate-artifact-taxonomy-tests validate-artifact-taxonomy-contract-tests validate-run-evidence-pack-schema-tests validate-claim-evidence validate-claim-evidence-tests validate-runtime-evidence-gate validate-runtime-evidence-gate-tests validate-result-assessment-readiness validate-result-assessment-readiness-tests validate-dependency-risk-caveat-scope validate-dependency-risk-caveat-scope-tests validate-model-lab-next-blocker-triage validate-model-lab-next-blocker-triage-tests validate-model-lab-condition-contrast-design-gate validate-model-lab-condition-contrast-design-gate-tests validate-model-lab-condition-design validate-model-lab-condition-design-tests validate-model-lab-access-policy validate-model-lab-access-policy-tests probe-model-lab-access-policy validate-model-lab-runtime-binding validate-model-lab-runtime-binding-tests validate-model-lab-runtime-candidate validate-model-lab-runtime-candidate-tests validate-model-lab-execution-readiness validate-model-lab-execution-readiness-tests validate-model-lab-execution-seed validate-model-lab-execution-seed-tests validate-model-lab-workspace-isolation validate-model-lab-workspace-isolation-tests validate-pr-scope validate-pr-scope-tests validate-outcome-series validate-outcome-series-tests agent-check agent-check-staged agent-check-tests check-decisions generate generate-blocking generate-generated-diagnostics generate-artifact-only generate-generated-gated generate-projections generate-exports generate-metrics generate-promotion-readiness generate-doc-index generate-system-map generate-backlinks generate-orphans generate-epistemic-state generate-artifact-taxonomy diagnose help validate-active-experiments validate-active-experiments-tests validate-operator-lab-closeout validate-operator-lab-closeout-tests validate-effect-evaluator-tests validate-core validate-active validate-legacy validate-validator-inventory validate-validator-inventory-tests
+.PHONY: validate-experiment-registration validate-experiment-registration-tests validate validate-doc-freshness-registry validate-doc-freshness-registry-tests validate-bundle-freshness-receipt-tests validate-ecosystem-organ-preflight validate-ecosystem-organ-preflight-tests validate-schemas validate-schemas-counterevidence-tests validate-execution-proof validate-run-bundle validate-run-bundle-tests validate-model-lab-control-tests validate-model-lab-control validate-challenge-version-tests validate-challenge-versions validate-relations validate-relations-tests validate-backlinks-tests validate-orphans-tests validate-epistemics validate-epistemics-tests validate-agent-handoff validate-agent-handoff-tests validate-agent-commands validate-agent-commands-tests validate-command-chain validate-command-chain-tests validate-command-version-policy-tests validate-fixture-matrix-audit-tests validate-known-gaps-audit validate-cross-contract validate-cross-contract-tests validate-replay-dry-run validate-replay-mutation-guard validate-replay-tests validate-replay-trace-contract validate-adoption-completeness validate-adoption-completeness-tests validate-epistemic-state-tests validate-exports-tests validate-export-parity validate-export-parity-tests validate-promotion-readiness validate-promotion-readiness-tests validate-promotion-readiness-ratchet validate-ratchet validate-generated-artifacts-contract validate-generated-artifacts-contract-tests validate-artifact-taxonomy validate-artifact-taxonomy-tests validate-artifact-taxonomy-contract-tests validate-run-evidence-pack-schema-tests validate-claim-evidence validate-claim-evidence-tests validate-runtime-evidence-gate validate-runtime-evidence-gate-tests validate-result-assessment-readiness validate-result-assessment-readiness-tests validate-dependency-risk-caveat-scope validate-dependency-risk-caveat-scope-tests validate-model-lab-next-blocker-triage validate-model-lab-condition-contrast-design-gate validate-model-lab-condition-design validate-model-lab-access-policy probe-model-lab-access-policy validate-model-lab-runtime-binding validate-model-lab-runtime-candidate validate-model-lab-execution-readiness validate-model-lab-execution-seed validate-model-lab-workspace-isolation validate-pr-scope validate-pr-scope-tests validate-outcome-series validate-outcome-series-tests agent-check agent-check-staged agent-check-tests check-decisions generate generate-blocking generate-generated-diagnostics generate-artifact-only generate-generated-gated generate-projections generate-exports generate-metrics generate-promotion-readiness generate-doc-index generate-system-map generate-backlinks generate-orphans generate-epistemic-state generate-artifact-taxonomy diagnose help validate-active-experiments validate-active-experiments-tests validate-operator-lab-closeout validate-operator-lab-closeout-tests validate-effect-evaluator-tests validate-core validate-active validate-legacy validate-validator-inventory validate-validator-inventory-tests
 
 # Validation frontdoor: complete coverage split by current authority.
 validate: validate-core validate-active validate-legacy
@@ -13,7 +13,7 @@ validate-core: validate-effect-evaluator-tests validate-doc-freshness-registry-t
 validate-active: validate-active-experiments-tests validate-active-experiments validate-operator-lab-closeout-tests validate-operator-lab-closeout validate-experiment-registration-tests validate-experiment-registration
 	@echo "✅ Active experiment validation passed."
 
-validate-legacy: validate-ecosystem-organ-preflight-tests validate-ecosystem-organ-preflight validate-model-lab-control-tests validate-model-lab-control validate-agent-handoff validate-agent-handoff-tests validate-agent-commands validate-agent-commands-tests validate-command-chain validate-command-chain-tests validate-command-version-policy-tests validate-fixture-matrix-audit-tests validate-known-gaps-audit validate-cross-contract validate-cross-contract-tests validate-replay-dry-run validate-replay-tests validate-replay-trace-contract validate-model-lab-next-blocker-triage-tests validate-model-lab-next-blocker-triage validate-model-lab-condition-contrast-design-gate-tests validate-model-lab-condition-contrast-design-gate validate-model-lab-condition-design-tests validate-model-lab-condition-design validate-model-lab-access-policy-tests validate-model-lab-access-policy validate-model-lab-runtime-binding-tests validate-model-lab-runtime-binding validate-model-lab-runtime-candidate-tests validate-model-lab-runtime-candidate validate-model-lab-execution-readiness-tests validate-model-lab-execution-readiness validate-model-lab-execution-seed-tests validate-model-lab-execution-seed validate-model-lab-workspace-isolation-tests validate-model-lab-workspace-isolation validate-outcome-series-tests validate-outcome-series
+validate-legacy: validate-ecosystem-organ-preflight-tests validate-ecosystem-organ-preflight validate-model-lab-control-tests validate-model-lab-control validate-agent-handoff validate-agent-handoff-tests validate-agent-commands validate-agent-commands-tests validate-command-chain validate-command-chain-tests validate-command-version-policy-tests validate-fixture-matrix-audit-tests validate-known-gaps-audit validate-cross-contract validate-cross-contract-tests validate-replay-dry-run validate-replay-tests validate-replay-trace-contract validate-model-lab-next-blocker-triage validate-model-lab-condition-contrast-design-gate validate-model-lab-condition-design validate-model-lab-access-policy validate-model-lab-runtime-binding validate-model-lab-runtime-candidate validate-model-lab-execution-readiness validate-model-lab-execution-seed validate-model-lab-workspace-isolation validate-outcome-series-tests validate-outcome-series
 	@echo "✅ Legacy evidence validation passed."
 
 
@@ -208,21 +208,9 @@ validate-model-lab-next-blocker-triage:
 	@echo "🧭 Validating model-lab-next-blocker-triage artifacts..."
 	@python3 scripts/docmeta/validate_model_lab_next_blocker_triage.py
 
-validate-model-lab-next-blocker-triage-tests:
-	@echo "🧪 Running model-lab-next-blocker-triage validator tests..."
-	@python3 scripts/docmeta/test_validate_model_lab_next_blocker_triage.py
-
-validate-model-lab-condition-contrast-design-gate-tests:
-	@echo "🧪 Running model-lab condition-contrast-design-gate validator tests..."
-	@python3 scripts/docmeta/test_validate_model_lab_condition_contrast_design_gate.py
-
 validate-model-lab-condition-contrast-design-gate:
 	@echo "🧭 Validating model-lab condition-contrast-design-gate artifacts..."
 	@python3 scripts/docmeta/validate_model_lab_condition_contrast_design_gate.py
-
-validate-model-lab-condition-design-tests:
-	@echo "🧪 Running model-lab condition-design validator tests..."
-	@python3 scripts/docmeta/test_validate_model_lab_condition_design.py
 
 validate-model-lab-condition-design:
 	@echo "🧭 Validating model-lab condition-design artifacts..."
@@ -230,10 +218,6 @@ validate-model-lab-condition-design:
 
 # Historical bundle validation is portable. Replay the live probe explicitly on
 # a compatible execution host (Bureau #2290; user audit 2026-11-24).
-validate-model-lab-access-policy-tests:
-	@echo "🧪 Running Run-004 access-policy bundle regression tests..."
-	@python3 scripts/docmeta/test_validate_model_lab_run004_access_policy.py AccessPolicyBundleTests
-
 validate-model-lab-access-policy:
 	@echo "🧭 Validating canonical Run-004 access-policy bundle..."
 	@python3 scripts/docmeta/validate_model_lab_run004_access_policy.py
@@ -242,34 +226,17 @@ probe-model-lab-access-policy:
 	@echo "🧪 Running Run-004 access-policy live negative probe..."
 	@python3 scripts/docmeta/probe_model_lab_run004_access_policy.py
 
-validate-model-lab-runtime-binding-tests:
-	@echo "🧪 Running Run-004 runtime-binding broker and validator tests..."
-	@python3 scripts/docmeta/test_run_model_lab_run004_agent.py
-	@python3 scripts/docmeta/test_validate_model_lab_run004_runtime_binding.py
-
 validate-model-lab-runtime-binding:
 	@echo "🧭 Validating canonical Run-004 runtime-binding bundle..."
 	@python3 scripts/docmeta/validate_model_lab_run004_runtime_binding.py
-
-validate-model-lab-execution-readiness-tests:
-	@echo "🧪 Running model-lab execution-readiness validator tests..."
-	@python3 scripts/docmeta/test_validate_model_lab_execution_readiness.py
 
 validate-model-lab-execution-readiness:
 	@echo "🧭 Validating model-lab execution-readiness artifacts..."
 	@python3 scripts/docmeta/validate_model_lab_execution_readiness.py
 
-validate-model-lab-execution-seed-tests:
-	@echo "🧪 Running model-lab execution-seed builder tests..."
-	@python3 scripts/docmeta/test_build_model_lab_execution_seed.py
-
 validate-model-lab-execution-seed:
 	@echo "🌱 Validating canonical Run-004 execution seed..."
 	@python3 scripts/docmeta/build_model_lab_execution_seed.py
-
-validate-model-lab-workspace-isolation-tests:
-	@echo "🧪 Running Run-004 workspace-isolation materializer tests..."
-	@python3 scripts/docmeta/test_prepare_model_lab_run004_workspaces.py
 
 validate-model-lab-workspace-isolation:
 	@echo "🧱 Validating canonical Run-004 workspace-isolation plan..."
@@ -477,9 +444,7 @@ help:
 	@echo "  make validate-run-bundle       — Cross-validate experiment run bundles (run.yml, auditor-output.yml, measurement.yml)"
 	@echo "  make validate-run-bundle-tests — Run run-bundle validator regression tests"
 	@echo "  make validate-model-lab-runtime-binding — Validate Run-004 runtime-binding bundle"
-	@echo "  make validate-model-lab-runtime-binding-tests — Run Run-004 runtime-binding broker/validator tests"
 	@echo "  make validate-model-lab-execution-readiness — Validate Run-004 execution-readiness preflight artifacts"
-	@echo "  make validate-model-lab-execution-readiness-tests — Run Run-004 execution-readiness validator regression tests"
 	@echo "  make validate-relations        — Validate frontmatter relations"
 	@echo "  make validate-relations-tests  — Run relations validator regression tests"
 	@echo "  make validate-backlinks-tests  — Run backlinks generator regression tests"
@@ -520,10 +485,6 @@ help:
 	@echo "  make generate-metrics   — Generate decision-gated metrics trend report"
 	@echo "  make generate-artifact-taxonomy — Generate artifact taxonomy report (diagnostic)"
 	@echo "  make help               — Show this help"
-
-validate-model-lab-runtime-candidate-tests:
-	@echo "Running Run-004 runtime-candidate validator regression tests..."
-	@python3 scripts/docmeta/test_validate_model_lab_runtime_candidate.py
 
 validate-model-lab-runtime-candidate:
 	@echo "Validating Run-004 runtime-candidate preflight artifacts..."

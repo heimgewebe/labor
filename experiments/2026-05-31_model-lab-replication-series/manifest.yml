@@ -7,12 +7,12 @@ experiment:
     validator and the AP-2 challenge-version validator against a real, opt-in
     activated run and decision, without producing any model-quality verdict,
     outcome upgrade, adoption, or promotion.
-  status: testing
+  status: inconclusive
   category: workflow
   execution_status: executed
   evidence_level: experimental
   created: "2026-05-31"
-  updated: "2026-06-28"
+  updated: "2026-11-25"
   author: "vibe-lab maintainers"
   triggered_by: "user-request-2026-06-28-run-004-runtime-binding"
   iteration: 21

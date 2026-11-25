@@ -245,7 +245,7 @@
       "path": "experiments/2026-05-31_model-lab-replication-series",
       "pre_execution_hold": false,
       "promotion_ready": true,
-      "status": "testing",
+      "status": "inconclusive",
       "warnings": [
         "falsifiability_assessment_inconclusive"
       ]

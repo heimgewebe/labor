@@ -79,10 +79,14 @@ python3 -m pip install -r requirements.txt
 make validate
 ```
 
-Die normale Validierung prüft auch die eingefrorenen Run-004-Belege und
-deren portable Regressionstests, benötigt dafür aber keine Ubuntu-spezifischen
-Sandboxpakete. Die erneute Live-Prüfung des historischen Bubblewrap/libseccomp-
-Vertrags ist eine eigene, explizite Handlung auf einem kompatiblen Host:
+Die normale Validierung prüft weiterhin die tatsächlichen eingefrorenen
+Run-004-Belege. Die neun spezialisierten Fixture-Test-Frontdoors der terminalen
+historischen Reihe sind nicht mehr Teil der Pflichtvalidierung; ihre Skripte und
+Fixtures bleiben für explizite Wiederholung erhalten. Siehe die
+[Archiventscheidung](experiments/2026-05-31_model-lab-replication-series/results/archive-decision.md)
+mit unveränderlichem Git-Stand. Die erneute Live-Prüfung des historischen
+Bubblewrap/libseccomp-Vertrags ist eine eigene, explizite Handlung auf einem
+kompatiblen Host; die normale Validierung benötigt diese Sandboxpakete nicht.
 
 ```bash
 python3 scripts/docmeta/test_validate_model_lab_run004_access_policy.py LiveAccessPolicyTests

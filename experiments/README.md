@@ -37,6 +37,7 @@ Dies ist das operative Labor des Vibe-Labs. Hier werden Hypothesen getestet und 
 - [Prompt-Length Control](2026-04-14_prompt-length-control/CONTEXT.md)
 
 ## Archivierte Evidenzreihen
+- [Model-Lab Replication Series — In-place Archive](2026-05-31_model-lab-replication-series/results/archive-decision.md) — terminal ohne vergleichendes Ergebnis; unveränderte historische Belegpfade und gepinnter Git-Stand, neun Spezialtest-Frontdoors stillgelegt.
 - [Agent Failure Surface Mapping](_archive/2026-04-23_agent-failure-surface/CONTEXT.md) —
   historische, ausgeführte Agent-Operability-Evidenzreihe. RRG-01/02/03 sind
   fixture-spezifisch belegt; die vorgeschlagenen v0.2-Remediationen wurden nie

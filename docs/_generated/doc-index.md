@@ -212,6 +212,7 @@
 | `experiments/2026-05-31_model-lab-replication-series/artifacts/runtime-validation-run-003/README.md` | README | — | — |
 | `experiments/2026-05-31_model-lab-replication-series/failure_modes.md` | Model-Lab Replication-Series — Failure Modes | designed | operative |
 | `experiments/2026-05-31_model-lab-replication-series/method.md` | Model-Lab Replication-Series — Method | designed | operative |
+| `experiments/2026-05-31_model-lab-replication-series/results/archive-decision.md` | Model-Lab Replication Series — In-place Archive Decision | archived | derived |
 | `experiments/2026-05-31_model-lab-replication-series/results/cross-run-assessment.md` | Cross-Run Assessment: Model-Lab Replication Series Run-001 vs Run-002 | draft | operative |
 | `experiments/2026-05-31_model-lab-replication-series/results/result.md` | Model-Lab Replication-Series — Results | testing | operative |
 | `experiments/2026-07-05_ecosystem-organ-preflight/CONTEXT.md` | Ecosystem Organ Preflight — Kontext | active | operative |
