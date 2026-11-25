@@ -19,6 +19,8 @@ from pathlib import Path
 
 import yaml
 
+from validate_model_lab_execution_readiness import main as validator_main
+
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 VALIDATOR = REPO_ROOT / "scripts" / "docmeta" / "validate_model_lab_execution_readiness.py"
 FIXROOT = REPO_ROOT / "tests" / "fixtures" / "model_lab_execution_readiness"
@@ -87,22 +89,32 @@ atexit.register(_cleanup_all)
 
 
 class ExecutionReadinessTests(unittest.TestCase):
-    def run_v(self, *paths: Path):
-        return subprocess.run(
-            [sys.executable, str(VALIDATOR), *[str(p) for p in paths]],
-            cwd=REPO_ROOT,
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            errors="strict",
-            check=False,
+    def run_v(self, *paths: Path, cli: bool = False):
+        # Exercise the real CLI for discovery and representative exit-code cases.
+        # The remaining fixture matrix calls the same entry point without process startup.
+        if cli or not paths or REAL in paths:
+            return subprocess.run(
+                [sys.executable, str(VALIDATOR), *[str(p) for p in paths]],
+                cwd=REPO_ROOT,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="strict",
+                check=False,
+            )
+        argv = [str(p) for p in paths]
+        stdout, stderr = io.StringIO(), io.StringIO()
+        with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+            code = validator_main(argv)
+        return subprocess.CompletedProcess(
+            [sys.executable, str(VALIDATOR), *argv], code, stdout.getvalue(), stderr.getvalue()
         )
 
     def assert_exit(self, completed, code: int) -> None:
         self.assertEqual(code, completed.returncode, completed.stdout + completed.stderr)
 
-    def assert_rule(self, path: Path, rule: str, code: int = 1) -> None:
-        completed = self.run_v(path)
+    def assert_rule(self, path: Path, rule: str, code: int = 1, *, cli: bool = False) -> None:
+        completed = self.run_v(path, cli=cli)
         self.assert_exit(completed, code)
         self.assertIn(rule, completed.stdout)
         self.assertNotIn("Traceback", completed.stdout + completed.stderr)
@@ -210,10 +222,10 @@ class ExecutionReadinessTests(unittest.TestCase):
     # 3-5 identity
     def test_wrong_series(self):
         self.assert_rule(self.build(mutate=lambda d, _: d.update(series_id="wrong-series")), "EXECUTION_READINESS_REQUIRES_RUN004_IDENTITY")
-        self.assert_exit(self.run_v(INVALID_WRONG_SERIES), 2)
+        self.assert_exit(self.run_v(INVALID_WRONG_SERIES, cli=True), 2)
 
     def test_wrong_design_id(self):
-        self.assert_rule(self.build(mutate=lambda d, _: d.update(design_id="wrong-design")), "EXECUTION_READINESS_REQUIRES_RUN004_IDENTITY")
+        self.assert_rule(self.build(mutate=lambda d, _: d.update(design_id="wrong-design")), "EXECUTION_READINESS_REQUIRES_RUN004_IDENTITY", cli=True)
 
     def test_wrong_challenge_version(self):
         self.assert_rule(self.build(mutate=lambda d, _: d.update(challenge_version="other-v1")), "EXECUTION_READINESS_REQUIRES_RUN004_IDENTITY")

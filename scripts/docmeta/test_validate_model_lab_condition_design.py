@@ -25,6 +25,8 @@ import unittest
 from pathlib import Path
 
 import yaml
+
+from validate_model_lab_condition_design import main as validator_main
 from jsonschema import Draft202012Validator
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
@@ -95,10 +97,20 @@ def _sha(p: Path) -> str:
 
 
 class CD(unittest.TestCase):
-    def run_v(self, *paths: Path):
-        return subprocess.run([sys.executable, str(VALIDATOR), *[str(p) for p in paths]],
-                              cwd=REPO_ROOT, capture_output=True, text=True,
-                              encoding="utf-8", errors="strict", check=False)
+    def run_v(self, *paths: Path, cli: bool = False):
+        # Exercise the real CLI for discovery and representative exit-code cases.
+        # The remaining fixture matrix calls the same entry point without process startup.
+        if cli or not paths or REAL in paths:
+            return subprocess.run([sys.executable, str(VALIDATOR), *[str(p) for p in paths]],
+                                  cwd=REPO_ROOT, capture_output=True, text=True,
+                                  encoding="utf-8", errors="strict", check=False)
+        argv = [str(p) for p in paths]
+        stdout, stderr = io.StringIO(), io.StringIO()
+        with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+            code = validator_main(argv)
+        return subprocess.CompletedProcess(
+            [sys.executable, str(VALIDATOR), *argv], code, stdout.getvalue(), stderr.getvalue()
+        )
 
     def _coerce(self, c):
         return self.run_v(c) if isinstance(c, Path) else c
@@ -234,7 +246,7 @@ class CD(unittest.TestCase):
 
     def test_old_reduced_gate_list_is_schema_error(self):
         # §4.1: a snapshot that carries its own reduced gate list is rejected by the closed schema.
-        self.assert_exit(self.build(snapshot=lambda s: s.update(required_control_dimensions=[])), 2)
+        self.assert_exit(self.run_v(self.build(snapshot=lambda s: s.update(required_control_dimensions=[])), cli=True), 2)
 
     # --- gate subset (exit 1) ---
     def test_gate_required_dimension_missing(self):
@@ -351,7 +363,7 @@ class CD(unittest.TestCase):
 
     # --- self identity / bundle / arms ---
     def test_wrong_self_path(self):
-        self.assert_rule(self.build(design=lambda d: d.update(design_artifact_path=FIX_PRE + "common-condition.md")),
+        self.assert_rule(self.run_v(self.build(design=lambda d: d.update(design_artifact_path=FIX_PRE + "common-condition.md")), cli=True),
                          "CONDITION_DESIGN_REQUIRES_DESIGN_SELF_IDENTITY")
 
     def test_child_outside_bundle(self):
