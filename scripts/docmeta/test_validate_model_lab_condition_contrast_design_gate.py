@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+import contextlib
+import io
 import json
 import runpy
 import subprocess
@@ -12,6 +14,8 @@ import unittest
 from pathlib import Path
 
 import yaml
+
+from validate_model_lab_condition_contrast_design_gate import main as validator_main
 from jsonschema import Draft202012Validator
 
 
@@ -103,13 +107,23 @@ READABILITY_MUTATIONS = [
 
 
 class ModelLabConditionContrastDesignGateValidatorTests(unittest.TestCase):
-    def run_validator(self, *paths: Path) -> subprocess.CompletedProcess[str]:
-        return subprocess.run(
-            [sys.executable, str(VALIDATOR_PATH), *[str(path) for path in paths]],
-            cwd=REPO_ROOT,
-            capture_output=True,
-            text=True,
-            check=False,
+    def run_validator(self, *paths: Path, cli: bool = False) -> subprocess.CompletedProcess[str]:
+        # Exercise the real CLI for discovery and representative exit-code cases.
+        # The remaining fixture matrix calls the same entry point without process startup.
+        if cli or not paths or REAL_ARTIFACT in paths:
+            return subprocess.run(
+                [sys.executable, str(VALIDATOR_PATH), *[str(path) for path in paths]],
+                cwd=REPO_ROOT,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+        argv = [str(p) for p in paths]
+        stdout, stderr = io.StringIO(), io.StringIO()
+        with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+            code = validator_main(argv)
+        return subprocess.CompletedProcess(
+            [sys.executable, str(VALIDATOR_PATH), *argv], code, stdout.getvalue(), stderr.getvalue()
         )
 
     def assert_exit_code(
@@ -149,7 +163,9 @@ class ModelLabConditionContrastDesignGateValidatorTests(unittest.TestCase):
     def test_invalid_fixtures_exit_one_with_rule_ids(self) -> None:
         for rel_path, rule_id in INVALID_FIXTURES.items():
             with self.subTest(rel_path=rel_path):
-                completed = self.run_validator(FIXTURE_ROOT / rel_path)
+                completed = self.run_validator(
+                    FIXTURE_ROOT / rel_path, cli=rel_path == "invalid/missing-triage-source.yml"
+                )
                 self.assert_exit_code(completed, 1)
                 self.assertIn(rule_id, completed.stdout)
 
@@ -192,7 +208,7 @@ class ModelLabConditionContrastDesignGateValidatorTests(unittest.TestCase):
                 'artifact_type: "model_lab_condition_contrast_design_gate"\n',
                 encoding="utf-8",
             )
-            self.assert_exit_code(self.run_validator(bad), 2)
+            self.assert_exit_code(self.run_validator(bad, cli=True), 2)
 
     def test_schema_non_blank_fields_reject_whitespace_only(self) -> None:
         mutations = [
